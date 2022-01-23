@@ -7,6 +7,7 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 
 struct event_t {
 	u32 pid;
+	char comm[128];
 };
 
 struct {
@@ -19,6 +20,7 @@ int uprobe_jvm_invoke_method(struct pt_regs *ctx) {
 
 	event.pid = bpf_get_current_pid_tgid();
 
+    bpf_get_current_comm(&event.comm, sizeof(event.comm));
 	bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, &event, sizeof(event));
 
 	return 0;

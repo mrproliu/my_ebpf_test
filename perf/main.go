@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"github.com/cilium/ebpf/link"
+	"fmt"
 	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
 	"golang.org/x/sys/unix"
@@ -18,20 +18,15 @@ import (
 )
 
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
-//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf uprobe.c -- -I../headers
+//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf perf-java.c -- -I../headers
 
-// An Event represents a perf event sent to userspace from the eBPF program
-// running in the kernel. Note that this must match the C event_t structure,
-// and that both C and Go structs must be aligned same way.
 type Event struct {
-	PID  uint32
-	Comm [128]byte
+	Pid           uint32
+	KernelIp      uint64
+	UserStackId   uint
+	KernelStackId uint
+	Name          [128]byte
 }
-
-var (
-	binPath = "/usr/lib/jvm/java-11-openjdk-amd64/lib/server/libjvm.so"
-	symbol  = "JVM_InvokeMethod"
-)
 
 func main() {
 	stopper := make(chan os.Signal, 1)
@@ -42,6 +37,26 @@ func main() {
 		log.Fatal(err)
 	}
 
+	eventAttr := &unix.PerfEventAttr{
+		Type:   unix.PERF_TYPE_SOFTWARE,
+		Config: unix.PERF_COUNT_SW_CPU_CLOCK,
+		//Size:        uint32(unsafe.Sizeof(unix.PerfEventAttr{})),
+		//Read_format: unix.PERF_FORMAT_TOTAL_TIME_RUNNING | unix.PERF_FORMAT_TOTAL_TIME_ENABLED,
+		Sample_type: unix.PERF_SAMPLE_RAW,
+		Sample:      1,
+		Wakeup:      1,
+	}
+	fd, err := unix.PerfEventOpen(
+		eventAttr,
+		17073,
+		0,
+		-1,
+		0,
+	)
+	if err != nil {
+		log.Fatal("test1", err)
+	}
+
 	// Load pre-compiled programs and maps into the kernel.
 	objs := bpfObjects{}
 	if err := loadBpfObjects(&objs, nil); err != nil {
@@ -49,36 +64,29 @@ func main() {
 	}
 	defer objs.Close()
 
-	// Open an ELF binary and read its symbols.
-	ex, err := link.OpenExecutable(binPath)
-	if err != nil {
-		log.Fatalf("opening executable: %s", err)
+	// attach ebpf to perf event
+	unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_SET_BPF, objs.DoPerfEvent.FD())
+
+	if err := unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_ENABLE, 0); err != nil {
+		log.Fatalf("test2", err)
 	}
 
-	// Open a Uretprobe at the exit point of the symbol and attach
-	// the pre-compiled eBPF program to it.
-	up, err := ex.Uprobe(symbol, objs.UprobeJvmInvokeMethod, nil)
-	if err != nil {
-		log.Fatalf("creating uretprobe: %s", err)
-	}
-	defer up.Close()
-
-	// Open a perf event reader from userspace on the PERF_EVENT_ARRAY map
-	// described in the eBPF C program.
-	rd, err := perf.NewReader(objs.Events, os.Getpagesize())
+	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
 	if err != nil {
 		log.Fatalf("creating perf event reader: %s", err)
 	}
 	defer rd.Close()
 
 	go func() {
-		// Wait for a signal and close the perf reader,
-		// which will interrupt rd.Read() and make the program exit.
 		<-stopper
 		log.Println("Received signal, exiting program..")
 
-		if err := rd.Close(); err != nil {
+		if err := unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_DISABLE, 0); err != nil {
 			log.Fatalf("closing perf event reader: %s", err)
+		}
+
+		if err := rd.Close(); err != nil {
+			log.Fatal("close reader error: %s", err)
 		}
 	}()
 
@@ -105,7 +113,6 @@ func main() {
 			log.Printf("parsing perf event: %s", err)
 			continue
 		}
-
-		log.Printf("%s:%s pid: %s, name: %s", binPath, symbol, event.PID, unix.ByteSliceToString(event.Comm[:]))
+		fmt.Printf("%s\n", event.Name)
 	}
 }

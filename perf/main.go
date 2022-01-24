@@ -30,13 +30,13 @@ type Event struct {
 }
 
 func main() {
-	if len(os.Args) == 0 {
+	if len(os.Args) <= 1 {
 		log.Fatal("please input the pid need to be monitor")
 		return
 	}
-	pid, err := strconv.Atoi(os.Args[0])
+	pid, err := strconv.Atoi(os.Args[1])
 	if err != nil {
-		log.Fatal("could not reconized the pid: %s", os.Args[0])
+		log.Fatal("could not reconized the pid: %s", os.Args[1])
 		return
 	}
 	stopper := make(chan os.Signal, 1)

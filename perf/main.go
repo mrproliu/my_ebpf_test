@@ -32,12 +32,12 @@ type Event struct {
 func main() {
 	if len(os.Args) == 0 {
 		log.Fatal("please input the pid need to be monitor")
-		return 1
+		return
 	}
 	pid, err := strconv.Atoi(os.Args[0])
 	if err != nil {
 		log.Fatal("could not reconized the pid: %s", os.Args[0])
-		return 1
+		return
 	}
 	stopper := make(chan os.Signal, 1)
 	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)

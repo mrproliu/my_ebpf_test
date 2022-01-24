@@ -38,10 +38,8 @@ func main() {
 	}
 
 	eventAttr := &unix.PerfEventAttr{
-		Type:   unix.PERF_TYPE_SOFTWARE,
-		Config: unix.PERF_COUNT_SW_CPU_CLOCK,
-		//Size:        uint32(unsafe.Sizeof(unix.PerfEventAttr{})),
-		//Read_format: unix.PERF_FORMAT_TOTAL_TIME_RUNNING | unix.PERF_FORMAT_TOTAL_TIME_ENABLED,
+		Type:        unix.PERF_TYPE_SOFTWARE,
+		Config:      unix.PERF_COUNT_SW_CPU_CLOCK,
 		Sample_type: unix.PERF_SAMPLE_RAW,
 		Sample:      1,
 		Wakeup:      1,

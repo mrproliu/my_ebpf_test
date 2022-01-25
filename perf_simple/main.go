@@ -101,7 +101,7 @@ func main() {
 	ev, err := unix.PerfEventOpen(
 		&unix.PerfEventAttr{
 			Type:        unix.PERF_TYPE_SOFTWARE,
-			Config:      unix.PERF_COUNT_SW_CPU_CLOCK,
+			Config:      unix.PERF_COUNT_SW_TASK_CLOCK,
 			Sample_type: unix.PERF_SAMPLE_RAW,
 			Sample:      1,
 			Wakeup:      1,

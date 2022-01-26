@@ -31,7 +31,6 @@ int do_perf_event(struct pt_regs *ctx) {
     u64 id = bpf_get_current_pid_tgid();
     u32 tgid = id >> 32;
 
-    bpf_printk("hello");
 	// create map key
     struct key_t key = {.pid = tgid};
     bpf_get_current_comm(&key.name, sizeof(key.name));

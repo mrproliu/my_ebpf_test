@@ -8,8 +8,8 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 struct key_t {
     u32 pid;
     char name[128];
-    u32 user_stack_id;
-    u32 kernel_stack_id;
+    long user_stack_id;
+    long kernel_stack_id;
 };
 
 #define MAX_ENTRIES	10000
@@ -20,7 +20,7 @@ struct {
 
 struct {
     __uint(type, BPF_MAP_TYPE_STACK_TRACE);
-    __uint(key_size, sizeof(u32));
+    __uint(key_size, sizeof(u64));
     __uint(value_size, 100 * sizeof(u64));
     __uint(max_entries, 10000);
 } stacks SEC(".maps");

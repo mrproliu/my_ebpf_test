@@ -50,7 +50,7 @@ func main() {
 		Type:        unix.PERF_TYPE_SOFTWARE,
 		Config:      unix.PERF_COUNT_SW_CPU_CLOCK,
 		Sample_type: unix.PERF_SAMPLE_RAW,
-		Sample:      1,
+		Sample:      1000000 * 1000,
 		Wakeup:      1,
 	}
 	fd, err := unix.PerfEventOpen(
@@ -121,14 +121,5 @@ func main() {
 			continue
 		}
 		fmt.Printf("id: %d, name: %s, stack: %d:%d\n", event.Pid, event.Name, event.KernelStackId, event.UserStackId)
-
-		symbls := make([]uint64, 0)
-		err = objs.Stacks.Lookup(event.UserStackId, symbls)
-		if err != nil {
-			log.Printf("err look up stackid: %d, %v", event.UserStackId, err)
-			continue
-		}
-
-		fmt.Printf("found stacks: %d", len(symbls))
 	}
 }

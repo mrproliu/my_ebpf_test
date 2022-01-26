@@ -106,7 +106,7 @@ func main() {
 			Sample:      1,
 			Wakeup:      1,
 		},
-		pid,
+		0,
 		0,
 		-1,
 		unix.PERF_FLAG_FD_CLOEXEC,

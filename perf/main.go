@@ -120,6 +120,6 @@ func main() {
 			log.Printf("parsing perf event: %s", err)
 			continue
 		}
-		fmt.Printf("id: %d, name: %s\n", event.Pid, event.Name)
+		fmt.Printf("id: %d, name: %s, stack: %d:%d\n", event.Pid, event.Name, event.KernelStackId, event.UserStackId)
 	}
 }

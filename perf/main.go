@@ -122,13 +122,20 @@ func main() {
 		}
 		fmt.Printf("id: %d, name: %s, stack: %d:%d\n", event.Pid, event.Name, event.KernelStackId, event.UserStackId)
 
-		symbls := make([]uint64, 0)
-		err = objs.Stacks.Lookup(uint32(event.UserStackId), symbls)
+		var key, nextKey uint32
+		err = objs.Stacks.NextKey(key, nextKey)
 		if err != nil {
-			log.Printf("err look up stackid: %d, %v", event.UserStackId, err)
+			log.Printf("err look up : %v", event.UserStackId, err)
 			continue
 		}
-
-		fmt.Printf("found stacks: %d", len(symbls))
+		log.Printf("find key: %d\n", key)
+		//symbls := make([]uint64, 0)
+		//err = objs.Stacks.Lookup(uint32(event.UserStackId), symbls)
+		//if err != nil {
+		//	log.Printf("err look up stackid: %d, %v", event.UserStackId, err)
+		//	continue
+		//}
+		//
+		//fmt.Printf("found stacks: %d", len(symbls))
 	}
 }

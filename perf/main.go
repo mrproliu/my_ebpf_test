@@ -23,9 +23,9 @@ import (
 
 type Event struct {
 	Pid           uint32
-	UserStackId   uint32
-	KernelStackId uint32
 	Name          [128]byte
+	UserStackId   uint64
+	KernelStackId uint64
 }
 
 func main() {
@@ -123,7 +123,7 @@ func main() {
 		fmt.Printf("id: %d, name: %s, stack: %d:%d\n", event.Pid, event.Name, event.KernelStackId, event.UserStackId)
 
 		symbls := make([]uint64, 0)
-		err = objs.Stacks.Lookup(event.UserStackId, symbls)
+		err = objs.Stacks.Lookup(uint32(event.UserStackId), symbls)
 		if err != nil {
 			log.Printf("err look up stackid: %d, %v", event.UserStackId, err)
 			continue

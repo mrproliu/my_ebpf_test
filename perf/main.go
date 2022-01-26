@@ -23,9 +23,8 @@ import (
 
 type Event struct {
 	Pid           uint32
-	KernelIp      uint64
-	UserStackId   uint
-	KernelStackId uint
+	UserStackId   uint64
+	KernelStackId uint64
 	Name          [128]byte
 }
 

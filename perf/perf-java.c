@@ -7,9 +7,8 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 
 struct key_t {
     u32 pid;
-    u64 kernel_ip;
-    int user_stack_id;
-    int kernel_stack_id;
+    long user_stack_id;
+    long kernel_stack_id;
     char name[128];
 };
 

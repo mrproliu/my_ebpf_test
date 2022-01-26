@@ -24,8 +24,8 @@ import (
 type Event struct {
 	Pid           uint32
 	Name          [128]byte
-	UserStackId   uint64
-	KernelStackId uint64
+	UserStackId   uint32
+	KernelStackId uint32
 }
 
 func main() {
@@ -122,8 +122,8 @@ func main() {
 		}
 		fmt.Printf("id: %d, name: %s, stack: %d:%d\n", event.Pid, event.Name, event.KernelStackId, event.UserStackId)
 
-		var key uint64
-		err = objs.Stacks.NextKey(uint64(0), key)
+		var key uint32
+		err = objs.Stacks.NextKey(uint32(0), key)
 		if err != nil {
 			log.Printf("err look up : %v", event.UserStackId, err)
 			continue

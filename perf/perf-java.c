@@ -8,8 +8,8 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 struct key_t {
     u32 pid;
     char name[128];
-    long user_stack_id;
-    long kernel_stack_id;
+    u32 user_stack_id;
+    u32 kernel_stack_id;
 };
 
 #define MAX_ENTRIES	10000

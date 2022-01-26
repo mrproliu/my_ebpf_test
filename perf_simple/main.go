@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 
 	"github.com/cilium/ebpf"
@@ -19,10 +18,10 @@ func main() {
 	if len(os.Args) != 2 {
 		log.Fatalf("Expected: ./%s <PID>\n", os.Args[0])
 	}
-	pid, err := strconv.Atoi(os.Args[1])
-	if err != nil {
-		log.Fatalf("Failed to parse pid from '%s': %v", os.Args[1], err)
-	}
+	//pid, err := strconv.Atoi(os.Args[1])
+	//if err != nil {
+	//	log.Fatalf("Failed to parse pid from '%s': %v", os.Args[1], err)
+	//}
 
 	// Subscribe to signals for terminating the program.
 	stopper := make(chan os.Signal, 1)

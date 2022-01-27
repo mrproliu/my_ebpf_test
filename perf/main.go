@@ -24,8 +24,8 @@ import (
 type Event struct {
 	Pid           uint32
 	Name          [128]byte
-	UserStackId   int64
-	KernelStackId int64
+	UserStackId   uint32
+	KernelStackId uint32
 }
 
 func main() {

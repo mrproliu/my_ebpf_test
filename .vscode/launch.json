@@ -10,11 +10,9 @@
             "request": "launch",
             "mode": "debug",
             "program": "${fileDirname}",
-            "args": ["1557"],
+            "args": ["2236"],
             "showLog": true,
-            "env": {
-				"DEBUG_AS_ROOT": "true",
-			}, 
+            "sudo": true,
         } 
     ]
 }

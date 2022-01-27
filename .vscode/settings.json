@@ -1,5 +1,0 @@
-{
-	"go.alternateTools": {
-		"dlv": "${workspaceFolder}/.vscode/dlv-sudo.sh"
-	}
-}

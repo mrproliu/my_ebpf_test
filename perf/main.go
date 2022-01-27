@@ -23,9 +23,9 @@ import (
 
 type Event struct {
 	Pid           uint32
-	Name          [128]byte
 	UserStackId   uint32
 	KernelStackId uint32
+	Name          [128]byte
 }
 
 func i32tob(val uint32) []byte {

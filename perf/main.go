@@ -160,14 +160,9 @@ func main() {
 				if addr == 0 {
 					continue
 				}
-				symByAddr := symbols.SymByAddr(addr)
-				if symByAddr != nil {
-					fmt.Printf("find sumbyaddr: %s: %s\n", symByAddr.Name, symByAddr.Func.Name)
-					continue
-				}
 				toFunc := symbols.PCToFunc(addr)
 				if toFunc != nil {
-					fmt.Printf("find tofun: %s: %s\n", toFunc.Name, toFunc.Func.Name)
+					fmt.Printf("find tofun: %s: %s\n", toFunc.Name, toFunc.Func.LineTable.Line)
 					continue
 				}
 				fmt.Printf("not found!!!")

@@ -102,7 +102,7 @@ func main() {
 	}
 	defer rd.Close()
 
-	elfFile, symbols, err := readSymbols("/home/liuhan/test/http")
+	elfFile, symbols, err := readSymbols(fmt.Sprintf("/proc/%d/exe", pid))
 	if err != nil {
 		log.Fatal("read symbols error: %v", err)
 		return
@@ -162,7 +162,7 @@ func main() {
 				}
 				toFunc := symbols.PCToFunc(addr)
 				if toFunc != nil {
-					fmt.Printf("find tofun: %s: %s\n", toFunc.Name, toFunc.Func.LineTable.Line)
+					fmt.Printf("find tofun: %s: %s\n", toFunc.Name)
 					continue
 				}
 				fmt.Printf("not found!!!")

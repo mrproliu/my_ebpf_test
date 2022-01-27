@@ -124,7 +124,7 @@ func main() {
 
 		fmt.Printf("%d, %d\n", objs.Stacks.KeySize(), objs.Stacks.ValueSize())
 		key := make([]byte, 4)
-		err = objs.Stacks.NextKey(make([]byte, 4), key)
+		err = objs.Stacks.NextKey(make([]byte, 4), &key)
 		if err != nil {
 			fmt.Printf("err look up : %v", event.UserStackId, err)
 			continue

@@ -160,7 +160,6 @@ func main() {
 			fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
 			continue
 		} else {
-			fmt.Printf("find user stack !!!: %v\n", val)
 			for _, addr := range val {
 				if addr == 0 {
 					continue

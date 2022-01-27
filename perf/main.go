@@ -148,14 +148,14 @@ func main() {
 			fmt.Printf("find user stack !!!: %v", val)
 		}
 
-		iterate := objs.Stacks.Iterate()
-		key := make([]byte, 4)
-		value := make([]byte, 800)
-		for iterate.Next(&key, &value) {
-			fmt.Printf("key: %d:%v, value: %v\n", btoi32(key), key, value)
-			key = make([]byte, 4)
-			value = make([]byte, 800)
-		}
+		//iterate := objs.Stacks.Iterate()
+		//key := make([]byte, 4)
+		//value := make([]byte, 800)
+		//for iterate.Next(&key, &value) {
+		//	fmt.Printf("key: %d:%v, value: %v\n", btoi32(key), key, value)
+		//	key = make([]byte, 4)
+		//	value = make([]byte, 800)
+		//}
 
 		//symbls := make([]uint64, 0)
 		//err = objs.Stacks.Lookup(&event.UserStackId, &symbls)

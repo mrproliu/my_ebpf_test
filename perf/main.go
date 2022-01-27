@@ -104,7 +104,7 @@ func main() {
 
 	elfFile, symbols, err := readSymbols(fmt.Sprintf("/proc/%d/exe", pid))
 	if err != nil {
-		log.Fatal("read symbols error: %v", err)
+		log.Fatalf("read symbols error: %v", err)
 		return
 	}
 

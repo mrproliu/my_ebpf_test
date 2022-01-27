@@ -166,7 +166,7 @@ func main() {
 				}
 				toFunc := symbols.PCToFunc(addr)
 				if toFunc != nil {
-					fmt.Printf("find tofun: %s: %s\n", toFunc.Name)
+					fmt.Printf("%s, %v", toFunc.Name, toFunc)
 					continue
 				}
 				fmt.Printf("not found!!!")

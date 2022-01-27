@@ -157,24 +157,21 @@ func main() {
 		} else {
 			fmt.Printf("find user stack !!!: %v", val)
 			for _, addr := range val {
+				if addr == 0 {
+					continue
+				}
 				symByAddr := symbols.SymByAddr(addr)
 				if symByAddr != nil {
-					fmt.Printf("find sumbyaddr: %s: %s", symByAddr.Name, symByAddr.Func.Name)
+					fmt.Printf("find sumbyaddr: %s: %s\n", symByAddr.Name, symByAddr.Func.Name)
 					continue
 				}
 				toFunc := symbols.PCToFunc(addr)
 				if toFunc != nil {
-					fmt.Printf("find tofun: %s: %s", toFunc.Name, toFunc.Func.Name)
+					fmt.Printf("find tofun: %s: %s\n", toFunc.Name, toFunc.Func.Name)
 					continue
 				}
 				fmt.Printf("not found!!!")
 			}
-		}
-
-		err = objs.Stacks.Lookup(event.KernelStackId, &val)
-		if err != nil {
-			fmt.Printf("error look up kernel stack: %v", err)
-			continue
 		}
 
 		//iterate := objs.Stacks.Iterate()

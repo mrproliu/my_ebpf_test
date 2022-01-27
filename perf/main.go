@@ -146,6 +146,11 @@ func main() {
 			log.Printf("parsing perf event: %s", err)
 			continue
 		}
+
+		if int(event.Pid) != pid {
+			continue
+		}
+
 		fmt.Printf("id: %d, name: %s, stack: %d:%d\n", event.Pid, event.Name, event.KernelStackId, event.UserStackId)
 
 		fmt.Printf("stack id to bytes: %d:%v, %d:%v\n", event.KernelStackId, i32tob(event.KernelStackId), event.UserStackId, i32tob(event.UserStackId))

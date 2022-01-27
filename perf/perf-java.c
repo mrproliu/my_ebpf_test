@@ -5,6 +5,7 @@
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
+int pid = 984;
 struct key_t {
     u32 pid;
     int user_stack_id;
@@ -27,7 +28,6 @@ struct {
 
 SEC("perf_event")
 int do_perf_event(struct pt_regs *ctx) {
-    bpf_printk("hello\n");
     u64 id = bpf_get_current_pid_tgid();
     u32 tgid = id >> 32;
 

@@ -5,6 +5,8 @@ package main
 
 import (
 	"bytes"
+	"debug/elf"
+	"debug/gosym"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -100,9 +102,17 @@ func main() {
 	}
 	defer rd.Close()
 
+	elfFile, symbols, err := readSymbols("/home/liuhan/test/http")
+	if err != nil {
+		log.Fatal("read symbols error: %v", err)
+		return
+	}
+
 	go func() {
 		<-stopper
 		log.Println("Received signal, exiting program..")
+
+		_ = elfFile.Close()
 
 		if err := unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_DISABLE, 0); err != nil {
 			log.Fatalf("closing perf event reader: %s", err)
@@ -146,6 +156,19 @@ func main() {
 			continue
 		} else {
 			fmt.Printf("find user stack !!!: %v", val)
+			for _, addr := range val {
+				symByAddr := symbols.SymByAddr(addr)
+				if symByAddr != nil {
+					fmt.Printf("find sumbyaddr: %s: %s", symByAddr.Name, symByAddr.Func.Name)
+					continue
+				}
+				toFunc := symbols.PCToFunc(addr)
+				if toFunc != nil {
+					fmt.Printf("find tofun: %s: %s", toFunc.Name, toFunc.Func.Name)
+					continue
+				}
+				fmt.Printf("not found!!!")
+			}
 		}
 
 		//iterate := objs.Stacks.Iterate()
@@ -166,4 +189,43 @@ func main() {
 
 		//fmt.Printf("found stacks: %d", len(symbls))
 	}
+}
+
+func readSymbols(file string) (*elf.File, *gosym.Table, error) {
+	// Open self
+	f, err := elf.Open(file)
+	if err != nil {
+		return nil, nil, err
+	}
+	table, err := parse(f)
+	if err != nil {
+		return nil, nil, err
+	}
+	return f, table, err
+}
+
+func parse(f *elf.File) (*gosym.Table, error) {
+	s := f.Section(".gosymtab")
+	if s == nil {
+		return nil, fmt.Errorf("no symbles")
+	}
+	symdat, err := s.Data()
+	if err != nil {
+		f.Close()
+		return nil, fmt.Errorf("read symbols failure: %v", err)
+	}
+	pclndat, err := f.Section(".gopclntab").Data()
+	if err != nil {
+		f.Close()
+		return nil, fmt.Errorf("read gopclntab failure: %v", err)
+	}
+
+	pcln := gosym.NewLineTable(pclndat, f.Section(".text").Addr)
+	tab, err := gosym.NewTable(symdat, pcln)
+	if err != nil {
+		f.Close()
+		return nil, fmt.Errorf("parse gosymtab failure: %v", err)
+	}
+
+	return tab, nil
 }

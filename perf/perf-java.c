@@ -7,9 +7,10 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 
 struct key_t {
     u32 pid;
+    u64 kernel_ip;
+    int user_stack_id;
+    int kernel_stack_id;
     char name[128];
-    u32 user_stack_id;
-    u32 kernel_stack_id;
 };
 
 #define MAX_ENTRIES	10000
@@ -35,8 +36,8 @@ int do_perf_event(struct pt_regs *ctx) {
     bpf_get_current_comm(&key.name, sizeof(key.name));
 
     // get stacks
-    key.user_stack_id = bpf_get_stackid(ctx, &stacks, 0);
-    key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
+    key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);
+    key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
 

@@ -28,6 +28,22 @@ type Event struct {
 	KernelStackId uint32
 }
 
+func i32tob(val uint32) []byte {
+	r := make([]byte, 4)
+	for i := uint32(0); i < 4; i++ {
+		r[i] = byte((val >> (8 * i)) & 0xff)
+	}
+	return r
+}
+
+func btoi32(val []byte) uint32 {
+	r := uint32(0)
+	for i := uint32(0); i < 4; i++ {
+		r |= uint32(val[i]) << (8 * i)
+	}
+	return r
+}
+
 func main() {
 	if len(os.Args) <= 1 {
 		log.Fatal("please input the pid need to be monitor")
@@ -122,7 +138,7 @@ func main() {
 		}
 		fmt.Printf("id: %d, name: %s, stack: %d:%d\n", event.Pid, event.Name, event.KernelStackId, event.UserStackId)
 
-		fmt.Printf("%d, %d\n", objs.Stacks.KeySize(), objs.Stacks.ValueSize())
+		fmt.Printf("stack id to bytes: %d:%v, %d:%v\n", event.KernelStackId, i32tob(event.KernelStackId), event.UserStackId, i32tob(event.UserStackId))
 		//key := make([]byte, 4)
 		//err = objs.Stacks.NextKey(make([]byte, 4), &key)
 		//if err != nil {
@@ -134,7 +150,7 @@ func main() {
 		key := make([]byte, 4)
 		value := make([]byte, 800)
 		for iterate.Next(&key, &value) {
-			fmt.Printf("key: %v, value: %v\n", key, value)
+			fmt.Printf("key: %d:%v, value: %v\n", btoi32(key), key, value)
 			key = make([]byte, 4)
 			value = make([]byte, 800)
 		}

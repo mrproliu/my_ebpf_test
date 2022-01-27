@@ -129,17 +129,18 @@ func main() {
 			fmt.Printf("err look up : %v", event.UserStackId, err)
 			continue
 		}
-		lookupBytes1, err := objs.Stacks.LookupBytes(event.KernelStackId)
+		val1 := make([]int64, 0)
+		err = objs.Stacks.Lookup(event.KernelStackId, val1)
 		if err != nil {
 			fmt.Printf("find kernel err: %v", err)
 		} else {
-			fmt.Printf("kernel: %v", lookupBytes1)
+			fmt.Printf("kernel: %v", val1)
 		}
-		lookupBytes2, err := objs.Stacks.LookupBytes(event.UserStackId)
+		err = objs.Stacks.Lookup(event.UserStackId, val1)
 		if err != nil {
 			fmt.Printf("find kernel err: %v", err)
 		} else {
-			fmt.Printf("kernel: %v", lookupBytes2)
+			fmt.Printf("kernel: %v", val1)
 		}
 		//symbls := make([]uint64, 0)
 		//err = objs.Stacks.Lookup(&event.UserStackId, &symbls)

@@ -123,13 +123,24 @@ func main() {
 		fmt.Printf("id: %d, name: %s, stack: %d:%d\n", event.Pid, event.Name, event.KernelStackId, event.UserStackId)
 
 		fmt.Printf("%d, %d\n", objs.Stacks.KeySize(), objs.Stacks.ValueSize())
-		key := make([]byte, 4)
+		key := make([]byte, 8)
 		err = objs.Stacks.NextKey(make([]byte, 4), &key)
 		if err != nil {
 			fmt.Printf("err look up : %v", event.UserStackId, err)
 			continue
 		}
-		fmt.Printf("the key: %v", key)
+		lookupBytes1, err := objs.Stacks.LookupBytes(event.KernelStackId)
+		if err != nil {
+			fmt.Printf("find kernel err: %v", err)
+		} else {
+			fmt.Sprintf("kernel: %v", lookupBytes1)
+		}
+		lookupBytes2, err := objs.Stacks.LookupBytes(event.UserStackId)
+		if err != nil {
+			fmt.Printf("find kernel err: %v", err)
+		} else {
+			fmt.Sprintf("kernel: %v", lookupBytes2)
+		}
 		//symbls := make([]uint64, 0)
 		//err = objs.Stacks.Lookup(&event.UserStackId, &symbls)
 		//if err != nil {

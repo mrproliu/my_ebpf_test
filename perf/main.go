@@ -139,12 +139,12 @@ func main() {
 		fmt.Printf("id: %d, name: %s, stack: %d:%d\n", event.Pid, event.Name, event.KernelStackId, event.UserStackId)
 
 		fmt.Printf("stack id to bytes: %d:%v, %d:%v\n", event.KernelStackId, i32tob(event.KernelStackId), event.UserStackId, i32tob(event.UserStackId))
-		//key := make([]byte, 4)
-		//err = objs.Stacks.NextKey(make([]byte, 4), &key)
-		//if err != nil {
-		//	fmt.Printf("err look up : %v", event.UserStackId, err)
-		//	continue
-		//}
+		val := make([]uint64, 100)
+		err = objs.Stacks.Lookup(event.UserStackId, &val)
+		if err != nil {
+			fmt.Printf("err look up : %d, %v", event.UserStackId, err)
+			continue
+		}
 
 		iterate := objs.Stacks.Iterate()
 		key := make([]byte, 4)

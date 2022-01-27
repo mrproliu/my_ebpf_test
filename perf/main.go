@@ -152,10 +152,10 @@ func main() {
 		val := make([]uint64, 100)
 		err = objs.Stacks.Lookup(event.UserStackId, &val)
 		if err != nil {
-			fmt.Printf("err look up : %d, %v", event.UserStackId, err)
+			fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
 			continue
 		} else {
-			fmt.Printf("find user stack !!!: %v", val)
+			fmt.Printf("find user stack !!!: %v\n", val)
 			for _, addr := range val {
 				if addr == 0 {
 					continue

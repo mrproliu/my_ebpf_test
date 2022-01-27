@@ -8,7 +8,6 @@ import (
 	"debug/elf"
 	"debug/gosym"
 	"encoding/binary"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/cilium/ebpf/perf"
@@ -167,11 +166,15 @@ func main() {
 				}
 				toFunc := symbols.PCToFunc(addr)
 				if toFunc != nil {
-					marshal, err := json.Marshal(toFunc)
-					if err != nil {
-						continue
+					fmt.Printf("%s", toFunc.Name)
+					fmt.Printf("(")
+					for i, p := range toFunc.Params {
+						if i > 0 {
+							fmt.Printf(", ")
+						}
+						fmt.Printf("%s", p.Name)
 					}
-					fmt.Printf("%s, %v", toFunc.Name, string(marshal))
+					fmt.Printf(")\n")
 					continue
 				}
 				fmt.Printf("not found!!!")

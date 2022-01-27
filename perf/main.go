@@ -133,13 +133,13 @@ func main() {
 		if err != nil {
 			fmt.Printf("find kernel err: %v", err)
 		} else {
-			fmt.Sprintf("kernel: %v", lookupBytes1)
+			fmt.Printf("kernel: %v", lookupBytes1)
 		}
 		lookupBytes2, err := objs.Stacks.LookupBytes(event.UserStackId)
 		if err != nil {
 			fmt.Printf("find kernel err: %v", err)
 		} else {
-			fmt.Sprintf("kernel: %v", lookupBytes2)
+			fmt.Printf("kernel: %v", lookupBytes2)
 		}
 		//symbls := make([]uint64, 0)
 		//err = objs.Stacks.Lookup(&event.UserStackId, &symbls)

@@ -129,7 +129,7 @@ func main() {
 			fmt.Printf("err look up : %v", event.UserStackId, err)
 			continue
 		}
-		fmt.Sprintf("the key: %v", key)
+		fmt.Printf("the key: %v", key)
 		//symbls := make([]uint64, 0)
 		//err = objs.Stacks.Lookup(&event.UserStackId, &symbls)
 		//if err != nil {

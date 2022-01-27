@@ -123,7 +123,7 @@ func main() {
 		fmt.Printf("id: %d, name: %s, stack: %d:%d\n", event.Pid, event.Name, event.KernelStackId, event.UserStackId)
 
 		fmt.Printf("%d, %d\n", objs.Stacks.KeySize(), objs.Stacks.ValueSize())
-		var key *[]byte
+		var key *[]int64
 		err = objs.Stacks.NextKey(make([]byte, 0), key)
 		if err != nil {
 			fmt.Printf("err look up : %v", event.UserStackId, err)

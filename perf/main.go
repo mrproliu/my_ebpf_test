@@ -144,6 +144,8 @@ func main() {
 		if err != nil {
 			fmt.Printf("err look up : %d, %v", event.UserStackId, err)
 			continue
+		} else {
+			fmt.Printf("find user stack !!!: %v", val)
 		}
 
 		iterate := objs.Stacks.Iterate()

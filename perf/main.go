@@ -171,6 +171,12 @@ func main() {
 			}
 		}
 
+		err = objs.Stacks.Lookup(event.KernelStackId, &val)
+		if err != nil {
+			fmt.Printf("error look up kernel stack: %v", err)
+			continue
+		}
+
 		//iterate := objs.Stacks.Iterate()
 		//key := make([]byte, 4)
 		//value := make([]byte, 800)

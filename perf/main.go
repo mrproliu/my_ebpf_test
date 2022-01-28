@@ -160,13 +160,15 @@ func main() {
 		//}
 		fmt.Printf("pid: %d, taskid: %d, name: %s, stack: %d:%d\n", event.Pid, event.TaskId, event.Name, event.KernelStackId, event.UserStackId)
 
-		fmt.Printf("stack id to bytes: %d:%v, %d:%v\n", event.KernelStackId, i32tob(event.KernelStackId), event.UserStackId, i32tob(event.UserStackId))
-		val := make([]uint64, 100)
-		err = objs.Stacks.Lookup(event.UserStackId, &val)
-		if err != nil {
-			fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
-			continue
-		} else {
+		fmt.Printf("stack id to bytes: %d %d\n", event.KernelStackId, event.UserStackId)
+
+		if int(event.Pid) == pid {
+			val := make([]uint64, 100)
+			err = objs.Stacks.Lookup(event.UserStackId, &val)
+			if err != nil {
+				fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
+				continue
+			}
 			for _, addr := range val {
 				if addr == 0 {
 					continue
@@ -186,6 +188,15 @@ func main() {
 				}
 				fmt.Printf("not found!!!")
 			}
+		} else if int(event.Pid) == 0 {
+			val := make([]uint64, 100)
+			err = objs.Stacks.Lookup(event.KernelStackId, &val)
+			if err != nil {
+				fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
+				continue
+			}
+
+			fmt.Printf("find kernel stack: %v\n", val)
 		}
 	}
 }

@@ -189,7 +189,7 @@ func main() {
 				fmt.Printf("not found!!!")
 			}
 		} else if int(event.Pid) == 0 {
-			val := make([]uint64, 100)
+			val := make([]uint64, 0)
 			err = objs.Stacks.Lookup(event.KernelStackId, &val)
 			if err != nil {
 				fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)

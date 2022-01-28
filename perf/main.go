@@ -64,24 +64,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	eventAttr := &unix.PerfEventAttr{
-		Type:        unix.PERF_TYPE_SOFTWARE,
-		Config:      unix.PERF_COUNT_SW_CPU_CLOCK,
-		Sample_type: unix.PERF_SAMPLE_RAW,
-		Sample:      1000000 * 1000,
-		Wakeup:      1,
-	}
-	fd, err := unix.PerfEventOpen(
-		eventAttr,
-		0,
-		-1,
-		-1,
-		0,
-	)
-	if err != nil {
-		log.Fatal("test1", err)
-	}
-
 	// Load pre-compiled programs and maps into the kernel.
 	objs := bpfObjects{}
 	if err := loadBpfObjects(&objs, nil); err != nil {
@@ -89,11 +71,33 @@ func main() {
 	}
 	defer objs.Close()
 
-	// attach ebpf to perf event
-	unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_SET_BPF, objs.DoPerfEvent.FD())
+	perfEvents := make([]int, 0)
+	for i := 0; i < 2; i++ {
+		eventAttr := &unix.PerfEventAttr{
+			Type:        unix.PERF_TYPE_SOFTWARE,
+			Config:      unix.PERF_COUNT_SW_CPU_CLOCK,
+			Sample_type: unix.PERF_SAMPLE_RAW,
+			Sample:      1000000 * 1000,
+			Wakeup:      1,
+		}
+		fd, err := unix.PerfEventOpen(
+			eventAttr,
+			-1,
+			0,
+			-1,
+			0,
+		)
+		if err != nil {
+			log.Fatal("test1", err)
+		}
+		perfEvents = append(perfEvents, fd)
 
-	if err := unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_ENABLE, 0); err != nil {
-		log.Fatalf("test2", err)
+		// attach ebpf to perf event
+		unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_SET_BPF, objs.DoPerfEvent.FD())
+
+		if err := unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_ENABLE, 0); err != nil {
+			log.Fatalf("test2", err)
+		}
 	}
 
 	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
@@ -114,8 +118,10 @@ func main() {
 
 		_ = elfFile.Close()
 
-		if err := unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_DISABLE, 0); err != nil {
-			log.Fatalf("closing perf event reader: %s", err)
+		for _, fd := range perfEvents {
+			if err := unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_DISABLE, 0); err != nil {
+				log.Fatalf("closing perf event reader: %s", err)
+			}
 		}
 
 		if err := rd.Close(); err != nil {

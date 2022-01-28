@@ -147,9 +147,9 @@ func main() {
 			continue
 		}
 
-		if int(event.Pid) != pid {
-			continue
-		}
+		//if int(event.Pid) != pid {
+		//	continue
+		//}
 
 		fmt.Printf("id: %d, name: %s, stack: %d:%d\n", event.Pid, event.Name, event.KernelStackId, event.UserStackId)
 
@@ -180,24 +180,6 @@ func main() {
 				fmt.Printf("not found!!!")
 			}
 		}
-
-		//iterate := objs.Stacks.Iterate()
-		//key := make([]byte, 4)
-		//value := make([]byte, 800)
-		//for iterate.Next(&key, &value) {
-		//	fmt.Printf("key: %d:%v, value: %v\n", btoi32(key), key, value)
-		//	key = make([]byte, 4)
-		//	value = make([]byte, 800)
-		//}
-
-		//symbls := make([]uint64, 0)
-		//err = objs.Stacks.Lookup(&event.UserStackId, &symbls)
-		//if err != nil {
-		//	log.Printf("err look up stackid: %d, %v", event.UserStackId, err)
-		//	continue
-		//}
-
-		//fmt.Printf("found stacks: %d", len(symbls))
 	}
 }
 

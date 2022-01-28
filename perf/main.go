@@ -26,6 +26,7 @@ import (
 
 type Event struct {
 	Pid           uint32
+	TaskId        uint32
 	UserStackId   uint32
 	KernelStackId uint32
 	Name          [128]byte
@@ -157,8 +158,7 @@ func main() {
 		//if int(event.Pid) != pid {
 		//	continue
 		//}
-
-		fmt.Printf("id: %d, name: %s, stack: %d:%d\n", event.Pid, event.Name, event.KernelStackId, event.UserStackId)
+		fmt.Printf("pid: %d, taskid: %d, name: %s, stack: %d:%d\n", event.Pid, event.TaskId, event.Name, event.KernelStackId, event.UserStackId)
 
 		fmt.Printf("stack id to bytes: %d:%v, %d:%v\n", event.KernelStackId, i32tob(event.KernelStackId), event.UserStackId, i32tob(event.UserStackId))
 		val := make([]uint64, 100)

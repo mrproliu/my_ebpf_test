@@ -8,6 +8,7 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 int pid = 984;
 struct key_t {
     u32 pid;
+    u32 tid;
     int user_stack_id;
     int kernel_stack_id;
     char name[128];
@@ -30,9 +31,11 @@ SEC("perf_event")
 int do_perf_event(struct pt_regs *ctx) {
     u64 id = bpf_get_current_pid_tgid();
     u32 tgid = id >> 32;
+    u32 tid = id;
 
 	// create map key
     struct key_t key = {.pid = tgid};
+    key.tid = tid;
     bpf_get_current_comm(&key.name, sizeof(key.name));
 
     // get stacks

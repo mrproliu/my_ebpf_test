@@ -198,6 +198,8 @@ func main() {
 
 			fmt.Printf("find kernel stack: %v\n", val)
 		}
+
+		fmt.Printf("---------------")
 	}
 }
 

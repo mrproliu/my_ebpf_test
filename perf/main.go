@@ -16,6 +16,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"runtime"
 	"strconv"
 	"syscall"
 )
@@ -72,7 +73,7 @@ func main() {
 	defer objs.Close()
 
 	perfEvents := make([]int, 0)
-	for i := 0; i < 2; i++ {
+	for i := 0; i < runtime.NumCPU(); i++ {
 		eventAttr := &unix.PerfEventAttr{
 			Type:        unix.PERF_TYPE_SOFTWARE,
 			Config:      unix.PERF_COUNT_SW_CPU_CLOCK,
@@ -83,7 +84,7 @@ func main() {
 		fd, err := unix.PerfEventOpen(
 			eventAttr,
 			-1,
-			0,
+			i,
 			-1,
 			0,
 		)

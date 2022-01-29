@@ -9,7 +9,7 @@ spec:
   template:
     metadata:
       labels:
-        name: happly-borg
+        name: happy-borg
     spec:
       containers:
         - name: execsnoop

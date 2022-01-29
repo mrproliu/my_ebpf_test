@@ -3,35 +3,43 @@ kind: DaemonSet
 metadata:
   name: happy-borg
 spec:
-  shareProcessNamespace: true
-  containers:
-    - name: execsnoop
-      image: calavera/execsnoop
-      securityContext:
-        privileged: true
-      volumeMounts:
-        - name: sys # mount the debug filesystem
-          mountPath: /sys
-          readOnly: true
-        - name: headers # mount the kernel headers required by bcc
-          mountPath: /usr/src
-          readOnly: true
-        - name: modules # mount the kernel modules required by bcc
-          mountPath: /lib/modules
-          readOnly: true
-        - name: proc # mount the kernel modules required by bcc
-          mountPath: /proc
-          readOnly: true
-  volumes:
-    - name: sys
-      hostPath:
-        path: /sys
-    - name: headers
-      hostPath:
-        path: /usr/src
-    - name: modules
-      hostPath:
-        path: /lib/modules
-    - name: proc
-      hostPath:
-        path: /proc
+  selector:
+    matchLabels:
+      name: happy-borg
+  template:
+    metadata:
+      labels:
+        name: happly-borg
+    spec:
+      containers:
+        - name: execsnoop
+          image: calavera/execsnoop
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: sys # mount the debug filesystem
+              mountPath: /sys
+              readOnly: true
+            - name: headers # mount the kernel headers required by bcc
+              mountPath: /usr/src
+              readOnly: true
+            - name: modules # mount the kernel modules required by bcc
+              mountPath: /lib/modules
+              readOnly: true
+            - name: proc # mount the kernel modules required by bcc
+              mountPath: /proc
+              readOnly: true
+        volumes:
+          - name: sys
+            hostPath:
+              path: /sys
+          - name: headers
+            hostPath:
+              path: /usr/src
+          - name: modules
+            hostPath:
+              path: /lib/modules
+          - name: proc
+            hostPath:
+              path: /proc
+

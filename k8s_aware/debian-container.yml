@@ -43,31 +43,18 @@ spec:
             - name: sys # mount the debug filesystem
               mountPath: /sys
               readOnly: true
-            - name: headers # mount the kernel headers required by bcc
-              mountPath: /usr/src
+            - name: host
+              mountPath: /host
               readOnly: true
-            - name: modules # mount the kernel modules required by bcc
-              mountPath: /lib/modules
-              readOnly: true
-            - name: localtime # mount the kernel modules required by bcc
-              mountPath: /etc/localtime
-              readOnly: true
-          command: [ "/bin/bash", "-c", "--" ]
-          args: [ "while true; do sleep 30; done;" ]
+      hostPID: true
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
       volumes:
         - name: sys
           hostPath:
             path: /sys
-        - name: headers
+            type: Directory
+        - name: host
           hostPath:
-            path: /usr/src
-        - name: modules
-          hostPath:
-            path: /lib/modules
-        - name: proc
-          hostPath:
-            path: /proc
-        - name: localtime
-          hostPath:
-            path: /etc/localtime
-
+            path: /
+            type: Directory

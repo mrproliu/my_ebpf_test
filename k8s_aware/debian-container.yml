@@ -29,17 +29,17 @@ spec:
             - name: proc # mount the kernel modules required by bcc
               mountPath: /proc
               readOnly: true
-        volumes:
-          - name: sys
-            hostPath:
-              path: /sys
-          - name: headers
-            hostPath:
-              path: /usr/src
-          - name: modules
-            hostPath:
-              path: /lib/modules
-          - name: proc
-            hostPath:
-              path: /proc
+      volumes:
+        - name: sys
+          hostPath:
+            path: /sys
+        - name: headers
+          hostPath:
+            path: /usr/src
+        - name: modules
+          hostPath:
+            path: /lib/modules
+        - name: proc
+          hostPath:
+            path: /proc
 

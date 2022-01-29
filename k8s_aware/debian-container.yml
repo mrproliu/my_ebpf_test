@@ -11,10 +11,33 @@ spec:
       labels:
         name: happy-borg
     spec:
+#      initContainers:
+#        - name: init-header
+#          image: ubuntu
+#          volumeMounts:
+#            - name: sys # mount the debug filesystem
+#              mountPath: /sys
+#              readOnly: true
+#            - name: headers # mount the kernel headers required by bcc
+#              mountPath: /usr/src
+#              readOnly: false
+#            - name: modules # mount the kernel modules required by bcc
+#              mountPath: /lib/modules
+#              readOnly: true
+#          command:
+#            - sh
+#            - "-c"
+#            - |-
+#              apt update
+#              apt install -y linux-headers-$(uname -r)
       containers:
         - name: execsnoop
-          image: calavera/execsnoop
+          image: gcr.io/hanliu-20211231-155028/ebpf-kprobe:test3
           securityContext:
+            capabilities:
+              add:
+                - SYS_PTRACE
+                - SYS_ADMIN
             privileged: true
           volumeMounts:
             - name: sys # mount the debug filesystem
@@ -26,9 +49,11 @@ spec:
             - name: modules # mount the kernel modules required by bcc
               mountPath: /lib/modules
               readOnly: true
-            - name: proc # mount the kernel modules required by bcc
-              mountPath: /proc
+            - name: localtime # mount the kernel modules required by bcc
+              mountPath: /etc/localtime
               readOnly: true
+          command: [ "/bin/bash", "-c", "--" ]
+          args: [ "while true; do sleep 30; done;" ]
       volumes:
         - name: sys
           hostPath:
@@ -42,4 +67,7 @@ spec:
         - name: proc
           hostPath:
             path: /proc
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
 

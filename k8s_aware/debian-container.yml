@@ -31,7 +31,7 @@ spec:
 #              apt update
 #              apt install -y linux-headers-$(uname -r)
       containers:
-        - name: execsnoop
+        - name: ebpf-kprobe
           image: gcr.io/hanliu-20211231-155028/ebpf-kprobe:test3
           securityContext:
             capabilities:

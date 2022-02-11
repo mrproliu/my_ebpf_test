@@ -50,7 +50,7 @@ func main() {
 	for _, ins := range spec.Programs[funcName].Instructions {
 		if ins.Constant == int64(999) {
 			ins.Constant = int64(234)
-			fmt.Printf("found the forcePid and replaced\n")
+			fmt.Printf("found the forcePid and replaced, ins opCode: %d\n", ins.OpCode)
 			break
 		}
 	}

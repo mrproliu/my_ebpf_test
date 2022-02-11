@@ -5,7 +5,7 @@
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
-int pid = 984;
+volatile const int pid;
 struct key_t {
     u32 pid;
     u32 tid;
@@ -32,6 +32,10 @@ int do_perf_event(struct pt_regs *ctx) {
     u64 id = bpf_get_current_pid_tgid();
     u32 tgid = id >> 32;
     u32 tid = id;
+
+    if (tgid != pid && tgid != 0) {
+        return 0;
+    }
 
 	// create map key
     struct key_t key = {.pid = tgid};

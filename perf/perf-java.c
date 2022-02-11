@@ -5,7 +5,7 @@
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
-volatile const int pid;
+static volatile const u32 pid;
 struct key_t {
     u32 pid;
     u32 tid;

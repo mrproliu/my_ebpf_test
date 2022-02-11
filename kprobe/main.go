@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/perf"
+	"github.com/cilium/ebpf/rlimit"
 	"log"
 	"os"
 	"os/signal"
@@ -22,8 +23,6 @@ import (
 
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf kprobe.c -- -I../headers
-
-const mapKey uint32 = 0
 
 type Event struct {
 	Pid    uint32
@@ -35,10 +34,10 @@ func main() {
 	// Name of the kernel function to trace.
 	fn := "sys_execve"
 
-	//// Allow the current process to lock memory for eBPF resources.
-	//if err := rlimit.RemoveMemlock(); err != nil {
-	//	log.Fatal(err)
-	//}
+	// Allow the current process to lock memory for eBPF resources.
+	if err := rlimit.RemoveMemlock(); err != nil {
+		log.Fatal(err)
+	}
 
 	// Load pre-compiled programs and maps into the kernel.
 	objs := bpfObjects{}
@@ -47,7 +46,7 @@ func main() {
 		log.Fatalf("loading objects: %s", err)
 		return
 	}
-	//spec.Programs["kprobe_execve"].Instructions[3].Constant = 999
+	spec.Programs["kprobe_execve"].Instructions[3].Constant = 234
 	if err := spec.LoadAndAssign(&objs, nil); err != nil {
 		log.Fatalf("loading objects: %s", err)
 	}

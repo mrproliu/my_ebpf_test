@@ -10,7 +10,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
 	"golang.org/x/sys/unix"

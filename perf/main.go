@@ -75,7 +75,7 @@ func main() {
 	}
 	spec.RewriteConstants(map[string]interface{}{"pid": pid})
 
-	if err := spec.LoadAndAssign(objs, nil); err != nil {
+	if err := spec.LoadAndAssign(&objs, nil); err != nil {
 		log.Fatalf("loading objects: %s", err)
 	}
 	defer objs.Close()

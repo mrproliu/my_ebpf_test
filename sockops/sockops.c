@@ -16,16 +16,7 @@ struct {
 } counts SEC(".maps");
 
 SEC("sockops")
-int bpf_sockmap(struct pt_regs *ctx) {
-//    u64 id = bpf_get_current_pid_tgid();
-//    u32 tgid = id >> 32;
-//    u32 tid = id;
-
-	// create map key
-    struct key_t key = {};
-//    key.tid = tid;
-    bpf_get_current_comm(&key.name, sizeof(key.name));
-
-    bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
+int bpf_sockmap(struct bpf_sock_ops *skops) {
+    bpf_printk("hello\n");
     return 0;
 }

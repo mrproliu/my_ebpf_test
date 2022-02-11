@@ -16,7 +16,7 @@ struct {
 } counts SEC(".maps");
 
 SEC("sockops")
-int bpf_sockmap(struct bpf_sock_ops *skops) {
+int bpf_sockmap(struct pt_regs *ctx) {
     bpf_printk("hello\n");
     return 0;
 }

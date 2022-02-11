@@ -73,6 +73,9 @@ func main() {
 		log.Fatalf("loading objects: %s", err)
 		return
 	}
+	for i := 0; i < 10; i++ {
+		fmt.Printf("%d->%d\n", spec.Programs["do_perf_event"].Instructions[i].OpCode, spec.Programs["do_perf_event"].Instructions[i].Constant)
+	}
 	fmt.Printf("%d---", spec.Programs["do_perf_event"].Instructions[3].Constant)
 	spec.Programs["do_perf_event"].Instructions[3].Constant = int64(pid)
 

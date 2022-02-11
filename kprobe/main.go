@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/perf"
+	"github.com/cilium/ebpf/rlimit"
 	"log"
 	"os"
 	"os/signal"
@@ -35,15 +36,21 @@ func main() {
 	// Name of the kernel function to trace.
 	fn := "sys_execve"
 
-	//// Allow the current process to lock memory for eBPF resources.
-	//if err := rlimit.RemoveMemlock(); err != nil {
-	//	log.Fatal(err)
-	//}
+	// Allow the current process to lock memory for eBPF resources.
+	if err := rlimit.RemoveMemlock(); err != nil {
+		log.Fatal(err)
+	}
 
 	// Load pre-compiled programs and maps into the kernel.
 	objs := bpfObjects{}
-	if err := loadBpfObjects(&objs, nil); err != nil {
-		log.Fatalf("loading objects: %v", err)
+	spec, err := loadBpf()
+	if err != nil {
+		log.Fatalf("loading objects: %s", err)
+		return
+	}
+	spec.Programs["do_perf_event"].Instructions[3].Constant = 999
+	if err := spec.LoadAndAssign(objs, nil); err != nil {
+		log.Fatalf("loading objects: %s", err)
 	}
 	defer objs.Close()
 

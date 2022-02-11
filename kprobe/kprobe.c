@@ -4,7 +4,7 @@
 #include "bpf_helpers.h"
 #include "kprobe-common.h"
 
-const u32 fallback_value;
+const u32 fallback_value = 111;
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 

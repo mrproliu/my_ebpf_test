@@ -17,10 +17,6 @@ struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
 } counts SEC(".maps");
 
-//SEC("sockops")
-//int sockops(struct pt_regs *ctx) {
-//SEC("kprobe/sys_execve")
-//int kprobe_execve(struct pt_regs *ctx) {
 SEC("sockops")
 int bpf_sockmap(struct pt_regs *ctx) {
     u64 id = bpf_get_current_pid_tgid();

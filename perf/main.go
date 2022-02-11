@@ -10,6 +10,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
 	"golang.org/x/sys/unix"
@@ -73,7 +74,7 @@ func main() {
 		log.Fatalf("loading objects: %s", err)
 		return
 	}
-	spec.RewriteConstants(map[string]interface{}{"pid": pid})
+	spec.Programs["do_perf_event"].Instructions[3].Constant = int64(pid)
 
 	if err := spec.LoadAndAssign(&objs, nil); err != nil {
 		log.Fatalf("loading objects: %s", err)

@@ -5,7 +5,6 @@
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
-static volatile const u32 pid;
 struct key_t {
     u32 pid;
     u32 tid;
@@ -29,6 +28,8 @@ struct {
 
 SEC("perf_event")
 int do_perf_event(struct pt_regs *ctx) {
+    // should change the pid value
+    u32 pid = 1;
     u64 id = bpf_get_current_pid_tgid();
     u32 tgid = id >> 32;
     u32 tid = id;

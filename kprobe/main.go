@@ -48,8 +48,8 @@ func main() {
 		log.Fatalf("loading objects: %s", err)
 		return
 	}
-	//spec.Programs["kprobe_execve"].Instructions[3].Constant = 999
-	if err := spec.LoadAndAssign(objs, nil); err != nil {
+	spec.Programs["kprobe_execve"].Instructions[3].Constant = 999
+	if err := spec.LoadAndAssign(&objs, nil); err != nil {
 		log.Fatalf("loading objects: %s", err)
 	}
 	defer objs.Close()

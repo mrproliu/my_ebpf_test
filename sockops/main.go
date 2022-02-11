@@ -64,7 +64,7 @@ func main() {
 	}
 	l, err := link.AttachCgroup(link.CgroupOptions{
 		Path:    path,
-		Attach:  ebpf.AttachCGroupInetEgress,
+		Attach:  ebpf.AttachCGroupSockOps,
 		Program: objs.BpfSockmap,
 	})
 	if err != nil {

@@ -13,7 +13,7 @@ struct {
 
 SEC("kprobe/sys_execve")
 int kprobe_execve(struct pt_regs *ctx) {
-    const u32 fallback_value = 111;
+    const u32 fallback_value = 2495;
     u64 id = bpf_get_current_pid_tgid();
     u32 tgid = id >> 32;
     u32 tid = id;

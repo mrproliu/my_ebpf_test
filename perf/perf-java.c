@@ -35,13 +35,14 @@ int do_perf_event(struct pt_regs *ctx) {
     u32 tgid = id >> 32;
     u32 tid = id;
 
-    if (tgid != pid && tgid != 0) {
-        return 0;
-    }
+//    if (tgid != pid && tgid != 0) {
+//        return 0;
+//    }
 
 	// create map key
     struct key_t key = {.pid = tgid};
     key.tid = tid;
+    key.pid = pid;
     bpf_get_current_comm(&key.name, sizeof(key.name));
 
     // get stacks

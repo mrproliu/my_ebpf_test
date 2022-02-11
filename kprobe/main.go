@@ -68,13 +68,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("creating perf event reader: %s", err)
 	}
-	defer rd.Close()
 
 	stopper := make(chan os.Signal, 1)
 	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-stopper
 		log.Println("Received signal, exiting program..")
+
+		rd.Close()
 	}()
 
 	var event Event

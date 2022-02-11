@@ -76,8 +76,9 @@ func main() {
 	// adjust the pid
 	funcName := "do_perf_event"
 	for _, ins := range spec.Programs[funcName].Instructions {
-		if ins.Constant == 999 {
+		if ins.Constant == int64(999) {
 			ins.Constant = int64(pid)
+			fmt.Printf("found the pid and replaced\n")
 			break
 		}
 	}

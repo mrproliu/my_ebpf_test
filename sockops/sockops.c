@@ -11,21 +11,19 @@ struct key_t {
     char name[128];
 };
 
-#define MAX_ENTRIES	10000
-
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
 } counts SEC(".maps");
 
 SEC("sockops")
 int bpf_sockmap(struct pt_regs *ctx) {
-    u64 id = bpf_get_current_pid_tgid();
-    u32 tgid = id >> 32;
-    u32 tid = id;
+//    u64 id = bpf_get_current_pid_tgid();
+//    u32 tgid = id >> 32;
+//    u32 tid = id;
 
 	// create map key
-    struct key_t key = {.pid = tgid};
-    key.tid = tid;
+    struct key_t key = {};
+//    key.tid = tid;
     bpf_get_current_comm(&key.name, sizeof(key.name));
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));

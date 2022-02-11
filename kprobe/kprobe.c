@@ -2,14 +2,11 @@
 
 #include "common.h"
 #include "bpf_helpers.h"
+#include "kprobe-common.h"
+
+const u32 fallback_value;
 
 char __license[] SEC("license") = "Dual MIT/GPL";
-
-struct key_t {
-    u32 pid;
-    u32 tid;
-    char name[128];
-};
 
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);

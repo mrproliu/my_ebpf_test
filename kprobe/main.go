@@ -46,7 +46,14 @@ func main() {
 		log.Fatalf("loading objects: %s", err)
 		return
 	}
-	spec.Programs["kprobe_execve"].Instructions[3].Constant = 234
+	funcName := "kprobe_execve"
+	for _, ins := range spec.Programs[funcName].Instructions {
+		if ins.Constant == int64(999) {
+			ins.Constant = int64(234)
+			fmt.Printf("found the forcePid and replaced\n")
+			break
+		}
+	}
 	if err := spec.LoadAndAssign(&objs, nil); err != nil {
 		log.Fatalf("loading objects: %s", err)
 	}

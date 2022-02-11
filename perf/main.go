@@ -73,6 +73,7 @@ func main() {
 		log.Fatalf("loading objects: %s", err)
 		return
 	}
+	fmt.Printf("%d---", spec.Programs["do_perf_event"].Instructions[3].Constant)
 	spec.Programs["do_perf_event"].Instructions[3].Constant = int64(pid)
 
 	if err := spec.LoadAndAssign(&objs, nil); err != nil {

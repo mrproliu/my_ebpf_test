@@ -51,7 +51,7 @@ func main() {
 	for _, ins := range spec.Programs[funcName].Instructions {
 		if ins.OpCode == asm.OpCode(183) {
 			ins.Constant = int64(234)
-			fmt.Printf("found the my_const and replaced\n", ins.OpCode)
+			fmt.Printf("found the my_const and replaced\n")
 			break
 		}
 	}

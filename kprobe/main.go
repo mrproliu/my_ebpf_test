@@ -47,10 +47,10 @@ func main() {
 		return
 	}
 	funcName := "kprobe_execve"
-	for _, ins := range spec.Programs[funcName].Instructions {
+	for i, ins := range spec.Programs[funcName].Instructions {
 		if ins.Reference == "MY_CONST" {
 			ins.Constant = 555
-			fmt.Printf("found the my_const and replaced\n")
+			fmt.Printf("found the my_const and replaced, index: %d, opCode: %d\n", i, ins.OpCode)
 		}
 	}
 	if err := spec.LoadAndAssign(&objs, nil); err != nil {

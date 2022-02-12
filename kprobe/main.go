@@ -47,13 +47,16 @@ func main() {
 		return
 	}
 	funcName := "kprobe_execve"
-	for _, ins := range spec.Programs[funcName].Instructions {
-		if ins.Constant == int64(999) {
-			ins.Constant = int64(234)
-			fmt.Printf("found the forcePid and replaced, ins opCode: %d\n", ins.OpCode)
-			break
-		}
+	for i := 0; i < 10; i++ {
+		fmt.Printf("%d -> %d", spec.Programs[funcName].Instructions[i].OpCode, spec.Programs[funcName].Instructions[i].Constant)
 	}
+	//for _, ins := range spec.Programs[funcName].Instructions {
+	//	if ins.Constant == int64(999) {
+	//		ins.Constant = int64(234)
+	//		fmt.Printf("found the forcePid and replaced, ins opCode: %d\n", ins.OpCode)
+	//		break
+	//	}
+	//}
 	if err := spec.LoadAndAssign(&objs, nil); err != nil {
 		log.Fatalf("loading objects: %s", err)
 	}

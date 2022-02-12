@@ -3,7 +3,7 @@
 //#include "common.h"
 //#include "bpf_helpers.h"
 
-#include "bpf/api.h"
+#include "api.h"
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 

@@ -1,4 +1,4 @@
-// This is a compact version of `vmlinux.h` to be used in the examples using C code.
+// linux types from `vmlinux.h`
 
 #ifndef __LINUX_TYPES_H
 #define __LINUX_TYPES_H

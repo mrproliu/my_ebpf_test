@@ -12,7 +12,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/cilium/ebpf/asm"
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
@@ -49,10 +48,9 @@ func main() {
 	}
 	funcName := "kprobe_execve"
 	for _, ins := range spec.Programs[funcName].Instructions {
-		if ins.OpCode == asm.OpCode(183) {
-			ins.Constant = int64(234)
+		if ins.Reference == "MY_CONST" {
+			ins.Constant = 555
 			fmt.Printf("found the my_const and replaced\n")
-			break
 		}
 	}
 	if err := spec.LoadAndAssign(&objs, nil); err != nil {

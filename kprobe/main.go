@@ -48,7 +48,7 @@ func main() {
 	}
 	funcName := "kprobe_execve"
 	for i := 0; i < 10; i++ {
-		fmt.Printf("%d -> %d", spec.Programs[funcName].Instructions[i].OpCode, spec.Programs[funcName].Instructions[i].Constant)
+		fmt.Printf("%d -> %d\n", spec.Programs[funcName].Instructions[i].OpCode, spec.Programs[funcName].Instructions[i].Constant)
 	}
 	//for _, ins := range spec.Programs[funcName].Instructions {
 	//	if ins.Constant == int64(999) {

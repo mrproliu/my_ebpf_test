@@ -48,13 +48,6 @@ func main() {
 		return
 	}
 	funcName := "kprobe_execve"
-	for i := 0; i < 10; i++ {
-		fmt.Printf("%d -> %d, symbol: %s, ref: %s\n",
-			spec.Programs[funcName].Instructions[i].OpCode,
-			spec.Programs[funcName].Instructions[i].Constant,
-			spec.Programs[funcName].Instructions[i].Symbol,
-			spec.Programs[funcName].Instructions[i].Reference)
-	}
 	for _, ins := range spec.Programs[funcName].Instructions {
 		if ins.OpCode == asm.OpCode(183) {
 			ins.Constant = int64(234)

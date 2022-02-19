@@ -1,8 +1,7 @@
 package main
 
 /*
-#cgo CFLAGS: -I/usr/src/linux-headers-4.19.0-18-common/include/
-#include <linux/kallsyms.h>
+extern int sprint_symbol(char *buffer, unsigned long address);
 */
 import "C"
 import "fmt"

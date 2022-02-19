@@ -179,7 +179,7 @@ func testSysSymbol() error {
 			break
 		}
 		info := strings.Split(scanner.Text(), " ")
-		atoi, err := strconv.ParseInt(info[0], 16, 10)
+		atoi, err := strconv.ParseUint(info[0], 16, 32)
 		if err != nil {
 			return fmt.Errorf("error read addr: %s", info[0])
 			break

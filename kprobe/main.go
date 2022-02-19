@@ -49,7 +49,8 @@ func main() {
 	funcName := "kprobe_execve"
 	for i, ins := range spec.Programs[funcName].Instructions {
 		if ins.Reference == "MY_CONST" {
-			ins.Constant = 555
+			spec.Programs[funcName].Instructions[i].Constant = 555
+			spec.Programs[funcName].Instructions[i].Offset = 0
 			fmt.Printf("found the my_const and replaced, index: %d, opCode: %d\n", i, ins.OpCode)
 		}
 	}

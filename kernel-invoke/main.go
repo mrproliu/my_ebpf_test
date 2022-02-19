@@ -1,7 +1,7 @@
 package main
 
 /*
-#cgo CFLAGS: -I/usr/src/linux-headers-4.19.0-18-cloud-amd64/include/config
+#cgo CFLAGS: -I/usr/src/linux-headers-4.19.0-18-cloud-amd64/include/linux
 #include <kallsyms.h>
 */
 import "C"

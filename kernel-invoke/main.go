@@ -9,6 +9,7 @@ import "fmt"
 
 func main() {
 	buffer := C.CString("")
-	result := C.sprint_symbol(buffer, 18446744071901140000)
+	d := C.uint64(18446744071901140000)
+	result := C.sprint_symbol(buffer, d)
 	fmt.Printf("%d", result)
 }

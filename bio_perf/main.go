@@ -190,11 +190,12 @@ func testSysSymbol() ([]*kernelSymbol, error) {
 	scanner := bufio.NewScanner(file)
 
 	symbols := make([]*kernelSymbol, 0)
+	count := 0
 	for scanner.Scan() {
 		info := strings.Split(scanner.Text(), " ")
 		atoi, err := strconv.ParseUint(info[0], 16, 64)
-		if info[0] == "ffffffffc02d1800" {
-			fmt.Printf("found symbol!!!%s\n", info[2])
+		if strings.HasPrefix(info[0], "ffffffff") {
+			count++
 		}
 		if err != nil {
 			return nil, fmt.Errorf("error read addr: %s, %v", info[0], err)
@@ -204,6 +205,7 @@ func testSysSymbol() ([]*kernelSymbol, error) {
 			Symbol: info[2],
 		})
 	}
+	fmt.Printf("total count: %d\n", count)
 	return symbols, nil
 }
 

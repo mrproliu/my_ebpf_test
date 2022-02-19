@@ -142,6 +142,13 @@ func main() {
 				}
 				fmt.Printf("not found!!!")
 			}
+
+			err = objs.Stacks.Lookup(event.KernelStackId, &val)
+			if err != nil {
+				fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
+				continue
+			}
+			fmt.Printf("kernel stack: %v", val)
 		}
 
 		fmt.Printf("---------------\n")

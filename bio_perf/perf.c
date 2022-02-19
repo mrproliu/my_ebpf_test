@@ -9,6 +9,7 @@ struct key_t {
     u32 pid;
     u32 tid;
     int user_stack_id;
+    int kernel_stack_id;
     char name[128];
 };
 
@@ -38,6 +39,7 @@ int bpf_blk_account_io_start(struct pt_regs *ctx) {
 
     // get stacks
     key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
+    key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
     return 0;

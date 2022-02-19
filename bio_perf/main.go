@@ -24,10 +24,11 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf perf.c -- -I../headers
 
 type Event struct {
-	Pid         uint32
-	TaskId      uint32
-	UserStackId uint32
-	Name        [128]byte
+	Pid           uint32
+	TaskId        uint32
+	UserStackId   uint32
+	KernelStackId uint32
+	Name          [128]byte
 }
 
 func main() {
@@ -113,7 +114,7 @@ func main() {
 		//if int(event.Pid) != pid {
 		//	continue
 		//}
-		fmt.Printf("pid: %d, taskid: %d, name: %s, stack: %d:%d\n", event.Pid, event.TaskId, event.Name, event.UserStackId)
+		fmt.Printf("pid: %d, taskid: %d, name: %s, stack: %d:%d\n", event.Pid, event.TaskId, event.Name, event.UserStackId, event.KernelStackId)
 
 		if int(event.Pid) == pid {
 			val := make([]uint64, 100)

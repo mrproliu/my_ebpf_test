@@ -186,6 +186,7 @@ func testSysSymbol() error {
 		}
 		fmt.Printf("addr: %d, type: %s, symbol: %s", atoi, info[1], info[2])
 	}
+	return nil
 }
 
 func readSymbols(file string) (*elf.File, *gosym.Table, error) {

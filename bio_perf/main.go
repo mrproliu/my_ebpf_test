@@ -160,8 +160,9 @@ func main() {
 				if addr == 0 {
 					continue
 				}
+				formatInt := strconv.FormatUint(addr, 2)
 				for _, sym := range kernelSymbols {
-					if sym.Addr == addr {
+					if sym.Addr == formatInt {
 						fmt.Printf("%s\n", sym.Symbol)
 						break
 					}
@@ -175,7 +176,7 @@ func main() {
 }
 
 type kernelSymbol struct {
-	Addr   uint64
+	Addr   string
 	Symbol string
 }
 
@@ -192,12 +193,12 @@ func testSysSymbol() ([]*kernelSymbol, error) {
 	symbols := make([]*kernelSymbol, 0)
 	for scanner.Scan() {
 		info := strings.Split(scanner.Text(), " ")
-		atoi, err := strconv.ParseUint(info[0], 16, 32)
-		if err != nil {
-			return nil, fmt.Errorf("error read addr: %s: %v", info[0], err)
-		}
+		//atoi, err := strconv.ParseUint(info[0], 16, 32)
+		//if err != nil {
+		//	return nil, fmt.Errorf("error read addr: %s: %v", info[0], err)
+		//}
 		symbols = append(symbols, &kernelSymbol{
-			Addr:   atoi,
+			Addr:   info[0],
 			Symbol: info[2],
 		})
 	}

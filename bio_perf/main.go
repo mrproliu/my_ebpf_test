@@ -161,7 +161,7 @@ func main() {
 					continue
 				}
 				for _, sym := range kernelSymbols {
-					if sym.Addr == addr {
+					if sym.Addr-1 == addr {
 						fmt.Printf("%s\n", sym.Symbol)
 						break
 					}

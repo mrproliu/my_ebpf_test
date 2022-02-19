@@ -11,10 +11,10 @@ import (
 )
 
 func main() {
-	s := ""
+	s := "absdefg"
 	buffer := C.CString(s)
 	result := C.sprint_symbol(buffer, 0)
 	fmt.Printf("%d\n", result)
-	fmt.Printf("%s", buffer)
+	fmt.Printf("%s\n", buffer)
 	C.free(unsafe.Pointer(buffer))
 }

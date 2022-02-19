@@ -181,10 +181,10 @@ func testSysSymbol() error {
 		info := strings.Split(scanner.Text(), " ")
 		atoi, err := strconv.ParseInt(info[0], 16, 10)
 		if err != nil {
-			fmt.Printf("error read addr: %s", info[0])
+			return fmt.Errorf("error read addr: %s", info[0])
 			break
 		}
-		fmt.Printf("addr: %d, type: %s, symbol: %s", atoi, info[1], info[2])
+		fmt.Printf("addr: %d, type: %s, symbol: %s\n", atoi, info[1], info[2])
 	}
 	return nil
 }

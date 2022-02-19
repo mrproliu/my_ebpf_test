@@ -2,6 +2,8 @@ package main
 
 /*
 #cgo CFLAGS: -I/usr/src/linux-headers-4.19.0-18-cloud-amd64/include/config
+#include <stdio.h>
+#include <stdlib.h>
 #include <kallsyms.h>
 */
 import "C"

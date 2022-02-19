@@ -2,21 +2,13 @@ package main
 
 /*
 #cgo CFLAGS: -I/usr/src/linux-headers-4.19.0-18-cloud-amd64/include/config
-#include <stdio.h>
-#include <stdlib.h>
 #include <kallsyms.h>
 */
 import "C"
-import (
-	"fmt"
-	"unsafe"
-)
+import "fmt"
 
 func main() {
-	s := "absdefg"
-	buffer := C.CString(s)
-	result := C.sprint_symbol(buffer, 0)
-	fmt.Printf("%d\n", result)
-	fmt.Printf("%s\n", buffer)
-	C.free(unsafe.Pointer(buffer))
+	buffer := C.CString("")
+	result := C.sprint_symbol(buffer, 111)
+	fmt.Printf("%d", result)
 }

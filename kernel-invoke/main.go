@@ -8,8 +8,11 @@ import "C"
 import "fmt"
 
 func main() {
+	//buffer := C.CString("")
+	//result := C.sprint_symbol(buffer, 111)
+	//fmt.Printf("%d", result)
+	fmt.Printf("a")
 	buffer := C.CString("")
 	result := C.sprint_symbol(buffer, 111)
-	fmt.Printf("%d\n", result)
-	fmt.Printf("aaa")
+	fmt.Printf("%d", result)
 }

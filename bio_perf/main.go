@@ -166,7 +166,7 @@ func main() {
 						break
 					}
 				}
-				fmt.Printf("Not Found!!!id: %v\n", addr)
+				fmt.Printf("Not Found!!!id: %v\n", strconv.FormatUint(addr, 16))
 			}
 		}
 
@@ -193,17 +193,21 @@ func testSysSymbol() ([]*kernelSymbol, error) {
 	count := 0
 	for scanner.Scan() {
 		info := strings.Split(scanner.Text(), " ")
-		atoi, err := strconv.ParseUint(info[0], 16, 64)
-		if strings.HasPrefix(info[0], "ffffffff") {
-			count++
+		stype := info[1]
+		if stype == "T" || stype == "t" || stype == "W" || stype == "w" {
+			atoi, err := strconv.ParseUint(info[0], 16, 64)
+
+			if strings.HasPrefix(info[0], "ffffffff") {
+				fmt.Printf("Addr: %s, \t, type: %s, symbol: %s\n", info[0], info[1], info[2])
+			}
+			if err != nil {
+				return nil, fmt.Errorf("error read addr: %s, %v", info[0], err)
+			}
+			symbols = append(symbols, &kernelSymbol{
+				Addr:   atoi,
+				Symbol: info[2],
+			})
 		}
-		if err != nil {
-			return nil, fmt.Errorf("error read addr: %s, %v", info[0], err)
-		}
-		symbols = append(symbols, &kernelSymbol{
-			Addr:   atoi,
-			Symbol: info[2],
-		})
 	}
 	fmt.Printf("total count: %d\n", count)
 	return symbols, nil

@@ -194,14 +194,12 @@ func testSysSymbol() ([]*kernelSymbol, error) {
 		info := strings.Split(scanner.Text(), " ")
 		atoi, err := strconv.ParseUint(info[0], 16, 32)
 		if err != nil {
-			return nil, fmt.Errorf("error read addr: %s", info[0])
-			break
+			return nil, fmt.Errorf("error read addr: %s: %v", info[0], err)
 		}
 		symbols = append(symbols, &kernelSymbol{
 			Addr:   atoi,
 			Symbol: info[2],
 		})
-		fmt.Printf("addr: %d, type: %s, symbol: %s\n", atoi, info[1], info[2])
 	}
 	return symbols, nil
 }

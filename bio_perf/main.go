@@ -193,6 +193,10 @@ func testSysSymbol() ([]*kernelSymbol, error) {
 	for scanner.Scan() {
 		info := strings.Split(scanner.Text(), " ")
 		atoi, err := strconv.ParseUint(info[0], 16, 64)
+		var d uint64 = 18446744072638764583
+		if atoi == d {
+			fmt.Printf("found symbol!!!%s\n", info[2])
+		}
 		if err != nil {
 			return nil, fmt.Errorf("error read addr: %s, %v", info[0], err)
 		}

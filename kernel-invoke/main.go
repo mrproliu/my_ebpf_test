@@ -1,8 +1,8 @@
 package main
 
 /*
-#cgo CFLAGS: -I/usr/src/linux-headers-4.19.0-18-common/include/linux/
-#include <kallsyms.h>
+#cgo CFLAGS: -I/usr/src/linux-headers-4.19.0-18-common/include/
+#include <linux/kallsyms.h>
 */
 import "C"
 import "fmt"

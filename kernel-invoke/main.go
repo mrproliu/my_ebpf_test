@@ -4,7 +4,7 @@ package main
 extern int sprint_symbol(char *buffer, unsigned long address);
 
 int symbol_query(char *buffer, unsigned long address) {
-	return sprint_symbol(buffer, address)
+	return sprint_symbol(buffer, address);
 }
 */
 import "C"

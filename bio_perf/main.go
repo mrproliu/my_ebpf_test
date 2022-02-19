@@ -77,7 +77,8 @@ func main() {
 		return
 	}
 
-	if err = testSysSymbol(); err != nil {
+	kernelSymbols, err := testSysSymbol()
+	if err != nil {
 		log.Fatalf("read kernel symbol error: %v", err)
 		return
 	}
@@ -155,38 +156,54 @@ func main() {
 				fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
 				continue
 			}
-			fmt.Printf("kernel stack: %v", val)
+			for _, addr := range val {
+				if addr == 0 {
+					continue
+				}
+				for _, sym := range kernelSymbols {
+					if sym.Addr == addr {
+						fmt.Printf("%s\n", sym.Symbol)
+						break
+					}
+				}
+				fmt.Printf("Not Found!!!id: %v\n", addr)
+			}
 		}
 
 		fmt.Printf("---------------\n")
 	}
 }
 
-func testSysSymbol() error {
+type kernelSymbol struct {
+	Addr   uint64
+	Symbol string
+}
+
+func testSysSymbol() ([]*kernelSymbol, error) {
 	file, err := os.Open("/proc/kallsyms")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer file.Close()
 
 	// read the file line by line using scanner
 	scanner := bufio.NewScanner(file)
 
-	i := 0
+	symbols := make([]*kernelSymbol, 0)
 	for scanner.Scan() {
-		i++
-		if i > 20 {
-			break
-		}
 		info := strings.Split(scanner.Text(), " ")
 		atoi, err := strconv.ParseUint(info[0], 16, 32)
 		if err != nil {
-			return fmt.Errorf("error read addr: %s", info[0])
+			return nil, fmt.Errorf("error read addr: %s", info[0])
 			break
 		}
+		symbols = append(symbols, &kernelSymbol{
+			Addr:   atoi,
+			Symbol: info[2],
+		})
 		fmt.Printf("addr: %d, type: %s, symbol: %s\n", atoi, info[1], info[2])
 	}
-	return nil
+	return symbols, nil
 }
 
 func readSymbols(file string) (*elf.File, *gosym.Table, error) {

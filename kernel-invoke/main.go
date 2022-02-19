@@ -9,6 +9,6 @@ import "fmt"
 
 func main() {
 	buffer := C.CString("")
-	result := C.sprint_symbol(buffer, 111)
+	result := C.sprint_symbol(buffer, 18446744071901140000)
 	fmt.Printf("%d", result)
 }

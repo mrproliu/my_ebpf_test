@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"debug/elf"
 	"debug/gosym"
@@ -17,6 +18,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 )
 
@@ -72,6 +74,11 @@ func main() {
 	elfFile, symbols, err := readSymbols(fmt.Sprintf("/proc/%d/exe", pid))
 	if err != nil {
 		log.Fatalf("read symbols error: %v", err)
+		return
+	}
+
+	if err = testSysSymbol(); err != nil {
+		log.Fatalf("read kernel symbol error: %v", err)
 		return
 	}
 
@@ -152,6 +159,32 @@ func main() {
 		}
 
 		fmt.Printf("---------------\n")
+	}
+}
+
+func testSysSymbol() error {
+	file, err := os.Open("/proc/kallsyms")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// read the file line by line using scanner
+	scanner := bufio.NewScanner(file)
+
+	i := 0
+	for scanner.Scan() {
+		i++
+		if i > 20 {
+			break
+		}
+		info := strings.Split(scanner.Text(), " ")
+		atoi, err := strconv.ParseInt(info[0], 16, 10)
+		if err != nil {
+			fmt.Printf("error read addr: %s", info[0])
+			break
+		}
+		fmt.Printf("addr: %d, type: %s, symbol: %s", atoi, info[1], info[2])
 	}
 }
 

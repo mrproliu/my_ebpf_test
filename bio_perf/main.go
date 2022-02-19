@@ -197,9 +197,9 @@ func testSysSymbol() ([]*kernelSymbol, error) {
 		if stype == "T" || stype == "t" || stype == "W" || stype == "w" {
 			atoi, err := strconv.ParseUint(info[0], 16, 64)
 
-			//if strings.HasPrefix(info[0], "ffffffff") {
-			//	fmt.Printf("Addr: %s, \t, type: %s, symbol: %s\n", info[0], info[1], info[2])
-			//}
+			if strings.HasPrefix(info[0], "ffffffff9435d7d0") {
+				fmt.Printf("Addr: %s, \t, type: %s, symbol: %s, toint: %d\n", info[0], info[1], info[2], uint64(atoi))
+			}
 			if err != nil {
 				return nil, fmt.Errorf("error read addr: %s, %v", info[0], err)
 			}

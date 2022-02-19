@@ -39,7 +39,7 @@ int bpf_blk_account_io_start(struct pt_regs *ctx) {
 
     // get stacks
     key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
-    key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 9));
+    key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0xffULL);
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
     return 0;

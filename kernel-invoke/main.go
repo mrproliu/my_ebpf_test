@@ -5,12 +5,16 @@ package main
 #include <kallsyms.h>
 */
 import "C"
-import "fmt"
+import (
+	"fmt"
+	"unsafe"
+)
 
 func main() {
-	buffer := C.CString("")
-	//d := C.uint64(18446744071901140000)
+	s := ""
+	buffer := C.CString(s)
 	result := C.sprint_symbol(buffer, 0)
 	fmt.Printf("%d\n", result)
 	fmt.Printf("%s", buffer)
+	C.free(unsafe.Pointer(buffer))
 }

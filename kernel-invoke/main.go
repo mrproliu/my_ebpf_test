@@ -2,6 +2,7 @@ package main
 
 /*
 #cgo LDFLAGS: -lelf -lz
+#cgo CFLAGS: -I/usr/include
 #include <linux/kallsyms.h>
 extern int sprint_symbol(char *buffer, unsigned long address);
 

@@ -77,19 +77,6 @@ func main() {
 		return
 	}
 
-	file, err := elf.Open("/proc/kcore")
-	if err != nil {
-		log.Fatalf("read kcore error: %v", err)
-		os.Exit(1)
-	}
-	defer file.Close()
-
-	symbols, err := file.Symbols()
-	if err != nil {
-		log.Fatalf("read kcore symbols error: %v", err)
-		os.Exit(1)
-	}
-
 	kernelSymbols, err := testSysSymbol()
 	if err != nil {
 		log.Fatalf("read kernel symbol error: %v", err)

@@ -84,17 +84,17 @@ func main() {
 	}
 	defer file.Close()
 
-	sysSymbols, err := file.Symbols()
+	symbols, err := file.Symbols()
 	if err != nil {
 		log.Fatalf("read kcore symbols error: %v", err)
 		os.Exit(1)
 	}
 
-	//kernelSymbols, err := testSysSymbol()
-	//if err != nil {
-	//	log.Fatalf("read kernel symbol error: %v", err)
-	//	return
-	//}
+	kernelSymbols, err := testSysSymbol()
+	if err != nil {
+		log.Fatalf("read kernel symbol error: %v", err)
+		return
+	}
 
 	go func() {
 		<-stopper
@@ -173,10 +173,9 @@ func main() {
 				if addr == 0 {
 					continue
 				}
-
-				for _, sym := range sysSymbols {
-					if sym.Value == addr {
-						fmt.Printf("%s\n", sym.Name)
+				for _, sym := range kernelSymbols {
+					if sym.Addr == addr {
+						fmt.Printf("%s\n", sym.Symbol)
 						break
 					}
 				}
@@ -194,7 +193,7 @@ type kernelSymbol struct {
 }
 
 func testSysSymbol() ([]*kernelSymbol, error) {
-	file, err := os.Open("/proc/kallsyms")
+	file, err := os.Open("/boot/System.map-4.19.0-18-cloud-amd64")
 	if err != nil {
 		return nil, err
 	}

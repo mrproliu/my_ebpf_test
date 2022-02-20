@@ -77,11 +77,24 @@ func main() {
 		return
 	}
 
-	kernelSymbols, err := testSysSymbol()
+	file, err := elf.Open("/proc/kcore")
 	if err != nil {
-		log.Fatalf("read kernel symbol error: %v", err)
-		return
+		log.Fatalf("read kcore error: %v", err)
+		os.Exit(1)
 	}
+	defer file.Close()
+
+	sysSymbols, err := file.Symbols()
+	if err != nil {
+		log.Fatalf("read kcore symbols error: %v", err)
+		os.Exit(1)
+	}
+
+	//kernelSymbols, err := testSysSymbol()
+	//if err != nil {
+	//	log.Fatalf("read kernel symbol error: %v", err)
+	//	return
+	//}
 
 	go func() {
 		<-stopper
@@ -160,9 +173,10 @@ func main() {
 				if addr == 0 {
 					continue
 				}
-				for _, sym := range kernelSymbols {
-					if sym.Addr == addr {
-						fmt.Printf("%s\n", sym.Symbol)
+
+				for _, sym := range sysSymbols {
+					if sym.Value == addr {
+						fmt.Printf("%s\n", sym.Name)
 						break
 					}
 				}

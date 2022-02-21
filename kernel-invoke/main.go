@@ -51,7 +51,7 @@ int load_kallsyms(void)
 	return 0;
 }
 
-int ksym_search(long key)
+int ksym_search(unsigned long long key)
 {
 	int start = 0, end = sym_cnt;
 	int result;
@@ -85,4 +85,5 @@ import "C"
 func main() {
 	C.demo()
 	C.load_kallsyms()
+	C.ksym_search(C.ulonglong(18446744071901190456))
 }

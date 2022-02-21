@@ -39,7 +39,12 @@ int bpf_blk_account_io_start(struct pt_regs *ctx) {
 
     // get stacks
     key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
-    key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 9) | (1ULL << 10));
+    key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 9));
+    void * elems = bpf_map_lookup_elem(&stacks, &key.kernel_stack_id);
+    u64 * ptr = (u64*)elems ;
+    for(int i=0 ; i < 10 ; i++){
+        bpf_printk("stack: %d", *(ptr++));
+    }
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
     return 0;

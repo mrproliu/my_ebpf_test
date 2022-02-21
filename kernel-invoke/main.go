@@ -46,6 +46,7 @@ int load_kallsyms(void)
 	fclose(f);
 	sym_cnt = i;
 	qsort(syms, sym_cnt, sizeof(struct ksym), ksym_cmp);
+	printf("Success! \n");
 	return 0;
 }
 

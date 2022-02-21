@@ -17,6 +17,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sort"
 	"strconv"
 	"strings"
 	"syscall"
@@ -234,8 +235,28 @@ func testSysSymbol() ([]*kernelSymbol, error) {
 			})
 		}
 	}
+
+	sort.Sort(&symbolInter{symbols: symbols})
 	fmt.Printf("total count: %d\n", count)
 	return symbols, nil
+}
+
+type symbolInter struct {
+	symbols []*kernelSymbol
+}
+
+func (s *symbolInter) Len() int {
+	return len(s.symbols)
+}
+
+func (s *symbolInter) Less(i, j int) bool {
+	return s.symbols[i].Addr < s.symbols[j].Addr
+}
+
+func (s *symbolInter) Swap(i, j int) {
+	tmp := s.symbols[i]
+	s.symbols[j] = s.symbols[i]
+	s.symbols[i] = tmp
 }
 
 func readSymbols(file string) (*elf.File, *gosym.Table, error) {

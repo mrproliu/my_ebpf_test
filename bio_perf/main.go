@@ -161,7 +161,7 @@ func main() {
 				if addr == 0 {
 					continue
 				}
-				fmt.Printf("total kernel size: %d\n", len(kernelSymbols))
+				//fmt.Printf("total kernel size: %d\n", len(kernelSymbols))
 				symbol := findKernelSymbol(kernelSymbols, addr)
 				//for _, sym := range kernelSymbols {
 				//	if sym.Addr == addr {

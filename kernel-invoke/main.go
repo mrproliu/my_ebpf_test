@@ -50,6 +50,31 @@ int load_kallsyms(void)
 	return 0;
 }
 
+int ksym_search(long key)
+{
+	int start = 0, end = sym_cnt;
+	int result;
+
+	while (start < end) {
+		size_t mid = start + (end - start) / 2;
+
+		result = key - syms[mid].addr;
+		if (result < 0)
+			end = mid;
+		else if (result > 0)
+			start = mid + 1;
+		else
+			return 1;
+	}
+
+	if (start >= 1 && syms[start - 1].addr < key &&
+	    key < syms[start].addr)
+		return 1;
+
+	printf("not found")
+	return 0;
+}
+
 void demo(){
 	printf("HELLO WORLD! \n");
 }
@@ -59,4 +84,5 @@ import "C"
 func main() {
 	C.demo()
 	C.load_kallsyms()
+	C.ksym_search(C.lang(114598615266172031205376))
 }

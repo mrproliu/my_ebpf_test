@@ -71,7 +71,7 @@ int ksym_search(long key)
 	    key < syms[start].addr)
 		return 1;
 
-	printf("not found")
+	printf("not found");
 	return 0;
 }
 

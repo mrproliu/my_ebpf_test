@@ -41,6 +41,7 @@ int load_kallsyms(void)
 			continue;
 		syms[i].addr = (long) addr;
 		syms[i].name = strdup(func);
+		printf("%d -> %s\n", addr, syms[i].name)
 		i++;
 	}
 	fclose(f);

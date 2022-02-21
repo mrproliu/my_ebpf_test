@@ -183,8 +183,8 @@ func findKernelSymbol(symbols []*kernelSymbol, addr uint64) string {
 
 	for start < end {
 		mid := start + (end-start)/2
-		result := addr - symbols[mid].Addr
-		fmt.Printf("start: %d, end: %d, mid: %d, addr: %d, curSymbolAddr: %d\n", start, end, mid, addr, result)
+		result := uint64(uint64(addr) - uint64(symbols[mid].Addr))
+		fmt.Printf("start: %d, end: %d, mid: %d, addr(%d)-symAddr(%d) = %d\n", start, end, mid, addr, symbols[mid].Addr, result)
 		if result < 0 {
 			end = mid
 		} else if result > 0 {
@@ -231,7 +231,7 @@ func testSysSymbol() ([]*kernelSymbol, error) {
 				return nil, fmt.Errorf("error read addr: %s, %v", info[0], err)
 			}
 			symbols = append(symbols, &kernelSymbol{
-				Addr:   atoi,
+				Addr:   uint64(atoi),
 				Symbol: info[2],
 			})
 		}

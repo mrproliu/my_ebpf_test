@@ -161,7 +161,7 @@ func main() {
 				if addr == 0 {
 					continue
 				}
-				fmt.Printf("total kernel size: %d", len(kernelSymbols))
+				fmt.Printf("total kernel size: %d\n", len(kernelSymbols))
 				symbol := findKernelSymbol(kernelSymbols, addr)
 				//for _, sym := range kernelSymbols {
 				//	if sym.Addr == addr {
@@ -222,22 +222,22 @@ func testSysSymbol() ([]*kernelSymbol, error) {
 	for scanner.Scan() {
 		count++
 		info := strings.Split(scanner.Text(), " ")
-		stype := info[1]
-		if stype == "T" || stype == "t" || stype == "W" || stype == "w" {
-			atoi, err := strconv.ParseUint(info[0], 16, 64)
+		//stype := info[1]
+		//if stype == "T" || stype == "t" || stype == "W" || stype == "w" {
+		atoi, err := strconv.ParseUint(info[0], 16, 64)
 
-			if strings.HasPrefix(info[0], "ffffffff9435d7d0") {
-				fmt.Printf("Addr: %s, \t, type: %s, symbol: %s, toint: %d\n", info[0], info[1], info[2], uint64(atoi))
-			}
-			//fmt.Printf("%d -> %s\n", atoi, info[2])
-			if err != nil {
-				return nil, fmt.Errorf("error read addr: %s, %v", info[0], err)
-			}
-			symbols = append(symbols, &kernelSymbol{
-				Addr:   uint64(atoi),
-				Symbol: info[2],
-			})
+		if strings.HasPrefix(info[0], "ffffffff9435d7d0") {
+			fmt.Printf("Addr: %s, \t, type: %s, symbol: %s, toint: %d\n", info[0], info[1], info[2], uint64(atoi))
 		}
+		//fmt.Printf("%d -> %s\n", atoi, info[2])
+		if err != nil {
+			return nil, fmt.Errorf("error read addr: %s, %v", info[0], err)
+		}
+		symbols = append(symbols, &kernelSymbol{
+			Addr:   uint64(atoi),
+			Symbol: info[2],
+		})
+		//}
 	}
 
 	sort.Sort(&symbolInter{symbols: symbols})

@@ -70,7 +70,7 @@ int ksym_search(unsigned long long key)
 
 	if (start >= 1 && syms[start - 1].addr < key &&
 	    key < syms[start].addr) {
-		printf("found: %llu\n", &syms[start - 1].addr);
+		printf("found: start: %d, %llu\n", start, &syms[start - 1].addr);
 		return 1;
 	}
 

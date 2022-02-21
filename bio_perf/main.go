@@ -178,13 +178,13 @@ func main() {
 	}
 }
 
-func findKernelSymbol(symbols []*kernelSymbol, addr uint64) string {
+func findKernelSymbol(symbols []kernelSymbol, addr uint64) string {
 	start := 0
 	end := len(symbols)
 
 	for start < end {
 		mid := start + (end-start)/2
-		result := uint64(uint64(addr) - uint64(symbols[mid].Addr))
+		result := addr - symbols[mid].Addr
 		fmt.Printf("start: %d, end: %d, mid: %d, addr(%d)-symAddr(%d) = %d\n", start, end, mid, addr, symbols[mid].Addr, result)
 		if result < 0 {
 			end = mid
@@ -207,7 +207,7 @@ type kernelSymbol struct {
 	Symbol string
 }
 
-func testSysSymbol() ([]*kernelSymbol, error) {
+func testSysSymbol() ([]kernelSymbol, error) {
 	file, err := os.Open("/proc/kallsyms")
 	if err != nil {
 		return nil, err
@@ -217,7 +217,7 @@ func testSysSymbol() ([]*kernelSymbol, error) {
 	// read the file line by line using scanner
 	scanner := bufio.NewScanner(file)
 
-	symbols := make([]*kernelSymbol, 0)
+	symbols := make([]kernelSymbol, 0)
 	count := 0
 	for scanner.Scan() {
 		count++
@@ -233,8 +233,8 @@ func testSysSymbol() ([]*kernelSymbol, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error read addr: %s, %v", info[0], err)
 		}
-		symbols = append(symbols, &kernelSymbol{
-			Addr:   uint64(atoi),
+		symbols = append(symbols, kernelSymbol{
+			Addr:   atoi,
 			Symbol: info[2],
 		})
 		//}
@@ -246,7 +246,7 @@ func testSysSymbol() ([]*kernelSymbol, error) {
 }
 
 type symbolInter struct {
-	symbols []*kernelSymbol
+	symbols []kernelSymbol
 }
 
 func (s *symbolInter) Len() int {

@@ -28,8 +28,8 @@ import (
 type Event struct {
 	Pid           uint32
 	TaskId        uint32
-	UserStackId   uint32
-	KernelStackId uint32
+	UserStackId   int32
+	KernelStackId int32
 	Name          [128]byte
 }
 
@@ -125,13 +125,13 @@ func main() {
 		fmt.Printf("pid: %d, taskid: %d, name: %s, stack: %d:%d\n", event.Pid, event.TaskId, event.Name, event.UserStackId, event.KernelStackId)
 
 		if int(event.Pid) == pid {
-			val := make([]uint64, 100)
-			err = objs.Stacks.Lookup(event.UserStackId, &val)
+			stackIdList := make([]uint64, 100)
+			err = objs.Stacks.Lookup(event.UserStackId, &stackIdList)
 			if err != nil {
 				fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
 				continue
 			}
-			for _, addr := range val {
+			for _, addr := range stackIdList {
 				if addr == 0 {
 					continue
 				}
@@ -151,12 +151,12 @@ func main() {
 				fmt.Printf("not found!!!")
 			}
 
-			err = objs.Stacks.Lookup(event.KernelStackId, &val)
+			err = objs.Stacks.Lookup(event.KernelStackId, &stackIdList)
 			if err != nil {
 				fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
 				continue
 			}
-			for _, addr := range val {
+			for _, addr := range stackIdList {
 				if addr == 0 {
 					continue
 				}
@@ -180,7 +180,7 @@ type kernelSymbol struct {
 }
 
 func testSysSymbol() ([]*kernelSymbol, error) {
-	file, err := os.Open("/boot/System.map-4.19.0-18-cloud-amd64")
+	file, err := os.Open("/proc/kallsyms")
 	if err != nil {
 		return nil, err
 	}

@@ -69,8 +69,10 @@ int ksym_search(unsigned long long key)
 	}
 
 	if (start >= 1 && syms[start - 1].addr < key &&
-	    key < syms[start].addr)
+	    key < syms[start].addr) {
+		printf("found: %s\n", &syms[start - 1].name)
 		return 1;
+	}
 
 	printf("not found");
 	return 0;
@@ -81,9 +83,15 @@ void demo(){
 }
 */
 import "C"
+import "strconv"
 
 func main() {
 	C.demo()
 	C.load_kallsyms()
-	C.ksym_search(C.ulonglong(18446744071901190456))
+	findData("ffffffff94369938")
+}
+
+func findData(addr string) {
+	d, _ := strconv.ParseUint(addr, 16, 64)
+	C.ksym_search(C.ulonglong(d))
 }

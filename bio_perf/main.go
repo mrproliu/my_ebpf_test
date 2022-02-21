@@ -125,54 +125,54 @@ func main() {
 		//}
 		fmt.Printf("pid: %d, taskid: %d, name: %s, stack: %d:%d\n", event.Pid, event.TaskId, event.Name, event.UserStackId, event.KernelStackId)
 
-		if int(event.Pid) == pid {
-			stackIdList := make([]uint64, 100)
-			err = objs.Stacks.Lookup(event.UserStackId, &stackIdList)
-			if err != nil {
-				fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
-				continue
-			}
-			for _, addr := range stackIdList {
-				if addr == 0 {
-					continue
-				}
-				toFunc := symbols.PCToFunc(addr)
-				if toFunc != nil {
-					fmt.Printf("%s", toFunc.Name)
-					fmt.Printf("(")
-					for i, p := range toFunc.Params {
-						if i > 0 {
-							fmt.Printf(", ")
-						}
-						fmt.Printf("%s", p.Name)
-					}
-					fmt.Printf(")\n")
-					continue
-				}
-				fmt.Printf("not found!!!")
-			}
-
-			err = objs.Stacks.Lookup(event.KernelStackId, &stackIdList)
-			if err != nil {
-				fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
-				continue
-			}
-			for _, addr := range stackIdList {
-				if addr == 0 {
-					continue
-				}
-				//fmt.Printf("total kernel size: %d\n", len(kernelSymbols))
-				symbol := findKernelSymbol(kernelSymbols, addr)
-				//for _, sym := range kernelSymbols {
-				//	if sym.Addr == addr {
-				//		fmt.Printf("%s\n", sym.Symbol)
-				//		break
-				//	}
-				//}
-				fmt.Printf("kernel: %s\n", symbol)
-				//fmt.Printf("Not Found!!!id: %v\n", strconv.FormatUint(addr, 16))
-			}
+		//if int(event.Pid) == pid {
+		stackIdList := make([]uint64, 100)
+		err = objs.Stacks.Lookup(event.UserStackId, &stackIdList)
+		if err != nil {
+			fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
+			continue
 		}
+		for _, addr := range stackIdList {
+			if addr == 0 {
+				continue
+			}
+			toFunc := symbols.PCToFunc(addr)
+			if toFunc != nil {
+				fmt.Printf("%s", toFunc.Name)
+				fmt.Printf("(")
+				for i, p := range toFunc.Params {
+					if i > 0 {
+						fmt.Printf(", ")
+					}
+					fmt.Printf("%s", p.Name)
+				}
+				fmt.Printf(")\n")
+				continue
+			}
+			fmt.Printf("not found!!!")
+		}
+
+		err = objs.Stacks.Lookup(event.KernelStackId, &stackIdList)
+		if err != nil {
+			fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
+			continue
+		}
+		for _, addr := range stackIdList {
+			if addr == 0 {
+				continue
+			}
+			//fmt.Printf("total kernel size: %d\n", len(kernelSymbols))
+			symbol := findKernelSymbol(kernelSymbols, addr)
+			//for _, sym := range kernelSymbols {
+			//	if sym.Addr == addr {
+			//		fmt.Printf("%s\n", sym.Symbol)
+			//		break
+			//	}
+			//}
+			fmt.Printf("kernel: %s\n", symbol)
+			//fmt.Printf("Not Found!!!id: %v\n", strconv.FormatUint(addr, 16))
+		}
+		//}
 
 		fmt.Printf("---------------\n")
 	}

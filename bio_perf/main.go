@@ -17,7 +17,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"sort"
 	"strconv"
 	"strings"
 	"syscall"

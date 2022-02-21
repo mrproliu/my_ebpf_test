@@ -85,5 +85,4 @@ import "C"
 func main() {
 	C.demo()
 	C.load_kallsyms()
-	C.ksym_search(C.long(18446744071901140945))
 }

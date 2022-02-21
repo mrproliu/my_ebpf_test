@@ -84,5 +84,5 @@ import "C"
 func main() {
 	C.demo()
 	C.load_kallsyms()
-	C.ksym_search(C.lang(114598615266172031205376))
+	C.ksym_search(C.long(114598615266172031205376))
 }

@@ -240,7 +240,7 @@ func testSysSymbol() ([]kernelSymbol, error) {
 		//}
 	}
 
-	sort.Sort(&symbolInter{symbols: symbols})
+	//sort.Sort(&symbolInter{symbols: symbols})
 	fmt.Printf("total count: %d\n", count)
 	last := len(symbols) - 1
 	fmt.Printf("last symbole: %d: addr: %d, name: %d", last, symbols[last].Addr, symbols[last].Symbol)

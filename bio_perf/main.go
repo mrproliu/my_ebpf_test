@@ -219,6 +219,7 @@ func testSysSymbol() ([]*kernelSymbol, error) {
 	symbols := make([]*kernelSymbol, 0)
 	count := 0
 	for scanner.Scan() {
+		count++
 		info := strings.Split(scanner.Text(), " ")
 		stype := info[1]
 		if stype == "T" || stype == "t" || stype == "W" || stype == "w" {

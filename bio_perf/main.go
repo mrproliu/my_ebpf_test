@@ -250,7 +250,7 @@ func (s *symbolInter) Len() int {
 }
 
 func (s *symbolInter) Less(i, j int) bool {
-	return s.symbols[i].Addr < s.symbols[j].Addr
+	return s.symbols[i].Addr > s.symbols[j].Addr
 }
 
 func (s *symbolInter) Swap(i, j int) {

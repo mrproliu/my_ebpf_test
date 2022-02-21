@@ -161,6 +161,7 @@ func main() {
 				if addr == 0 {
 					continue
 				}
+				fmt.Printf("total kernel size: %d", len(kernelSymbols))
 				symbol := findKernelSymbol(kernelSymbols, addr)
 				//for _, sym := range kernelSymbols {
 				//	if sym.Addr == addr {
@@ -228,7 +229,7 @@ func testSysSymbol() ([]*kernelSymbol, error) {
 			if strings.HasPrefix(info[0], "ffffffff9435d7d0") {
 				fmt.Printf("Addr: %s, \t, type: %s, symbol: %s, toint: %d\n", info[0], info[1], info[2], uint64(atoi))
 			}
-			fmt.Printf("%d -> %s\n", atoi, info[2])
+			//fmt.Printf("%d -> %s\n", atoi, info[2])
 			if err != nil {
 				return nil, fmt.Errorf("error read addr: %s, %v", info[0], err)
 			}

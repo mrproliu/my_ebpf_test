@@ -43,7 +43,7 @@ int bpf_blk_account_io_start(struct pt_regs *ctx) {
     void * elems = bpf_map_lookup_elem(&stacks, &key.kernel_stack_id);
     u64 * ptr = (u64*)elems ;
     for(int i=0 ; i < 10 ; i++){
-        bpf_printk("stack: %d", *(ptr++));
+        bpf_printk("stack: %d\n", *(ptr++));
     }
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));

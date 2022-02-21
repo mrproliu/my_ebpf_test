@@ -185,13 +185,12 @@ func findKernelSymbol(symbols []kernelSymbol, addr uint64) string {
 
 	for start < end {
 		mid := start + (end-start)/2
-		copyAddr := addr
-		result := addr - symbols[mid].Addr
+		result := int64(addr) - int64(symbols[mid].Addr)
 
-		c := int64(-symbols[mid].Addr)
-		d := uint64(c)
-		f := atomic.AddUint64(&copyAddr, d)
-		fmt.Printf("%d-%d=%d\n", addr, symbols[mid].Addr, f)
+		//c := int64(-symbols[mid].Addr)
+		//d := uint64(c)
+		//f := atomic.AddUint64(&copyAddr, d)
+		//fmt.Printf("%d-%d=%d\n", addr, symbols[mid].Addr, f)
 		fmt.Printf("start: %d, end: %d, mid: %d, addr(%d)-symAddr(%d) = %d\n", start, end, mid, addr, symbols[mid].Addr, result)
 		if result < 0 {
 			end = mid

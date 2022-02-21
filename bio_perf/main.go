@@ -184,8 +184,10 @@ func findKernelSymbol(symbols []kernelSymbol, addr uint64) string {
 
 	for start < end {
 		mid := start + (end-start)/2
-		result := addr - symbols[mid].Addr
-		fmt.Printf("start: %d, end: %d, mid: %d, addr(%d)-symAddr(%d) = %d\n", start, end, mid, addr, symbols[mid].Addr, result)
+		kaddr := symbols[mid].Addr
+		result := addr - kaddr
+		fmt.Printf("-----%d-%d=%d", addr, kaddr, result)
+		fmt.Printf("start: %d, end: %d, mid: %d, addr(%d)-symAddr(%d) = %d\n", start, end, mid, addr, kaddr, result)
 		if result < 0 {
 			end = mid
 		} else if result > 0 {

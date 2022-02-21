@@ -160,18 +160,43 @@ func main() {
 				if addr == 0 {
 					continue
 				}
-				for _, sym := range kernelSymbols {
-					if sym.Addr == addr {
-						fmt.Printf("%s\n", sym.Symbol)
-						break
-					}
-				}
-				fmt.Printf("Not Found!!!id: %v\n", strconv.FormatUint(addr, 16))
+				symbol := findKernelSymbol(kernelSymbols, addr)
+				//for _, sym := range kernelSymbols {
+				//	if sym.Addr == addr {
+				//		fmt.Printf("%s\n", sym.Symbol)
+				//		break
+				//	}
+				//}
+				fmt.Printf("kernel: %s\n", symbol)
+				//fmt.Printf("Not Found!!!id: %v\n", strconv.FormatUint(addr, 16))
 			}
 		}
 
 		fmt.Printf("---------------\n")
 	}
+}
+
+func findKernelSymbol(symbols []*kernelSymbol, addr uint64) string {
+	start := 0
+	end := len(symbols)
+
+	for start < end {
+		mid := start + (end-start)/2
+		result := addr - symbols[mid].Addr
+		if result < 0 {
+			end = mid
+		} else if result > 0 {
+			start = mid + 1
+		} else {
+			return symbols[mid].Symbol
+		}
+	}
+
+	if start >= 1 && symbols[start-1].Addr < addr && addr < symbols[start].Addr {
+		return symbols[start-1].Symbol
+	}
+
+	return "NOT FOUND!!!!"
 }
 
 type kernelSymbol struct {

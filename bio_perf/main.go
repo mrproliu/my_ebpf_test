@@ -138,6 +138,7 @@ func main() {
 			}
 			toFunc := symbols.PCToFunc(addr)
 			if toFunc != nil {
+				fmt.Printf("%d:", addr)
 				fmt.Printf("%s", toFunc.Name)
 				fmt.Printf("(")
 				for i, p := range toFunc.Params {

@@ -18,6 +18,7 @@ import (
 	"runtime"
 	"strconv"
 	"syscall"
+	"time"
 )
 
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
@@ -58,7 +59,7 @@ func main() {
 			Type:        unix.PERF_TYPE_SOFTWARE,
 			Config:      unix.PERF_COUNT_SW_CPU_CLOCK,
 			Sample_type: unix.PERF_SAMPLE_RAW,
-			Sample:      1000000 * 10,
+			Sample:      uint64(time.Second.Nanoseconds()),
 			Wakeup:      1,
 		}
 		fd, err := unix.PerfEventOpen(eventAttr, pid, i, -1, 0)
@@ -143,7 +144,7 @@ func main() {
 				fmt.Printf("%s\n", funcName)
 				continue
 			}
-			fmt.Printf("not found stack symbol, addr: %d", addr)
+			fmt.Printf("not found stack symbol, addr: %d\n", addr)
 		}
 	}
 }

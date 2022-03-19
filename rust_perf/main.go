@@ -161,14 +161,14 @@ func readSymbols(file string) *Elf {
 		os.Exit(1)
 	}
 
-	symbols = make([]*Symbol, 0)
+	d := make([]*Symbol, 0)
 	for _, sym := range symbols {
-		symbols = append(symbols, &Symbol{
+		d = append(d, &Symbol{
 			Name: sym.Name,
 			Addr: sym.Value,
 		})
 	}
-	return &Elf{symbols: symbols}
+	return &Elf{symbols: d}
 }
 
 type Elf struct {

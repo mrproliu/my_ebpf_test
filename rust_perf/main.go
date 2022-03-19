@@ -6,7 +6,6 @@ package main
 import (
 	"bytes"
 	"debug/elf"
-	"debug/gosym"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -18,7 +17,6 @@ import (
 	"os/signal"
 	"runtime"
 	"strconv"
-	"strings"
 	"syscall"
 )
 
@@ -95,8 +93,6 @@ func main() {
 		<-stopper
 		log.Println("Received signal, exiting program..")
 
-		_ = elfFile.Close()
-
 		for _, fd := range perfEvents {
 			if err := unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_DISABLE, 0); err != nil {
 				log.Fatalf("closing perf event reader: %s", err)
@@ -153,12 +149,13 @@ func main() {
 }
 
 func readSymbols(file string) *Elf {
-	file, err := elf.Open("/Users/hanliu/Documents/go_workspace/github/tetrate/tctl/build/bin/linux/amd64/tctl")
+	file, err := elf.Open(file)
 	if err != nil {
 		os.Exit(1)
 	}
 	defer file.Close()
 
+	// exist symbol data
 	symbols, err := file.Symbols()
 	if err != nil {
 		os.Exit(1)

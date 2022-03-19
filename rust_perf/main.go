@@ -149,14 +149,14 @@ func main() {
 }
 
 func readSymbols(file string) *Elf {
-	file, err := elf.Open(file)
+	elfFile, err := elf.Open(file)
 	if err != nil {
 		os.Exit(1)
 	}
-	defer file.Close()
+	defer elfFile.Close()
 
 	// exist symbol data
-	symbols, err := file.Symbols()
+	symbols, err := elfFile.Symbols()
 	if err != nil {
 		os.Exit(1)
 	}

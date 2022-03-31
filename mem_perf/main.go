@@ -14,6 +14,7 @@ func main() {
 		log.Fatal("please input the pid need to be monitor")
 		return
 	}
+	fmt.Printf("args: %v", os.Args)
 	pid, err := strconv.Atoi(os.Args[1])
 	if err != nil {
 		log.Fatal("could not reconized the pid: %s", os.Args[1])

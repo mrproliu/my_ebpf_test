@@ -5,21 +5,19 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 )
 
 func main() {
-	if len(os.Args) <= 1 {
-		log.Fatal("please input the pid need to be monitor")
-		return
-	}
-	fmt.Printf("args: %v", os.Args)
-	pid, err := strconv.Atoi(os.Args[1])
-	if err != nil {
-		log.Fatal("could not reconized the pid: %s", os.Args[1])
-		return
-	}
+	//if len(os.Args) <= 1 {
+	//	log.Fatal("please input the pid need to be monitor")
+	//	return
+	//}
+	pid := 15174
+	//if err != nil {
+	//	log.Fatal("could not reconized the pid: %s", os.Args[1])
+	//	return
+	//}
 
 	links, err := readLinks(fmt.Sprintf("/proc/%d/exe", pid))
 	if err != nil {

@@ -100,6 +100,9 @@ func recurseDynStrings(dynSym []string, searchPath []string) (map[string]string,
 			}
 		}
 
+		if fd == nil {
+			return nil, fmt.Errorf("could not read the file: %s in search pathes: %v", el, searchPath)
+		}
 		bint, err := elf.NewFile(fd)
 		if err != nil {
 			return nil, fmt.Errorf("read elf file error: %s: %v", fd.Name(), err)

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -32,95 +34,211 @@ func main() {
 }
 
 func readLinks(file string) ([]string, error) {
-	fd, err := os.OpenFile(file, os.O_RDONLY, 0644)
-	if err != nil {
-		return nil, fmt.Errorf("open file error: %v", err)
-	}
-
-	// Populate ELF fields
-	bin, err := elf.NewFile(fd)
-	if err != nil {
-		return nil, fmt.Errorf("elf file error: %v", err)
-	}
-
-	searchPath := make([]string, 0)
-
-	// Check ELF Class
-	if bin.Class == elf.ELFCLASS32 {
-		searchPath = append(searchPath, "/lib/")
-	} else if bin.Class == elf.ELFCLASS64 {
-		searchPath = append(searchPath, "/lib64/")
-	} else {
-		return nil, fmt.Errorf("unknown ELF Class")
-	}
-
-	// env parse LD_LIBRARY_PATH
-	env := os.Getenv("LD_LIBRARY_PATH")
-	paths := strings.Split(env, ":")
-	searchPath = append(searchPath, paths...)
-	// SO files are searched through LD_LIBRARY_PATH and lib/lib64
-
-	// Get list of needed shared libraries
-	dynSym, err := bin.DynString(elf.DT_NEEDED)
-	if err != nil {
-		return nil, fmt.Errorf("read needes error: %v", err)
-	}
-
-	// Recurse
-	soPath, err := recurseDynStrings(dynSym, searchPath)
-	if err != nil {
-		return nil, fmt.Errorf("recurse dynamic error: %v", err)
-	}
-
-	result := make([]string, 0)
-	for _, v := range soPath {
-		result = append(result, v)
-	}
-
-	return result, nil
+	f := make([]string, 0)
+	f = append(f, file)
+	return List(f)
 }
 
-func recurseDynStrings(dynSym []string, searchPath []string) (map[string]string, error) {
-	soPath := make(map[string]string, 0)
-	for _, el := range dynSym {
-		// fmt.Println(el)
-		// check file path here for library if it doesnot exists panic
-		var fd *os.File
-		for _, entry := range searchPath {
-			path := entry + el
-			if _, err := os.Stat(path); !os.IsNotExist(err) {
-				fd, err = os.OpenFile(path, os.O_RDONLY, 0644)
-				if err != nil {
-					return nil, fmt.Errorf("could not read path: %s, %v", path, err)
-				} else {
-					soPath[el] = path
-				}
-			} else {
-				// Nothing
-			}
+// Follow starts at a pathname and adds it
+// to a map if it is not there.
+// If the pathname is a symlink, indicated by the Readlink
+// succeeding, links repeats and continues
+// for as long as the name is not found in the map.
+func follow(l string, names map[string]*FileInfo) error {
+	for {
+		if names[l] != nil {
+			return nil
+		}
+		i, err := os.Lstat(l)
+		if err != nil {
+			return fmt.Errorf("%v", err)
 		}
 
-		if fd == nil {
-			log.Printf("could not read the file: %s in search pathes: %v", el, searchPath)
+		names[l] = &FileInfo{FullName: l, FileInfo: i}
+		if i.Mode().IsRegular() {
+			return nil
+		}
+		// If it's a symlink, the read works; if not, it fails.
+		// we can skip testing the type, since we still have to
+		// handle any error if it's a link.
+		next, err := os.Readlink(l)
+		if err != nil {
+			return err
+		}
+		// It may be a relative link, so we need to
+		// make it abs.
+		if filepath.IsAbs(next) {
+			l = next
 			continue
 		}
-		bint, err := elf.NewFile(fd)
+		l = filepath.Join(filepath.Dir(l), next)
+	}
+}
+
+// runinterp runs the interpreter with the --list switch
+// and the file as an argument. For each returned line
+// it looks for => as the second field, indicating a
+// real .so (as opposed to the .vdso or a string like
+// 'not a dynamic executable'.
+func runinterp(interp, file string) ([]string, error) {
+	var names []string
+	o, err := exec.Command(interp, "--list", file).Output()
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range strings.Split(string(o), "\n") {
+		f := strings.Split(p, " ")
+		if len(f) < 3 {
+			continue
+		}
+		if f[1] != "=>" || len(f[2]) == 0 {
+			continue
+		}
+		names = append(names, f[2])
+	}
+	return names, nil
+}
+
+type FileInfo struct {
+	FullName string
+	os.FileInfo
+}
+
+func GetInterp(file string) (string, error) {
+	r, err := os.Open(file)
+	if err != nil {
+		return "fail", err
+	}
+	defer r.Close()
+	f, err := elf.NewFile(r)
+	if err != nil {
+		return "", nil
+	}
+	s := f.Section(".interp")
+	var interp string
+	if s != nil {
+		// If there is an interpreter section, it should be
+		// an error if we can't read it.
+		i, err := s.Data()
 		if err != nil {
-			return nil, fmt.Errorf("read elf file error: %s: %v", fd.Name(), err)
+			return "fail", err
+		}
+		// Ignore #! interpreters
+		if len(i) > 1 && i[0] == '#' && i[1] == '!' {
+			return "", nil
+		}
+		// annoyingly, s.Data() seems to return the null at the end and,
+		// weirdly, that seems to confuse the kernel. Truncate it.
+		interp = string(i[:len(i)-1])
+	}
+	if interp == "" {
+		if f.Type != elf.ET_DYN || f.Class == elf.ELFCLASSNONE {
+			return "", nil
+		}
+		bit64 := true
+		if f.Class != elf.ELFCLASS64 {
+			bit64 = false
 		}
 
-		bDynSym, err := bint.DynString(elf.DT_NEEDED)
+		// This is a shared library. Turns out you can run an
+		// interpreter with --list and this shared library as an
+		// argument. What interpreter do we use? Well, there's no way to
+		// know. You have to guess.  I'm not sure why they could not
+		// just put an interp section in .so's but maybe that would
+		// cause trouble somewhere else.
+		interp, err = LdSo(bit64)
 		if err != nil {
-			log.Fatal(err)
+			return "fail", err
 		}
+	}
+	return interp, nil
+}
 
-		dynStrings, err := recurseDynStrings(bDynSym, searchPath)
+// Ldd returns a list of all library dependencies for a set of files.
+//
+// If a file has no dependencies, that is not an error. The only possible error
+// is if a file does not exist, or it says it has an interpreter but we can't
+// read it, or we are not able to run its interpreter.
+//
+// It's not an error for a file to not be an ELF.
+func Ldd(names []string) ([]*FileInfo, error) {
+	var (
+		list    = make(map[string]*FileInfo)
+		interps = make(map[string]*FileInfo)
+		libs    []*FileInfo
+	)
+	for _, n := range names {
+		if err := follow(n, list); err != nil {
+			return nil, err
+		}
+	}
+	for _, n := range names {
+		interp, err := GetInterp(n)
 		if err != nil {
 			return nil, err
 		}
-		for k, v := range dynStrings {
-			soPath[k] = v
+		if interp == "" {
+			continue
+		}
+		// We could just append the interp but people
+		// expect to see that first.
+		if interps[interp] == nil {
+			err := follow(interp, interps)
+			if err != nil {
+				return nil, err
+			}
+		}
+		// oh boy. Now to run the interp and get more names.
+		n, err := runinterp(interp, n)
+		if err != nil {
+			return nil, err
+		}
+		for i := range n {
+			if err := follow(n[i], list); err != nil {
+				log.Fatalf("ldd: %v", err)
+			}
 		}
 	}
-	return soPath, nil
+
+	for i := range interps {
+		libs = append(libs, interps[i])
+	}
+
+	for i := range list {
+		libs = append(libs, list[i])
+	}
+
+	return libs, nil
+}
+
+// List returns the dependency file paths of files in names.
+func List(names []string) ([]string, error) {
+	var list []string
+	l, err := Ldd(names)
+	if err != nil {
+		return nil, err
+	}
+	for i := range l {
+		list = append(list, l[i].FullName)
+	}
+	return list, nil
+}
+
+// LdSo finds the loader binary.
+func LdSo(bit64 bool) (string, error) {
+	bits := 32
+	if bit64 {
+		bits = 64
+	}
+	choices := []string{fmt.Sprintf("/lib%d/ld-*.so.*", bits), "/lib/ld-*.so.*"}
+	for _, d := range choices {
+		n, err := filepath.Glob(d)
+		if err != nil {
+			return "", err
+		}
+		if len(n) > 0 {
+			return n[0], nil
+		}
+	}
+	return "", fmt.Errorf("could not find ld.so in %v", choices)
 }

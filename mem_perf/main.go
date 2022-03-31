@@ -19,7 +19,7 @@ func main() {
 		log.Fatal("could not reconized the pid: %s", os.Args[1])
 		return
 	}
-	fmt.Printf("read get link for pid: %d", pid)
+	fmt.Printf("read get link for pid: %d\n", pid)
 
 	links, err := readLinks(fmt.Sprintf("/proc/%d/exe", pid))
 	if err != nil {
@@ -34,13 +34,13 @@ func main() {
 func readLinks(file string) ([]string, error) {
 	fd, err := os.OpenFile(file, os.O_RDONLY, 0644)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("open file error: %v", err)
 	}
 
 	// Populate ELF fields
 	bin, err := elf.NewFile(fd)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("elf file error: %v", err)
 	}
 
 	searchPath := make([]string, 0)

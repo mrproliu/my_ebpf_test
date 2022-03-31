@@ -5,19 +5,21 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
 func main() {
-	//if len(os.Args) <= 1 {
-	//	log.Fatal("please input the pid need to be monitor")
-	//	return
-	//}
-	pid := 15174
-	//if err != nil {
-	//	log.Fatal("could not reconized the pid: %s", os.Args[1])
-	//	return
-	//}
+	if len(os.Args) <= 1 {
+		log.Fatal("please input the pid need to be monitor")
+		return
+	}
+	pid, err := strconv.Atoi(os.Args[1])
+	if err != nil {
+		log.Fatal("could not reconized the pid: %s", os.Args[1])
+		return
+	}
+	fmt.Printf("read get link for pid: %d", pid)
 
 	links, err := readLinks(fmt.Sprintf("/proc/%d/exe", pid))
 	if err != nil {
@@ -32,13 +34,13 @@ func main() {
 func readLinks(file string) ([]string, error) {
 	fd, err := os.OpenFile(file, os.O_RDONLY, 0644)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	// Populate ELF fields
 	bin, err := elf.NewFile(fd)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	searchPath := make([]string, 0)
@@ -49,7 +51,7 @@ func readLinks(file string) ([]string, error) {
 	} else if bin.Class == elf.ELFCLASS64 {
 		searchPath = append(searchPath, "/lib64/")
 	} else {
-		log.Fatal("Unknown ELF Class")
+		return nil, fmt.Errorf("unknown ELF Class")
 	}
 
 	// env parse LD_LIBRARY_PATH
@@ -61,7 +63,7 @@ func readLinks(file string) ([]string, error) {
 	// Get list of needed shared libraries
 	dynSym, err := bin.DynString(elf.DT_NEEDED)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("read needes error: %v", err)
 	}
 	// Recurse
 	soPath := recurseDynStrings(dynSym, searchPath)

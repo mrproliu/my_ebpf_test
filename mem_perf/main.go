@@ -66,11 +66,12 @@ func readLinks(file string) ([]string, error) {
 		return nil, fmt.Errorf("read needes error: %v", err)
 	}
 
-	fmt.Printf("111\n")
 	// Recurse
-	soPath := recurseDynStrings(dynSym, searchPath)
+	soPath, err := recurseDynStrings(dynSym, searchPath)
+	if err != nil {
+		return nil, fmt.Errorf("recurse dynamic error: %v", err)
+	}
 
-	fmt.Printf("222\n")
 	result := make([]string, 0)
 	for _, v := range soPath {
 		result = append(result, v)
@@ -79,7 +80,7 @@ func readLinks(file string) ([]string, error) {
 	return result, nil
 }
 
-func recurseDynStrings(dynSym []string, searchPath []string) map[string]string {
+func recurseDynStrings(dynSym []string, searchPath []string) (map[string]string, error) {
 	soPath := make(map[string]string, 0)
 	for _, el := range dynSym {
 		// fmt.Println(el)
@@ -90,7 +91,7 @@ func recurseDynStrings(dynSym []string, searchPath []string) map[string]string {
 			if _, err := os.Stat(path); !os.IsNotExist(err) {
 				fd, err = os.OpenFile(path, os.O_RDONLY, 0644)
 				if err != nil {
-					log.Fatal(err)
+					return nil, fmt.Errorf("could not read path: %s, %v", path, err)
 				} else {
 					soPath[el] = path
 				}
@@ -101,7 +102,7 @@ func recurseDynStrings(dynSym []string, searchPath []string) map[string]string {
 
 		bint, err := elf.NewFile(fd)
 		if err != nil {
-			log.Fatal(err)
+			return nil, fmt.Errorf("read elf file error: %s: %v", fd.Name(), err)
 		}
 
 		bDynSym, err := bint.DynString(elf.DT_NEEDED)
@@ -109,10 +110,13 @@ func recurseDynStrings(dynSym []string, searchPath []string) map[string]string {
 			log.Fatal(err)
 		}
 
-		dynStrings := recurseDynStrings(bDynSym, searchPath)
+		dynStrings, err := recurseDynStrings(bDynSym, searchPath)
+		if err != nil {
+			return nil, err
+		}
 		for k, v := range dynStrings {
 			soPath[k] = v
 		}
 	}
-	return soPath
+	return soPath, nil
 }

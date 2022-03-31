@@ -65,9 +65,12 @@ func readLinks(file string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("read needes error: %v", err)
 	}
+
+	fmt.Printf("111\n")
 	// Recurse
 	soPath := recurseDynStrings(dynSym, searchPath)
 
+	fmt.Printf("222\n")
 	result := make([]string, 0)
 	for _, v := range soPath {
 		result = append(result, v)

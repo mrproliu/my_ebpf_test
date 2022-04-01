@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/cilium/ebpf/link"
-	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/ringbuf"
 	"github.com/cilium/ebpf/rlimit"
 	"log"
@@ -105,7 +104,7 @@ func main() {
 	}
 
 	// listen the event
-	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
+	rd, err := ringbuf.NewReader(objs.Counts)
 	if err != nil {
 		log.Fatal("creating perf event reader: %v", err)
 	}

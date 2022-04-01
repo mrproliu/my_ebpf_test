@@ -106,11 +106,12 @@ func main() {
 	for {
 		select {
 		case <-timer.C:
+
 			iterate := objs.StackCountMap.Iterate()
 			if iterate.Next(&event, &val) {
-				fmt.Printf("fount event: %v: %d\n", event, val)
+				fmt.Printf("fount event: %v: %d, size: %d\n", event, val, objs.StackCountMap.ValueSize())
 			} else {
-				fmt.Printf("could not found data\n")
+				fmt.Printf("could not found data, size: %d\n", objs.StackCountMap.ValueSize())
 			}
 		case <-stopper:
 			log.Println("Received signal, exiting program..")

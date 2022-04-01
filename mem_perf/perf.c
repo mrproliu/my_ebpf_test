@@ -24,7 +24,7 @@ struct {
     __uint(max_entries, 10000);
 } stacks SEC(".maps");
 
-SEC("uprobe/malloc")
+SEC("uprobe/malloc_enter")
 int malloc_enter(struct pt_regs *ctx, u64 size) {
     struct key_t key = {};
     // get stacks

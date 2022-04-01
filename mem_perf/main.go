@@ -24,7 +24,7 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf perf.c -- -I../headers
 
 var allocFuncs = []string{
-	"main.test",
+	"runtime.allocm",
 }
 
 type Event struct {
@@ -444,17 +444,4 @@ func LdSo(bit64 bool) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("could not find ld.so in %v", choices)
-}
-
-func readSymbols(file string) (*elf.File, []elf.Symbol, error) {
-	// Open self
-	f, err := elf.Open(file)
-	if err != nil {
-		return nil, nil, err
-	}
-	table, err := f.Symbols()
-	if err != nil {
-		return nil, nil, err
-	}
-	return f, table, err
 }

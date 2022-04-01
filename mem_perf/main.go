@@ -46,7 +46,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("total links:\n")
+	fmt.Printf("execute file total links:\n")
 	for _, va := range links {
 		fmt.Printf("%s\n", va)
 	}
@@ -57,7 +57,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("find all allocers: %v", allocers)
+	fmt.Printf("find all allocers: %v\n", allocers)
+	if len(allocers) == 0 {
+		log.Fatal("could not found any alloc symbol, shutdown")
+	}
 
 	stopper := make(chan os.Signal, 1)
 	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)

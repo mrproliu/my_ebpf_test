@@ -37,9 +37,11 @@ int malloc_enter(struct pt_regs *ctx) {
     bpf_printk("recieve event123\n");
     valp = bpf_map_lookup_elem(&stack_count_map, &key);
     if (!valp) {
+         bpf_printk("add new data\n");
          bpf_map_update_elem(&stack_count_map, &key, &initval, BPF_ANY);
          return 0;
     }
+    bpf_printk("update data\n");
     __sync_fetch_and_add(valp, 1);
 
     return 0;

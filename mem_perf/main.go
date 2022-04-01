@@ -106,7 +106,7 @@ func main() {
 	// listen the event
 	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
 	if err != nil {
-		log.Fatal("creating perf event reader: %v", err)
+		log.Fatalf("creating perf event reader: %s", err)
 	}
 	defer rd.Close()
 
@@ -135,10 +135,9 @@ func main() {
 		record, err := rd.Read()
 		if err != nil {
 			if errors.Is(err, perf.ErrClosed) {
-				log.Println("Received signal, exiting..")
 				return
 			}
-			log.Printf("reading from reader: %s", err)
+			log.Printf("reading from perf event reader: %s", err)
 			continue
 		}
 

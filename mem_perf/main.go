@@ -109,6 +109,8 @@ func main() {
 			iterate := objs.StackCountMap.Iterate()
 			if iterate.Next(&event, &val) {
 				fmt.Printf("fount event: %v: %d", event, val)
+			} else {
+				fmt.Printf("could not found data")
 			}
 		case <-stopper:
 			log.Println("Received signal, exiting program..")

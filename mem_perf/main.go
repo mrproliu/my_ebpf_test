@@ -104,7 +104,8 @@ func main() {
 	}
 
 	// listen the event
-	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
+	size := os.Getpagesize()
+	rd, err := perf.NewReader(objs.Counts, size)
 	if err != nil {
 		log.Fatalf("creating perf event reader: %s", err)
 	}
@@ -149,7 +150,7 @@ func main() {
 		}
 
 		count++
-		fmt.Printf("%d: stack: %d:%d, size: %d\n", count, event.KernelStackId, event.UserStackId, event.Size)
+		fmt.Printf("%d:%d stack: %d:%d, size: %d\n", count, size, event.KernelStackId, event.UserStackId, event.Size)
 
 		if err = objs.Stacks.Lookup(event.UserStackId, stacks); err == nil && processStat != nil {
 			symbols := processStat.FindSymbols(stacks, "MISSING")

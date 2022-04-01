@@ -1,15 +1,33 @@
 package main
 
 import (
+	"bytes"
 	"debug/elf"
+	"debug/gosym"
+	"encoding/binary"
+	"errors"
 	"fmt"
+	"github.com/cilium/ebpf/link"
+	"github.com/cilium/ebpf/perf"
+	"github.com/cilium/ebpf/rlimit"
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 )
+
+// $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
+//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf perf.c -- -I../headers
+
+type Event struct {
+	UserStackId   uint32
+	KernelStackId uint32
+	Size          uint64
+}
 
 func main() {
 	if len(os.Args) <= 1 {
@@ -23,7 +41,8 @@ func main() {
 	}
 	fmt.Printf("read get link for pid: %d\n", pid)
 
-	links, err := readLinks(fmt.Sprintf("/proc/%d/exe", pid))
+	executeFile := fmt.Sprintf("/proc/%d/exe", pid)
+	links, err := readLinks(executeFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -31,11 +50,142 @@ func main() {
 	for _, va := range links {
 		fmt.Printf("%s\n", va)
 	}
+
+	links = append(links, executeFile)
+
+	allocers, err := allMemoryAlloc(links)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	stopper := make(chan os.Signal, 1)
+	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
+
+	// Allow the current process to lock memory for eBPF resources.
+	if err := rlimit.RemoveMemlock(); err != nil {
+		log.Fatal(err)
+	}
+
+	// load bpf
+	objs := bpfObjects{}
+	err = loadBpfObjects(objs, nil)
+	if err != nil {
+		log.Fatalf("load bpf object failure: %v", err)
+	}
+
+	// open all uprobes
+	uprobes := make([]link.Link, 0)
+	defer closeAllUprobes(uprobes)
+	for file, symbol := range allocers {
+		executableFile, err := link.OpenExecutable(file)
+		if err != nil {
+			log.Fatalf("read execute file failure, file path: %s, %v", file, err)
+		}
+		uprobe, err := executableFile.Uprobe(symbol, objs.MallocEnter, &link.UprobeOptions{
+			PID: pid,
+		})
+		if err != nil {
+			log.Fatalf("could not open uprobe: %v", err)
+		}
+		uprobes = append(uprobes, uprobe)
+	}
+
+	// listen the event
+	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
+	if err != nil {
+		log.Fatal("creating perf event reader: %v", err)
+	}
+	defer rd.Close()
+
+	elfFile, _, err := readSymbols(fmt.Sprintf("/proc/%d/exe", pid))
+	if err != nil {
+		log.Fatalf("read symbols error: %v", err)
+		return
+	}
+
+	go func() {
+		<-stopper
+		log.Println("Received signal, exiting program..")
+
+		_ = elfFile.Close()
+	}()
+
+	log.Printf("Listening for events..")
+
+	var event Event
+	for {
+		record, err := rd.Read()
+		if err != nil {
+			if errors.Is(err, perf.ErrClosed) {
+				return
+			}
+			log.Printf("reading from perf event reader: %s", err)
+			continue
+		}
+
+		if record.LostSamples != 0 {
+			log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
+			continue
+		}
+
+		// Parse the perf event entry into an Event structure.
+		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
+			log.Printf("parsing perf event: %s", err)
+			continue
+		}
+
+		fmt.Printf("stack: %d:%d, size: %d\n", event.KernelStackId, event.UserStackId, event.Size)
+		fmt.Printf("---------------\n")
+	}
 }
 
-func readLinks(file string) ([]string, error) {
+func closeAllUprobes(links []link.Link) {
+	for _, l := range links {
+		l.Close()
+	}
+}
+
+func allMemoryAlloc(files []string) (map[string]string, error) {
+	result := make(map[string]string)
+	for _, file := range files {
+		alloc, err := findoutAlloc(file)
+		if err != nil {
+			return nil, fmt.Errorf("find the alloc symbol error: %v", err)
+		}
+		if alloc != "" {
+			result[file] = alloc
+		}
+	}
+
+	return result, nil
+}
+
+func findoutAlloc(file string) (string, error) {
+	elfFile, err := elf.Open(file)
+	if err != nil {
+		os.Exit(1)
+	}
+	defer elfFile.Close()
+
+	symbols, err := elfFile.Symbols()
+	if err != nil {
+		if err == elf.ErrNoSymbols {
+			return "", nil
+		}
+		return "", err
+	}
+
+	for _, sym := range symbols {
+		if strings.HasPrefix(sym.Name, "malloc") {
+			return sym.Name, nil
+		}
+	}
+	return "", nil
+}
+
+func readLinks(path string) ([]string, error) {
 	f := make([]string, 0)
-	f = append(f, file)
+	f = append(f, path)
 	return List(f)
 }
 
@@ -45,34 +195,32 @@ func readLinks(file string) ([]string, error) {
 // succeeding, links repeats and continues
 // for as long as the name is not found in the map.
 func follow(l string, names map[string]*FileInfo) error {
-	for {
-		if names[l] != nil {
-			return nil
-		}
-		i, err := os.Lstat(l)
-		if err != nil {
-			return fmt.Errorf("%v", err)
-		}
-
-		names[l] = &FileInfo{FullName: l, FileInfo: i}
-		if i.Mode().IsRegular() {
-			return nil
-		}
-		// If it's a symlink, the read works; if not, it fails.
-		// we can skip testing the type, since we still have to
-		// handle any error if it's a link.
-		next, err := os.Readlink(l)
-		if err != nil {
-			return err
-		}
-		// It may be a relative link, so we need to
-		// make it abs.
-		if filepath.IsAbs(next) {
-			l = next
-			continue
-		}
-		l = filepath.Join(filepath.Dir(l), next)
+	if names[l] != nil {
+		return nil
 	}
+
+	stat, err := os.Lstat(l)
+	if err != nil {
+		return err
+	}
+
+	if stat.Mode().IsRegular() {
+		names[l] = &FileInfo{FullName: l, FileInfo: stat}
+		return nil
+	}
+
+	next, err := os.Readlink(l)
+	if err != nil {
+		return err
+	}
+	// It may be a relative link, so we need to
+	// make it abs.
+	if filepath.IsAbs(next) {
+		names[l] = &FileInfo{FullName: l, FileInfo: stat}
+		return nil
+	}
+
+	return follow(filepath.Join(filepath.Dir(l), next), names)
 }
 
 // runinterp runs the interpreter with the --list switch
@@ -180,35 +328,58 @@ func Ldd(names []string) ([]*FileInfo, error) {
 		if interp == "" {
 			continue
 		}
-		// We could just append the interp but people
-		// expect to see that first.
-		if interps[interp] == nil {
-			err := follow(interp, interps)
-			if err != nil {
-				return nil, err
-			}
-		}
-		// oh boy. Now to run the interp and get more names.
-		n, err := runinterp(interp, n)
-		if err != nil {
-			return nil, err
-		}
-		for i := range n {
-			if err := follow(n[i], list); err != nil {
-				log.Fatalf("ldd: %v", err)
-			}
-		}
+		loopFind(interp, n, interps, list)
+		//// We could just append the interp but people
+		//// expect to see that first.
+		//if interps[interp] == nil {
+		//	err := follow(interp, interps)
+		//	if err != nil {
+		//		return nil, err
+		//	}
+		//}
+		//// oh boy. Now to run the interp and get more names.
+		//n, err := runinterp(interp, n)
+		//if err != nil {
+		//	return nil, err
+		//}
+		//for i := range n {
+		//	if err := follow(n[i], list); err != nil {
+		//		log.Fatalf("ldd: %v", err)
+		//	}
+		//}
 	}
 
 	for i := range interps {
 		libs = append(libs, interps[i])
 	}
 
-	for i := range list {
-		libs = append(libs, list[i])
-	}
-
 	return libs, nil
+}
+
+func loopFind(interp string, from string, interps map[string]*FileInfo, list map[string]*FileInfo) error {
+	// We could just append the interp but people
+	// expect to see that first.
+	if interps[interp] == nil {
+		err := follow(interp, interps)
+		if err != nil {
+			return err
+		}
+	}
+	// oh boy. Now to run the interp and get more names.
+	n, err := runinterp(interp, from)
+	if err != nil {
+		return err
+	}
+	for i := range n {
+		if err := follow(n[i], list); err != nil {
+			log.Fatalf("ldd: %v", err)
+		}
+
+		if err = loopFind(n[i], interp, interps, list); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // List returns the dependency file paths of files in names.
@@ -241,4 +412,43 @@ func LdSo(bit64 bool) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("could not find ld.so in %v", choices)
+}
+
+func readSymbols(file string) (*elf.File, *gosym.Table, error) {
+	// Open self
+	f, err := elf.Open(file)
+	if err != nil {
+		return nil, nil, err
+	}
+	table, err := parse(f)
+	if err != nil {
+		return nil, nil, err
+	}
+	return f, table, err
+}
+
+func parse(f *elf.File) (*gosym.Table, error) {
+	s := f.Section(".gosymtab")
+	if s == nil {
+		return nil, fmt.Errorf("no symbles")
+	}
+	symdat, err := s.Data()
+	if err != nil {
+		f.Close()
+		return nil, fmt.Errorf("read symbols failure: %v", err)
+	}
+	pclndat, err := f.Section(".gopclntab").Data()
+	if err != nil {
+		f.Close()
+		return nil, fmt.Errorf("read gopclntab failure: %v", err)
+	}
+
+	pcln := gosym.NewLineTable(pclndat, f.Section(".text").Addr)
+	tab, err := gosym.NewTable(symdat, pcln)
+	if err != nil {
+		f.Close()
+		return nil, fmt.Errorf("parse gosymtab failure: %v", err)
+	}
+
+	return tab, nil
 }

@@ -68,7 +68,7 @@ func main() {
 
 	// load bpf
 	objs := bpfObjects{}
-	err = loadBpfObjects(objs, nil)
+	err = loadBpfObjects(&objs, nil)
 	if err != nil {
 		log.Fatalf("load bpf object failure: %v", err)
 	}
@@ -87,6 +87,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("could not open uprobe: %v", err)
 		}
+		log.Printf("start uprobe with file: %s, symbol: %s", file, symbol)
 		uprobes = append(uprobes, uprobe)
 	}
 

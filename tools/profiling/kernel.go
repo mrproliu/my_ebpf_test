@@ -23,8 +23,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/apache/skywalking-rover/pkg/tools/host"
 )
 
 type KernelFinder struct {
@@ -32,7 +30,7 @@ type KernelFinder struct {
 }
 
 func NewKernelFinder() *KernelFinder {
-	stat, _ := os.Stat(host.GetFileInHost(KernelSymbolFilePath))
+	stat, _ := os.Stat(KernelSymbolFilePath)
 	return &KernelFinder{kernelFileExists: stat != nil}
 }
 

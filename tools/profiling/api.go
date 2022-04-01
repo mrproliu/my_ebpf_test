@@ -17,8 +17,6 @@
 
 package profiling
 
-import "github.com/ianlancetaylor/demangle"
-
 var KernelSymbolFilePath = "/proc/kallsyms"
 
 // Info of profiling process
@@ -102,5 +100,5 @@ func processSymbolName(name string) string {
 	if name[0] == '.' || name[0] == '$' {
 		skip++
 	}
-	return demangle.Filter(name[skip:])
+	return name
 }

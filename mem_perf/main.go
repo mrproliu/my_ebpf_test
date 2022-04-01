@@ -100,7 +100,7 @@ func main() {
 
 	elfFile, _, err := readSymbols(fmt.Sprintf("/proc/%d/exe", pid))
 	if err != nil {
-		log.Fatalf("read symbols error: %v", err)
+		log.Fatalf("read symbols error in file: %s: %v", fmt.Sprintf("/proc/%d/exe", pid), err)
 		return
 	}
 

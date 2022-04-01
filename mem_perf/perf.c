@@ -32,8 +32,9 @@ int malloc_enter(struct pt_regs *ctx) {
     key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);
     key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
 
+    bpf_printk("recieve event123---\n");
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
-    bpf_printk("recieve event123\n");
+    bpf_printk("recieve event123+++\n");
 
     return 0;
 }

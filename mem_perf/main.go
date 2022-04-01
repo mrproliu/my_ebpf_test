@@ -24,7 +24,9 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf perf.c -- -I../headers
 
 var allocFuncs = []string{
-	"runtime.allocm",
+	"runtime.mallocgc",
+	"runtime.newobject",
+	"runtime.newarray",
 }
 
 type Event struct {
@@ -84,19 +86,21 @@ func main() {
 	// open all uprobes
 	uprobes := make([]link.Link, 0)
 	defer closeAllUprobes(uprobes)
-	for file, symbol := range allocers {
+	for file, symbols := range allocers {
 		executableFile, err := link.OpenExecutable(file)
 		if err != nil {
 			log.Fatalf("read execute file failure, file path: %s, %v", file, err)
 		}
-		uprobe, err := executableFile.Uprobe(symbol, objs.MallocEnter, &link.UprobeOptions{
-			PID: pid,
-		})
-		if err != nil {
-			log.Fatalf("could not open uprobe: %v", err)
+		for _, symbol := range symbols {
+			uprobe, err := executableFile.Uprobe(symbol, objs.MallocEnter, &link.UprobeOptions{
+				PID: pid,
+			})
+			if err != nil {
+				log.Fatalf("could not open uprobe: %v", err)
+			}
+			log.Printf("start uprobe with file: %s, symbol: %s", file, symbol)
+			uprobes = append(uprobes, uprobe)
 		}
-		log.Printf("start uprobe with file: %s, symbol: %s", file, symbol)
-		uprobes = append(uprobes, uprobe)
 	}
 
 	// listen the event
@@ -175,14 +179,14 @@ func closeAllUprobes(links []link.Link) {
 	}
 }
 
-func allMemoryAlloc(files []string) (map[string]string, error) {
-	result := make(map[string]string)
+func allMemoryAlloc(files []string) (map[string][]string, error) {
+	result := make(map[string][]string)
 	for _, file := range files {
 		alloc, err := findoutAlloc(file)
 		if err != nil {
 			return nil, fmt.Errorf("find the alloc symbol error: %v", err)
 		}
-		if alloc != "" {
+		if len(alloc) > 0 {
 			result[file] = alloc
 		}
 	}
@@ -190,7 +194,7 @@ func allMemoryAlloc(files []string) (map[string]string, error) {
 	return result, nil
 }
 
-func findoutAlloc(file string) (string, error) {
+func findoutAlloc(file string) ([]string, error) {
 	elfFile, err := elf.Open(file)
 	if err != nil {
 		os.Exit(1)
@@ -200,19 +204,20 @@ func findoutAlloc(file string) (string, error) {
 	symbols, err := elfFile.Symbols()
 	if err != nil {
 		if err == elf.ErrNoSymbols {
-			return "", nil
+			return nil, nil
 		}
-		return "", err
+		return nil, err
 	}
 
+	result := make([]string, 0)
 	for _, sym := range symbols {
 		for _, ac := range allocFuncs {
 			if sym.Name == ac {
-				return sym.Name, nil
+				result = append(result, sym.Name)
 			}
 		}
 	}
-	return "", nil
+	return result, nil
 }
 
 func readLinks(path string) ([]string, error) {

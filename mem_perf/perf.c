@@ -25,12 +25,11 @@ struct {
 } stacks SEC(".maps");
 
 SEC("uprobe/malloc_enter")
-int malloc_enter(struct pt_regs *ctx, u64 size) {
+int malloc_enter(struct pt_regs *ctx) {
     struct key_t key = {};
     // get stacks
     key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);
     key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
-    key.size = size;
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
 

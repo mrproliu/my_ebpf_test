@@ -11,7 +11,6 @@ import (
 	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/ringbuf"
 	"github.com/cilium/ebpf/rlimit"
-	"golang.org/x/sys/unix"
 	"log"
 	"os"
 	"os/exec"

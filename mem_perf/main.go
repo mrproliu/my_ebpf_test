@@ -108,9 +108,9 @@ func main() {
 		case <-timer.C:
 			iterate := objs.StackCountMap.Iterate()
 			if iterate.Next(&event, &val) {
-				fmt.Printf("fount event: %v: %d", event, val)
+				fmt.Printf("fount event: %v: %d\n", event, val)
 			} else {
-				fmt.Printf("could not found data")
+				fmt.Printf("could not found data\n")
 			}
 		case <-stopper:
 			log.Println("Received signal, exiting program..")

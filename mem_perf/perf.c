@@ -14,7 +14,8 @@ struct key_t {
 #define MAX_ENTRIES	10000
 
 struct {
-	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+	__uint(type, BPF_MAP_TYPE_RINGBUF);
+	__uint(max_entries, 1 << 24);
 } counts SEC(".maps");
 
 struct {
@@ -26,12 +27,17 @@ struct {
 
 SEC("uprobe/malloc_enter")
 int malloc_enter(struct pt_regs *ctx) {
-    struct key_t key = {};
-    // get stacks
-    key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);
-    key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
+    struct key_t *key;
+    key = bpf_ringbuf_reserve(&counts, sizeof(struct key_t), 0);
+	if (!key) {
+		return 0;
+	}
 
-    bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
+    // get stacks
+    key->kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);
+    key->user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
+
+	bpf_ringbuf_submit(key, 0);
 
     return 0;
 }

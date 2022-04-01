@@ -9,7 +9,9 @@ import (
 	"fmt"
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/perf"
+	"github.com/cilium/ebpf/ringbuf"
 	"github.com/cilium/ebpf/rlimit"
+	"golang.org/x/sys/unix"
 	"log"
 	"os"
 	"os/exec"
@@ -130,30 +132,26 @@ func main() {
 	log.Printf("Listening for events..")
 
 	var event Event
-	stacks := make([]uint64, 100)
 	for {
 		record, err := rd.Read()
 		if err != nil {
-			if errors.Is(err, perf.ErrClosed) {
+			if errors.Is(err, ringbuf.ErrClosed) {
+				log.Println("Received signal, exiting..")
 				return
 			}
-			log.Printf("reading from perf event reader: %s", err)
+			log.Printf("reading from reader: %s", err)
 			continue
 		}
 
-		if record.LostSamples != 0 {
-			log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
-			continue
-		}
-
-		// Parse the perf event entry into an Event structure.
+		// Parse the ringbuf event entry into a bpfEvent structure.
 		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
-			log.Printf("parsing perf event: %s", err)
+			log.Printf("parsing ringbuf event: %s", err)
 			continue
 		}
 
 		fmt.Printf("stack: %d:%d, size: %d\n", event.KernelStackId, event.UserStackId, event.Size)
 
+		var stacks []uint64
 		if err = objs.Stacks.Lookup(event.UserStackId, stacks); err == nil && processStat != nil {
 			symbols := processStat.FindSymbols(stacks, "MISSING")
 			fmt.Printf("user statck: \n")

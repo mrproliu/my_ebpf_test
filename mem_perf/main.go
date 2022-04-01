@@ -154,22 +154,22 @@ func main() {
 
 		fmt.Printf("stack: %d:%d, size: %d\n", event.KernelStackId, event.UserStackId, event.Size)
 
-		if err = objs.Stacks.Lookup(event.UserStackId, stacks); err == nil && kernelStat != nil {
-			symbols := kernelStat.FindSymbols(stacks, "MISSING")
+		if err = objs.Stacks.Lookup(event.UserStackId, stacks); err == nil && processStat != nil {
+			symbols := processStat.FindSymbols(stacks, "MISSING")
 			fmt.Printf("user statck: \n")
 			for _, s := range symbols {
 				fmt.Printf("%s\n", s)
 			}
+			fmt.Printf("---------------\n")
 		}
-		fmt.Printf("---------------\n")
-		if err = objs.Stacks.Lookup(event.KernelStackId, stacks); err == nil && processStat != nil {
-			symbols := processStat.FindSymbols(stacks, "MISSING")
+		if err = objs.Stacks.Lookup(event.KernelStackId, stacks); err == nil && kernelStat != nil {
+			symbols := kernelStat.FindSymbols(stacks, "MISSING")
 			fmt.Printf("kernel statck: \n")
 			for _, s := range symbols {
 				fmt.Printf("%s\n", s)
 			}
+			fmt.Printf("---------------\n")
 		}
-		fmt.Printf("---------------\n")
 	}
 }
 

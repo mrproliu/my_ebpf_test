@@ -5,21 +5,19 @@
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
-
-int count = 0;
-
 struct key_t {
     int user_stack_id;
     int kernel_stack_id;
-    u64 size;
 };
 
 #define MAX_ENTRIES	10000
 
 struct {
-	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
-	__uint(max_entries, 10);
-} counts SEC(".maps");
+	__uint(type, BPF_MAP_TYPE_LRU_HASH);
+	__uint(key_size, sizeof(struct key_t));
+	__uint(value_size, sizeof(u64));
+    __uint(max_entries, 10000);
+} stack_count_map SEC(".maps");
 
 struct {
     __uint(type, BPF_MAP_TYPE_STACK_TRACE);
@@ -34,11 +32,14 @@ int malloc_enter(struct pt_regs *ctx) {
     // get stacks
     key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);
     key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
+    u64 initval = 1, *valp;
 
-    count++;
-    bpf_printk("recieve event123---%d\n", count);
-    bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
-    bpf_printk("recieve event123+++\n");
+    valp = bpf_map_lookup_elem(&stack_count_map, &key);
+    if (!valp) {
+         bpf_map_update_elem(&stack_count_map, &key, &initval, BPF_ANY);
+         return 0;
+    }
+    __sync_fetch_and_add(valp, 1);
 
     return 0;
 }

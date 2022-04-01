@@ -1,14 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"debug/elf"
-	"ebpf_test/tools"
-	"encoding/binary"
-	"errors"
 	"fmt"
 	"github.com/cilium/ebpf/link"
-	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
 	"log"
 	"os"
@@ -18,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 )
 
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
@@ -104,71 +100,88 @@ func main() {
 	}
 
 	// listen the event
-	size := os.Getpagesize()
-	rd, err := perf.NewReader(objs.Counts, size)
-	if err != nil {
-		log.Fatalf("creating perf event reader: %s", err)
-	}
-	defer rd.Close()
-
-	kernelStat, err := tools.KernelFileProfilingStat()
-	if err != nil {
-		log.Printf("could not read the kernel symbols: %v, so ignored.", err)
-	}
-	processStat, err := tools.ExecutableFileProfilingStat(fmt.Sprintf("/proc/%d/exe", pid))
-	if err != nil {
-		log.Fatalf("read symbols error in file: %s: %v", fmt.Sprintf("/proc/%d/exe", pid), err)
-		return
-	}
-
-	go func() {
-		<-stopper
-		log.Println("Received signal, exiting program..")
-
-		rd.Close()
-	}()
-
-	log.Printf("Listening for events..")
-
+	timer := time.NewTimer(1 * time.Second)
 	var event Event
-	stacks := make([]uint64, 100)
-	count := 0
+	var val uint64
 	for {
-		record, err := rd.Read()
-		if err != nil {
-			if errors.Is(err, perf.ErrClosed) {
-				return
+		select {
+		case <-timer.C:
+			iterate := objs.StackCountMap.Iterate()
+			if iterate.Next(&event, &val) {
+				fmt.Printf("fount event: %v: %d", event, val)
 			}
-			log.Printf("reading from perf event reader: %s", err)
-			return
-		}
+		case <-stopper:
+			<-stopper
+			log.Println("Received signal, exiting program..")
 
-		// Parse the ringbuf event entry into a bpfEvent structure.
-		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
-			log.Printf("parsing ringbuf event: %s", err)
-			continue
-		}
-
-		count++
-		fmt.Printf("%d:%d stack: %d:%d, size: %d\n", count, size, event.KernelStackId, event.UserStackId, event.Size)
-
-		if err = objs.Stacks.Lookup(event.UserStackId, stacks); err == nil && processStat != nil {
-			symbols := processStat.FindSymbols(stacks, "MISSING")
-			fmt.Printf("user statck: \n")
-			for _, s := range symbols {
-				fmt.Printf("%s\n", s)
-			}
-			fmt.Printf("---------------\n")
-		}
-		if err = objs.Stacks.Lookup(event.KernelStackId, stacks); err == nil && kernelStat != nil {
-			symbols := kernelStat.FindSymbols(stacks, "MISSING")
-			fmt.Printf("kernel statck: \n")
-			for _, s := range symbols {
-				fmt.Printf("%s\n", s)
-			}
-			fmt.Printf("---------------\n")
+			objs.StackCountMap.Close()
 		}
 	}
+	//size := os.Getpagesize()
+	//rd, err := perf.NewReader(objs.Counts, size)
+	//if err != nil {
+	//	log.Fatalf("creating perf event reader: %s", err)
+	//}
+	//defer rd.Close()
+	//
+	//kernelStat, err := tools.KernelFileProfilingStat()
+	//if err != nil {
+	//	log.Printf("could not read the kernel symbols: %v, so ignored.", err)
+	//}
+	//processStat, err := tools.ExecutableFileProfilingStat(fmt.Sprintf("/proc/%d/exe", pid))
+	//if err != nil {
+	//	log.Fatalf("read symbols error in file: %s: %v", fmt.Sprintf("/proc/%d/exe", pid), err)
+	//	return
+	//}
+	//
+	//go func() {
+	//	<-stopper
+	//	log.Println("Received signal, exiting program..")
+	//
+	//	rd.Close()
+	//}()
+	//
+	//log.Printf("Listening for events..")
+	//
+	//var event Event
+	//stacks := make([]uint64, 100)
+	//count := 0
+	//for {
+	//	record, err := rd.Read()
+	//	if err != nil {
+	//		if errors.Is(err, perf.ErrClosed) {
+	//			return
+	//		}
+	//		log.Printf("reading from perf event reader: %s", err)
+	//		return
+	//	}
+	//
+	//	// Parse the ringbuf event entry into a bpfEvent structure.
+	//	if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
+	//		log.Printf("parsing ringbuf event: %s", err)
+	//		continue
+	//	}
+	//
+	//	count++
+	//	fmt.Printf("%d:%d stack: %d:%d, size: %d\n", count, size, event.KernelStackId, event.UserStackId, event.Size)
+	//
+	//	if err = objs.Stacks.Lookup(event.UserStackId, stacks); err == nil && processStat != nil {
+	//		symbols := processStat.FindSymbols(stacks, "MISSING")
+	//		fmt.Printf("user statck: \n")
+	//		for _, s := range symbols {
+	//			fmt.Printf("%s\n", s)
+	//		}
+	//		fmt.Printf("---------------\n")
+	//	}
+	//	if err = objs.Stacks.Lookup(event.KernelStackId, stacks); err == nil && kernelStat != nil {
+	//		symbols := kernelStat.FindSymbols(stacks, "MISSING")
+	//		fmt.Printf("kernel statck: \n")
+	//		for _, s := range symbols {
+	//			fmt.Printf("%s\n", s)
+	//		}
+	//		fmt.Printf("---------------\n")
+	//	}
+	//}
 }
 
 func closeAllUprobes(links []link.Link) {

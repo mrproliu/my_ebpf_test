@@ -110,7 +110,7 @@ func main() {
 		case <-timer.C:
 			iterate := objs.StackCountMap.Iterate()
 			if iterate.Next(&event, &val) {
-				fmt.Printf("fount event: %v: %d, size: %d\n", event, val)
+				fmt.Printf("fount event: %v, total count:%d, size: %d\n", event, val)
 				if err := objs.Stacks.Lookup(event, stacks); err != nil {
 					fmt.Printf("could not found the stack: %d: error: %v", event, err)
 					continue

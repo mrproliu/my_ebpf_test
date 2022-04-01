@@ -56,7 +56,7 @@ func main() {
 	for _, va := range links {
 		fmt.Printf("%s\n", va)
 	}
-	fmt.Printf("-------------------\n")
+	fmt.Printf("------------------------------------------\n")
 
 	links = append(links, executeFile)
 
@@ -66,9 +66,9 @@ func main() {
 	}
 	fmt.Printf("find all allocator: \n")
 	for file, symbols := range allocers {
-		fmt.Printf("%s: %s", file, strings.Join(symbols, ", "))
+		fmt.Printf("%s: %s\n", file, strings.Join(symbols, ", "))
 	}
-	fmt.Printf("--------------------\n")
+	fmt.Printf("------------------------------------------\n")
 	if len(allocers) == 0 {
 		log.Fatal("could not found any allocator symbol, shutdown")
 	}
@@ -122,11 +122,11 @@ func main() {
 	for {
 		select {
 		case <-timer.C:
-			fmt.Printf("Print total memory execute stack:\n")
+			fmt.Printf("Print total memory execute stack\n")
 			fmt.Printf("------------------------------------------\n")
 			iterate := objs.StackCountMap.Iterate()
 			if iterate.Next(&userStackId, &val) {
-				fmt.Printf("total found user stack id: %v, count: %d\n", userStackId, val)
+				fmt.Printf("found user space stack id: %v, count: %d\n", userStackId, val)
 
 				if err := objs.Stacks.Lookup(userStackId, stacks); err != nil {
 					fmt.Printf("could not found the stack: %d: error: %v", userStackId, err)

@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/perf"
-	"github.com/cilium/ebpf/ringbuf"
 	"github.com/cilium/ebpf/rlimit"
 	"log"
 	"os"
@@ -135,7 +134,7 @@ func main() {
 	for {
 		record, err := rd.Read()
 		if err != nil {
-			if errors.Is(err, ringbuf.ErrClosed) {
+			if errors.Is(err, perf.ErrClosed) {
 				log.Println("Received signal, exiting..")
 				return
 			}

@@ -110,7 +110,7 @@ func main() {
 			if iterate.Next(&event, &val) {
 				fmt.Printf("fount event: %v: %d, size: %d\n", event, val)
 			} else {
-				fmt.Printf("could not found data, size: %d\n", objs.StackCountMap)
+				fmt.Printf("could not found data\n")
 			}
 			fmt.Printf("error info: %v\n", iterate.Err())
 		case <-stopper:

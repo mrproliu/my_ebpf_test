@@ -138,7 +138,7 @@ func main() {
 				return
 			}
 			log.Printf("reading from perf event reader: %s", err)
-			continue
+			return
 		}
 
 		// Parse the ringbuf event entry into a bpfEvent structure.

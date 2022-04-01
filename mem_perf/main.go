@@ -23,6 +23,10 @@ import (
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf perf.c -- -I../headers
 
+var allocFuncs = []string{
+	"main.test",
+}
+
 type Event struct {
 	UserStackId   uint32
 	KernelStackId uint32
@@ -202,8 +206,10 @@ func findoutAlloc(file string) (string, error) {
 	}
 
 	for _, sym := range symbols {
-		if sym.Name == "runtime.(*mheap).allocSpan" {
-			return sym.Name, nil
+		for _, ac := range allocFuncs {
+			if sym.Name == ac {
+				return sym.Name, nil
+			}
 		}
 	}
 	return "", nil

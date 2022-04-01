@@ -109,6 +109,8 @@ func main() {
 		log.Println("Received signal, exiting program..")
 
 		_ = elfFile.Close()
+
+		rd.Close()
 	}()
 
 	log.Printf("Listening for events..")

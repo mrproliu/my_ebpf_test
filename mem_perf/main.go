@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"debug/elf"
+	"ebpf_test/tools"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -98,7 +99,11 @@ func main() {
 	}
 	defer rd.Close()
 
-	elfFile, _, err := readSymbols(fmt.Sprintf("/proc/%d/exe", pid))
+	kernelStat, err := tools.KernelFileProfilingStat()
+	if err != nil {
+		log.Printf("could not read the kernel symbols: %v, so ignored.", err)
+	}
+	processStat, err := tools.ExecutableFileProfilingStat(fmt.Sprintf("/proc/%d/exe", pid))
 	if err != nil {
 		log.Fatalf("read symbols error in file: %s: %v", fmt.Sprintf("/proc/%d/exe", pid), err)
 		return
@@ -108,14 +113,13 @@ func main() {
 		<-stopper
 		log.Println("Received signal, exiting program..")
 
-		_ = elfFile.Close()
-
 		rd.Close()
 	}()
 
 	log.Printf("Listening for events..")
 
 	var event Event
+	stacks := make([]uint64, 100)
 	for {
 		record, err := rd.Read()
 		if err != nil {
@@ -138,6 +142,22 @@ func main() {
 		}
 
 		fmt.Printf("stack: %d:%d, size: %d\n", event.KernelStackId, event.UserStackId, event.Size)
+
+		if err = objs.Stacks.Lookup(event.UserStackId, stacks); err == nil && kernelStat != nil {
+			symbols := kernelStat.FindSymbols(stacks, "MISSING")
+			fmt.Printf("user statck: \n")
+			for _, s := range symbols {
+				fmt.Printf("%s\n", s)
+			}
+		}
+		fmt.Printf("---------------\n")
+		if err = objs.Stacks.Lookup(event.KernelStackId, stacks); err == nil && kernelStat != nil {
+			symbols := kernelStat.FindSymbols(stacks, "MISSING")
+			fmt.Printf("kernel statck: \n")
+			for _, s := range symbols {
+				fmt.Printf("%s\n", s)
+			}
+		}
 		fmt.Printf("---------------\n")
 	}
 }

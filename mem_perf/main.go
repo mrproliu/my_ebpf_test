@@ -125,7 +125,12 @@ func main() {
 			fmt.Printf("Print total memory execute stack\n")
 			fmt.Printf("------------------------------------------\n")
 			iterate := objs.StackCountMap.Iterate()
+			count := 0
 			if iterate.Next(&userStackId, &val) {
+				if count > 0 {
+					fmt.Printf("-----------\n")
+				}
+				count++
 				fmt.Printf("found user space stack id: %v, count: %d\n", userStackId, val)
 
 				if err := objs.Stacks.Lookup(userStackId, stacks); err != nil {
@@ -137,7 +142,6 @@ func main() {
 				for _, sym := range symbols {
 					fmt.Printf("%s\n", sym)
 				}
-				fmt.Printf("-----------\n")
 			} else {
 				fmt.Printf("could not found data\n")
 			}

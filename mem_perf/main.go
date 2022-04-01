@@ -179,7 +179,7 @@ func findoutAlloc(file string) (string, error) {
 	}
 
 	for _, sym := range symbols {
-		if sym.Name == "malloc" {
+		if sym.Name == "runtime.(*mheap).allocSpan" {
 			return sym.Name, nil
 		}
 	}

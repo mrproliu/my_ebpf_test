@@ -137,7 +137,7 @@ func main() {
 				for _, sym := range symbols {
 					fmt.Printf("%s\n", sym)
 				}
-				fmt.Printf("-----------")
+				fmt.Printf("-----------\n")
 			} else {
 				fmt.Printf("could not found data\n")
 			}

@@ -5,6 +5,9 @@
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
+
+int count = 0;
+
 struct key_t {
     int user_stack_id;
     int kernel_stack_id;
@@ -32,7 +35,8 @@ int malloc_enter(struct pt_regs *ctx) {
     key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);
     key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
 
-    bpf_printk("recieve event123---\n");
+    count++;
+    bpf_printk("recieve event123---%d\n", count);
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
     bpf_printk("recieve event123+++\n");
 

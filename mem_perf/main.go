@@ -111,8 +111,9 @@ func main() {
 			if iterate.Next(&event, &val) {
 				fmt.Printf("fount event: %v: %d, size: %d\n", event, val, objs.StackCountMap.ValueSize())
 			} else {
-				fmt.Printf("could not found data, size: %d\n", objs.StackCountMap.ValueSize())
+				fmt.Printf("could not found data, size: %d\n", objs.StackCountMap)
 			}
+			fmt.Printf("error info: %v\n", iterate.Err())
 		case <-stopper:
 			log.Println("Received signal, exiting program..")
 

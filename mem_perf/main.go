@@ -131,6 +131,7 @@ func main() {
 	log.Printf("Listening for events..")
 
 	var event Event
+	stacks := make([]uint64, 100)
 	for {
 		record, err := rd.Read()
 		if err != nil {
@@ -150,7 +151,6 @@ func main() {
 
 		fmt.Printf("stack: %d:%d, size: %d\n", event.KernelStackId, event.UserStackId, event.Size)
 
-		var stacks []uint64
 		if err = objs.Stacks.Lookup(event.UserStackId, stacks); err == nil && processStat != nil {
 			symbols := processStat.FindSymbols(stacks, "MISSING")
 			fmt.Printf("user statck: \n")

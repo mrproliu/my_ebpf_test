@@ -111,7 +111,6 @@ func main() {
 				fmt.Printf("fount event: %v: %d", event, val)
 			}
 		case <-stopper:
-			<-stopper
 			log.Println("Received signal, exiting program..")
 
 			objs.StackCountMap.Close()

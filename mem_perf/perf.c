@@ -34,6 +34,7 @@ int malloc_enter(struct pt_regs *ctx) {
     key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
     u64 initval = 1, *valp;
 
+    bpf_printk("recieve event123\n");
     valp = bpf_map_lookup_elem(&stack_count_map, &key);
     if (!valp) {
          bpf_map_update_elem(&stack_count_map, &key, &initval, BPF_ANY);

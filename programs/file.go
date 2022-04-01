@@ -7,8 +7,8 @@ import (
 )
 
 func main() {
+	d1 := []byte("hello\ngo\n")
 	for {
-		d1 := []byte("hello\ngo\n")
 		err := os.WriteFile("/tmp/dat1", d1, 0644)
 		if err != nil {
 			fmt.Printf("error: %v", err)

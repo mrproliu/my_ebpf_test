@@ -104,7 +104,9 @@ func main() {
 	}
 
 	// listen the event
-	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
+	getpagesize := os.Getpagesize()
+	fmt.Printf("page buffer size: %d", getpagesize)
+	rd, err := perf.NewReader(objs.Counts, getpagesize)
 	if err != nil {
 		log.Fatalf("creating perf event reader: %s", err)
 	}

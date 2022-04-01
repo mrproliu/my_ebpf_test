@@ -116,6 +116,7 @@ func main() {
 			log.Println("Received signal, exiting program..")
 
 			objs.StackCountMap.Close()
+			return
 		}
 	}
 	//size := os.Getpagesize()

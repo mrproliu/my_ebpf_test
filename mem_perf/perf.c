@@ -14,7 +14,7 @@ struct key_t {
 
 struct {
 	__uint(type, BPF_MAP_TYPE_LRU_HASH);
-	__uint(key_size, sizeof(u64));
+	__uint(key_size, sizeof(u32));
 	__uint(value_size, sizeof(u64));
     __uint(max_entries, 10000);
 } stack_count_map SEC(".maps");
@@ -28,20 +28,18 @@ struct {
 
 SEC("uprobe/malloc_enter")
 int malloc_enter(struct pt_regs *ctx) {
-    struct key_t key = {};
     // get stacks
-    key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);
-    key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
+    u32 id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
     u64 initval = 1, *valp;
 
     bpf_printk("recieve event123\n");
-    valp = bpf_map_lookup_elem(&stack_count_map, &key.user_stack_id);
+    valp = bpf_map_lookup_elem(&stack_count_map, &id);
     if (!valp) {
          bpf_printk("add new data\n");
-         bpf_map_update_elem(&stack_count_map, &key.user_stack_id, &initval, BPF_ANY);
+         bpf_map_update_elem(&stack_count_map, &id, &initval, BPF_ANY);
          return 0;
     }
-    bpf_printk("update data, %d\n", valp);
+    bpf_printk("update data, %d\n", &valp);
     __sync_fetch_and_add(valp, 1);
 
     return 0;

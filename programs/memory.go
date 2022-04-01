@@ -1,20 +1,19 @@
 package main
 
 import (
-	"fmt"
-	"math"
+	"time"
 )
 
 //go:noinline
 func test() {
-	math.Sqrt(1000)
+	buf := []byte{}
+	mb := 1024 * 1024
+
+	for {
+		buf = append(buf, make([]byte, mb)...)
+		time.Sleep(time.Second)
+	}
 }
 func main() {
-	for true {
-		array := make([]string, 1000)
-		for i := 0; i < 1000; i++ {
-			array[i] = fmt.Sprintf("%d---", i)
-		}
-		test()
-	}
+	test()
 }

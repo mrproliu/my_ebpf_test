@@ -57,9 +57,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("find all allocers: %v\n", allocers)
+	fmt.Printf("find all allocator: %v\n", allocers)
 	if len(allocers) == 0 {
-		log.Fatal("could not found any alloc symbol, shutdown")
+		log.Fatal("could not found any allocator symbol, shutdown")
 	}
 
 	stopper := make(chan os.Signal, 1)

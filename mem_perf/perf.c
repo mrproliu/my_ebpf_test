@@ -15,7 +15,6 @@ struct key_t {
 
 struct {
 	__uint(type, BPF_MAP_TYPE_RINGBUF);
-	__uint(max_entries, 1 << 24);
 } counts SEC(".maps");
 
 struct {

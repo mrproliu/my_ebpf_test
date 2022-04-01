@@ -24,6 +24,9 @@ var allocFuncs = []string{
 	"runtime.mallocgc",
 	"runtime.newobject",
 	"runtime.newarray",
+	"malloc",
+	"je_calloc",
+	"calloc",
 }
 
 type Event struct {
@@ -49,7 +52,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("execute file total links:\n")
+	fmt.Printf("execute file(%s) total links\n", executeFile)
 	for _, va := range links {
 		fmt.Printf("%s\n", va)
 	}
@@ -61,6 +64,9 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Printf("find all allocator: %v\n", allocers)
+	for file, symbols := range allocers {
+		fmt.Printf("%s: %s", file, strings.Join(symbols, ", "))
+	}
 	if len(allocers) == 0 {
 		log.Fatal("could not found any allocator symbol, shutdown")
 	}
@@ -107,16 +113,18 @@ func main() {
 	}
 
 	// listen the event
-	timer := time.NewTicker(1 * time.Second)
+	timer := time.NewTicker(5 * time.Second)
 	var userStackId uint32
 	var val uint64
 	stacks := make([]uint64, 100)
 	for {
 		select {
 		case <-timer.C:
+			fmt.Printf("Print total memory execute stack:\n")
+			fmt.Printf("------------------------------------------")
 			iterate := objs.StackCountMap.Iterate()
 			if iterate.Next(&userStackId, &val) {
-				fmt.Printf("total found user stack id: %v: %d\n", userStackId, val)
+				fmt.Printf("total found user stack id: %v, count: %d\n", userStackId, val)
 
 				if err := objs.Stacks.Lookup(userStackId, stacks); err != nil {
 					fmt.Printf("could not found the stack: %d: error: %v", userStackId, err)
@@ -131,6 +139,7 @@ func main() {
 			} else {
 				fmt.Printf("could not found data\n")
 			}
+			fmt.Printf("------------------------------------------")
 		case <-stopper:
 			log.Println("Received signal, exiting program..")
 

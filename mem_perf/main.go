@@ -100,7 +100,7 @@ func main() {
 	}
 
 	// listen the event
-	timer := time.NewTimer(1 * time.Second)
+	timer := time.NewTicker(1 * time.Second)
 	var event Event
 	var val uint64
 	for {

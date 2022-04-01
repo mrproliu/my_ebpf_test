@@ -2,6 +2,7 @@ package main
 
 import (
 	"debug/elf"
+	"ebpf_test/tools"
 	"fmt"
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/rlimit"
@@ -23,12 +24,6 @@ var allocFuncs = []string{
 	"runtime.mallocgc",
 	"runtime.newobject",
 	"runtime.newarray",
-}
-
-type Event struct {
-	UserStackId   uint32
-	KernelStackId uint32
-	Size          uint64
 }
 
 func main() {
@@ -72,6 +67,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	processStat, err := tools.ExecutableFileProfilingStat(fmt.Sprintf("/proc/%d/exe", pid))
+	if err != nil {
+		log.Fatalf("read symbols error in file: %s: %v", fmt.Sprintf("/proc/%d/exe", pid), err)
+		return
+	}
+
 	// load bpf
 	objs := bpfObjects{}
 	err = loadBpfObjects(&objs, nil)
@@ -101,6 +102,7 @@ func main() {
 
 	// listen the event
 	timer := time.NewTicker(1 * time.Second)
+	stacks := make([]uint64, 100)
 	var event uint32
 	var val uint64
 	for {
@@ -109,6 +111,16 @@ func main() {
 			iterate := objs.StackCountMap.Iterate()
 			if iterate.Next(&event, &val) {
 				fmt.Printf("fount event: %v: %d, size: %d\n", event, val)
+				if err := objs.Stacks.Lookup(event, stacks); err != nil {
+					fmt.Printf("could not found the stack: %d: error: %v", event, err)
+					continue
+				}
+
+				symbols := processStat.FindSymbols(stacks, "MISSING")
+				for _, sym := range symbols {
+					fmt.Printf("%s\n", sym)
+				}
+				fmt.Printf("-----------")
 			} else {
 				fmt.Printf("could not found data\n")
 			}

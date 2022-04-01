@@ -177,7 +177,7 @@ func findoutAlloc(file string) (string, error) {
 	}
 
 	for _, sym := range symbols {
-		if strings.HasPrefix(sym.Name, "malloc") {
+		if sym.Name == "malloc" {
 			return sym.Name, nil
 		}
 	}

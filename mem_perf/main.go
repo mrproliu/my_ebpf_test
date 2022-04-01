@@ -151,8 +151,8 @@ func main() {
 			}
 		}
 		fmt.Printf("---------------\n")
-		if err = objs.Stacks.Lookup(event.KernelStackId, stacks); err == nil && kernelStat != nil {
-			symbols := kernelStat.FindSymbols(stacks, "MISSING")
+		if err = objs.Stacks.Lookup(event.KernelStackId, stacks); err == nil && processStat != nil {
+			symbols := processStat.FindSymbols(stacks, "MISSING")
 			fmt.Printf("kernel statck: \n")
 			for _, s := range symbols {
 				fmt.Printf("%s\n", s)

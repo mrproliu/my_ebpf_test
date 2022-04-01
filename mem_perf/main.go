@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"debug/elf"
-	"debug/gosym"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -415,41 +414,15 @@ func LdSo(bit64 bool) (string, error) {
 	return "", fmt.Errorf("could not find ld.so in %v", choices)
 }
 
-func readSymbols(file string) (*elf.File, *gosym.Table, error) {
+func readSymbols(file string) (*elf.File, []elf.Symbol, error) {
 	// Open self
 	f, err := elf.Open(file)
 	if err != nil {
 		return nil, nil, err
 	}
-	table, err := parse(f)
+	table, err := f.Symbols()
 	if err != nil {
 		return nil, nil, err
 	}
 	return f, table, err
-}
-
-func parse(f *elf.File) (*gosym.Table, error) {
-	s := f.Section(".gosymtab")
-	if s == nil {
-		return nil, fmt.Errorf("no symbles")
-	}
-	symdat, err := s.Data()
-	if err != nil {
-		f.Close()
-		return nil, fmt.Errorf("read symbols failure: %v", err)
-	}
-	pclndat, err := f.Section(".gopclntab").Data()
-	if err != nil {
-		f.Close()
-		return nil, fmt.Errorf("read gopclntab failure: %v", err)
-	}
-
-	pcln := gosym.NewLineTable(pclndat, f.Section(".text").Addr)
-	tab, err := gosym.NewTable(symdat, pcln)
-	if err != nil {
-		f.Close()
-		return nil, fmt.Errorf("parse gosymtab failure: %v", err)
-	}
-
-	return tab, nil
 }

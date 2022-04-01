@@ -101,12 +101,11 @@ func main() {
 
 	// listen the event
 	timer := time.NewTicker(1 * time.Second)
-	var event Event
+	var event uint64
 	var val uint64
 	for {
 		select {
 		case <-timer.C:
-
 			iterate := objs.StackCountMap.Iterate()
 			if iterate.Next(&event, &val) {
 				fmt.Printf("fount event: %v: %d, size: %d\n", event, val, objs.StackCountMap.ValueSize())

@@ -14,7 +14,7 @@ struct key_t {
 
 struct {
 	__uint(type, BPF_MAP_TYPE_LRU_HASH);
-	__uint(key_size, sizeof(struct key_t));
+	__uint(key_size, sizeof(u64));
 	__uint(value_size, sizeof(u64));
     __uint(max_entries, 10000);
 } stack_count_map SEC(".maps");
@@ -35,13 +35,13 @@ int malloc_enter(struct pt_regs *ctx) {
     u64 initval = 1, *valp;
 
     bpf_printk("recieve event123\n");
-    valp = bpf_map_lookup_elem(&stack_count_map, &key);
+    valp = bpf_map_lookup_elem(&stack_count_map, &key.user_stack_id);
     if (!valp) {
          bpf_printk("add new data\n");
-         bpf_map_update_elem(&stack_count_map, &key, &initval, BPF_ANY);
+         bpf_map_update_elem(&stack_count_map, &key.user_stack_id, &initval, BPF_ANY);
          return 0;
     }
-    bpf_printk("update data\n");
+    bpf_printk("update data, %d\n", valp);
     __sync_fetch_and_add(valp, 1);
 
     return 0;

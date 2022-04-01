@@ -104,9 +104,7 @@ func main() {
 	}
 
 	// listen the event
-	getpagesize := os.Getpagesize()
-	fmt.Printf("page buffer size: %d", getpagesize)
-	rd, err := perf.NewReader(objs.Counts, getpagesize)
+	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
 	if err != nil {
 		log.Fatalf("creating perf event reader: %s", err)
 	}
@@ -196,7 +194,7 @@ func allMemoryAlloc(files []string) (map[string][]string, error) {
 func findoutAlloc(file string) ([]string, error) {
 	elfFile, err := elf.Open(file)
 	if err != nil {
-		os.Exit(1)
+		return nil, fmt.Errorf("could not open file: %s, %v", file, err)
 	}
 	defer elfFile.Close()
 

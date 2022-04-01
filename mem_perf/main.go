@@ -108,18 +108,18 @@ func main() {
 
 	// listen the event
 	timer := time.NewTicker(1 * time.Second)
-	var event uint32
+	var userStackId uint32
 	var val uint64
 	stacks := make([]uint64, 100)
 	for {
 		select {
 		case <-timer.C:
 			iterate := objs.StackCountMap.Iterate()
-			if iterate.Next(&event, &val) {
-				fmt.Printf("fount event: %v: %d, size: %d\n", event, val)
+			if iterate.Next(&userStackId, &val) {
+				fmt.Printf("total found user stack id: %v: %d\n", userStackId, val)
 
-				if err := objs.Stacks.Lookup(event, stacks); err != nil {
-					fmt.Printf("could not found the stack: %d: error: %v", event, err)
+				if err := objs.Stacks.Lookup(userStackId, stacks); err != nil {
+					fmt.Printf("could not found the stack: %d: error: %v", userStackId, err)
 					continue
 				}
 
@@ -129,7 +129,7 @@ func main() {
 				}
 				fmt.Printf("-----------")
 			} else {
-				fmt.Printf("could not found data, size: %d\n", objs.StackCountMap)
+				fmt.Printf("could not found data\n")
 			}
 		case <-stopper:
 			log.Println("Received signal, exiting program..")

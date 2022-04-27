@@ -21,7 +21,7 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpfel -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf read.c -- -I$HOME/bpf/include/ -I$LINUX_HEADER -D__TARGET_ARCH_x86
 
 type Event struct {
-	Name [128]byte
+	Name [256]byte
 	Comm [128]byte
 }
 

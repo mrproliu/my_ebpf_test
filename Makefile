@@ -50,6 +50,7 @@ container-all: build-base-container
 		-v "${REPODIR}":/ebpf -w /ebpf --env MAKEFLAGS \
 		--env CFLAGS="-fdebug-prefix-map=/ebpf=." \
 		--env HOME="/ebpf" \
+		--env LINUX_HEADER=`(/usr/include/$(uname -m)*` \
 		"ebpf_test:latest" \
 		make all
 

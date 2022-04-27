@@ -18,7 +18,7 @@ FROM golang:1.17
 
 RUN apt update && \
     apt install -y libbpf-dev lsb-release wget software-properties-common && \
-    mkdir -p /usr/include/asm /usr/include/bits && \
+    mkdir -p /usr/include/asm /usr/include/bits /usr/include/sys && \
     cp -r /usr/include/$(uname -m)*/asm/* /usr/include/asm && \
     cp -r /usr/include/$(uname -m)*/bits/* /usr/include/bits && \
     cp -r /usr/include/asm-generic/* /usr/include/asm && \
@@ -27,3 +27,5 @@ RUN apt update && \
     ./llvm.sh 13
 
 ENV PATH="${PATH}:/usr/lib/llvm-13/bin"
+
+ENV LINUX_HEADER=$(echo /usr/include/$(uname -m)*)

@@ -16,8 +16,9 @@ struct {
 SEC("kprobe/do_sys_open")
 int do_sys_open(struct pt_regs *ctx) {
     struct key_t key = {};
-    bpf_core_read_user_str(&key.name, sizeof(key.name),
-                       ctx, rdi);
+    long ad = BPF_CORE_READ(ctx, rdi);
+    bpf_probe_read_user_str(&key.name, sizeof(key.name),
+                       (void *)(long)ad);
     bpf_get_current_comm(&key.comm, sizeof(key.comm));
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));

@@ -13,7 +13,7 @@ struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
 } counts SEC(".maps");
 
-SEC("kprobe/sys_open")
+SEC("kprobe/do_sys_open")
 int do_sys_open(struct pt_regs *ctx) {
     struct key_t key = {};
     bpf_probe_read_user_str(&key.name, sizeof(key.name),

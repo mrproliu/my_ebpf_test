@@ -9,7 +9,7 @@ int do_perf_event(struct pt_regs *ctx) {
     char filename[100];
     bpf_probe_read(&filename, sizeof(filename),
                        (void *)(long)PT_REGS_PARM1(ctx));
-//    bpf_trace_printk("executing , %s\n", filename);
+    bpf_trace_printk("executing , %s\n", filename);
     return 0;
 }
 

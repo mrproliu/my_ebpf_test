@@ -18,7 +18,7 @@ import (
 )
 
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
-//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpfel -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf read.c -- -I$HOME/bpf/include/ -I$LINUX_HEADER -D__TARGET_ARCH_x86
+//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpfel -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf read.c -- -I$HOME/bpf/include/ -I$LINUX_HEADER -D__TARGET_ARCH_x86 -D__KERNEL__
 
 type Event struct {
 	Name [256]byte

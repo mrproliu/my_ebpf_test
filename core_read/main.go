@@ -13,7 +13,7 @@ import (
 )
 
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
-//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf read.c -- -I$HOME/bpf/include/ -I/usr/include
+//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target=amd64 -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf read.c -- -I$HOME/bpf/include/ -I/usr/include
 
 func main() {
 	stopper := make(chan os.Signal, 1)

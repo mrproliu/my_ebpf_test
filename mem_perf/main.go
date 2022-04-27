@@ -22,8 +22,6 @@ import (
 
 var allocFuncs = []string{
 	"runtime.mallocgc",
-	"runtime.newobject",
-	"runtime.newarray",
 	"malloc",
 	"je_calloc",
 	"calloc",

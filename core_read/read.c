@@ -7,7 +7,9 @@
 char __license[] SEC("license") = "Dual MIT/GPL";
 
 SEC("kprobe/sys_execve")
-int do_perf_event(struct pt_regs *ctx, const char *filename) {
-    bpf_printk("executing , %d\n", &filename);
+int do_perf_event(struct pt_regs *ctx) {
+    char *arg[128];
+    bpf_probe_read(arg, sizeof(arg), (void *)ctx->rdi);
+    bpf_printk("executing , %d\n", &arg);
     return 0;
 }

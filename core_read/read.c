@@ -16,7 +16,7 @@ struct {
 SEC("kprobe/do_sys_open")
 int do_sys_open(struct pt_regs *ctx) {
     struct key_t key = {};
-    bpf_probe_read_user_str(&key.name, sizeof(key.name),
+    bpf_core_read_user_str(&key.name, sizeof(key.name),
                        (void *)(long)BPF_CORE_READ(ctx, di));
     bpf_get_current_comm(&key.comm, sizeof(key.comm));
 

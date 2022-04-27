@@ -46,7 +46,7 @@ build-base-container:
 
 # Build all ELF binaries using a containerized LLVM toolchain.
 container-all: build-base-container
-	export LINUX_HEADER=`/usr/include/$(uname -m)*`
+	export LINUX_HEADER=/usr/include/$(uname -m)*
 	${CONTAINER_ENGINE} run --rm ${CONTAINER_RUN_ARGS} \
 		-v "${REPODIR}":/ebpf -w /ebpf --env MAKEFLAGS \
 		--env CFLAGS="-fdebug-prefix-map=/ebpf=." \

@@ -36,7 +36,6 @@
 #define __HEADERS__
 
 #include <stddef.h>
-#include <string.h>
 #include <linux/bpf.h>
 #include <linux/ptrace.h>
 #include <bpf/bpf_helpers.h>

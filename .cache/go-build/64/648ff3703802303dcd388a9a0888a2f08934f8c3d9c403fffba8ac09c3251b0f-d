@@ -1,0 +1,10 @@
+./btf.go
+./btf_types.go
+./btf_types_string.go
+./core.go
+./doc.go
+./ext_info.go
+./info.go
+./strings.go
+./syscalls.go
+./types.go

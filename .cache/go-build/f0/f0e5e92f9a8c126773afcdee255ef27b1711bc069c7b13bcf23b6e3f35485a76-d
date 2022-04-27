@@ -1,0 +1,6 @@
+./doc.go
+./fd.go
+./ptr.go
+./ptr_64.go
+./syscall.go
+./types.go

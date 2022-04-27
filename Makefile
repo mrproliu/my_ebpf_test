@@ -41,20 +41,23 @@ TARGETS := \
 
 .DEFAULT_TARGET = container-all
 
+build-base-container:
+	${CONTAINER_ENGINE} build -t ebpf_test:latest . -f docker/Dockerfile.base
+
 # Build all ELF binaries using a containerized LLVM toolchain.
-container-all:
+container-all: build-base-container
 	${CONTAINER_ENGINE} run --rm ${CONTAINER_RUN_ARGS} \
 		-v "${REPODIR}":/ebpf -w /ebpf --env MAKEFLAGS \
 		--env CFLAGS="-fdebug-prefix-map=/ebpf=." \
 		--env HOME="/ebpf" \
-		"${IMAGE}:${VERSION}" \
+		"ebpf_test:latest" \
 		make all
 
 # (debug) Drop the user into a shell inside the container as root.
 container-shell:
 	${CONTAINER_ENGINE} run --rm -ti \
 		-v "${REPODIR}":/ebpf -w /ebpf \
-		"${IMAGE}:${VERSION}"
+		"ebpf_test:latest"
 
 clean:
 	-$(RM) testdata/*.elf

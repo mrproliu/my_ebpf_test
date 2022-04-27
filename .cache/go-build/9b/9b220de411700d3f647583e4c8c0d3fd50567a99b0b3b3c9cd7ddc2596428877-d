@@ -1,0 +1,5 @@
+./compile.go
+./doc.go
+./main.go
+./output.go
+./tools.go

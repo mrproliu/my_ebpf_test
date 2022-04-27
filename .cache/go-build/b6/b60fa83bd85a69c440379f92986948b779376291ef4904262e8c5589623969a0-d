@@ -1,0 +1,12 @@
+./attachtype_string.go
+./collection.go
+./doc.go
+./elf_reader.go
+./info.go
+./linker.go
+./map.go
+./marshalers.go
+./prog.go
+./syscalls.go
+./types.go
+./types_string.go

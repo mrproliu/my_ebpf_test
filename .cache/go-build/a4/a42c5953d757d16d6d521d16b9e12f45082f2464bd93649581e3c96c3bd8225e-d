@@ -1,0 +1,14 @@
+./align.go
+./cpu.go
+./elf.go
+./endian.go
+./errors.go
+./fd.go
+./feature.go
+./io.go
+./pinning.go
+./ptr.go
+./ptr_64.go
+./syscall.go
+./syscall_string.go
+./version.go

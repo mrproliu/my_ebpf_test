@@ -28,4 +28,4 @@ RUN apt update && \
 
 ENV PATH="${PATH}:/usr/lib/llvm-13/bin"
 
-RUN LINUX_HEADER=$(echo /usr/include/$(uname -m)*)
+RUN export LINUX_HEADER=$(echo /usr/include/$(uname -m)*)

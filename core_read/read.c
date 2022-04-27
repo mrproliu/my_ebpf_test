@@ -5,8 +5,8 @@
 char __license[] SEC("license") = "Dual MIT/GPL";
 
 struct key_t {
-    char name[100];
-    char comm[100];
+    char name[128];
+    char comm[128];
 };
 
 struct {

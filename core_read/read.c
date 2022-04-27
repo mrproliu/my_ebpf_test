@@ -14,7 +14,7 @@ struct {
 } counts SEC(".maps");
 
 SEC("kprobe/sys_open")
-int do_perf_event(struct pt_regs *ctx) {
+int do_sys_open(struct pt_regs *ctx) {
     struct key_t key = {};
     bpf_probe_read_user_str(&key.name, sizeof(key.name),
                        (void *)(long)PT_REGS_PARM1(ctx));

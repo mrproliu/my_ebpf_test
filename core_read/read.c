@@ -23,8 +23,8 @@ struct {
 SEC("kprobe/sys_execve")
 int do_sys_execve(struct pt_regs *ctx) {
     struct task_struct *task = (struct task_struct *) bpf_get_current_task();
-    int pid = task->pid;
-    struct key_t key = {.pid = pid};
+    struct key_t key = {};
+    bpf_probe_read(&key.pid, sizeof(key.pid), &task->pid);
     bpf_probe_read_user_str(&key.name, sizeof(key.name),
                     (void *)(long)PT_REGS_PARM1(ctx));
     bpf_get_current_comm(&key.comm, sizeof(key.comm));

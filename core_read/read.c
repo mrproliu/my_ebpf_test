@@ -21,7 +21,7 @@ int do_sys_execve(struct pt_regs *ctx) {
 //    bpf_probe_read_user_str(&key.name, sizeof(key.name),
 //                       (void *)(long)ad);
     const char *fp = (char *)PT_REGS_PARM1(ctx);
-    bpf_probe_read_user_str(&key.name, sizeof(filename), fp);
+    bpf_probe_read_user_str(&key.name, sizeof(key.name), fp);
 //    bpf_probe_read_user_str(&key.name, sizeof(key.name),
 //                    (void *)(long)PT_REGS_PARM1(ctx));
     bpf_get_current_comm(&key.comm, sizeof(key.comm));

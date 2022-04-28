@@ -13,7 +13,7 @@ struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
 } counts SEC(".maps");
 
-SEC("kprobe/do_sys_open")
+SEC("kprobe/sys_execve")
 int do_sys_open(struct pt_regs *ctx) {
     struct key_t key = {};
 //    CO-RE way to read
@@ -21,7 +21,7 @@ int do_sys_open(struct pt_regs *ctx) {
 //    bpf_probe_read_user_str(&key.name, sizeof(key.name),
 //                       (void *)(long)ad);
     bpf_probe_read_user_str(&key.name, sizeof(key.name),
-                    (void *)(long)PT_REGS_PARM2(ctx, di));
+                    (void *)(long)PT_REGS_PARM2(ctx));
     bpf_get_current_comm(&key.comm, sizeof(key.comm));
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));

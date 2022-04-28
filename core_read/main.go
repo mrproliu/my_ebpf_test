@@ -45,7 +45,7 @@ func main() {
 	// pre-compiled program. Each time the kernel function enters, the program
 	// will increment the execution counter by 1. The read loop below polls this
 	// map value once per second.
-	kp, err := link.Kprobe("execve", objs.DoSysOpen)
+	kp, err := link.Kprobe("sys_execve", objs.DoSysExecve)
 	if err != nil {
 		log.Fatalf("opening kprobe: %s", err)
 	}

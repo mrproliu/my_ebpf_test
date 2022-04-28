@@ -23,6 +23,7 @@ import (
 type Event struct {
 	Name [256]byte
 	Comm [128]byte
+	Res  int32
 }
 
 func main() {
@@ -85,7 +86,7 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("name: %s, comm: %s\n", event.Name, event.Comm)
+		fmt.Printf("name: %s, comm: %s, res: %d\n", event.Name, event.Comm, event.Res)
 	}
 
 }

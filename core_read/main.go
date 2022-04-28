@@ -21,6 +21,7 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpfel -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf read.c -- -I$HOME/bpf/include/ -D__TARGET_ARCH_x86
 
 type Event struct {
+	Pid  int32
 	Name [256]byte
 	Comm [128]byte
 }
@@ -85,6 +86,6 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("name: %s, comm: %s\n", event.Name, event.Comm)
+		fmt.Printf("pid: %d, name: %s, comm: %s\n", event.Pid, event.Name, event.Comm)
 	}
 }

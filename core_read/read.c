@@ -5,8 +5,15 @@
 char __license[] SEC("license") = "Dual MIT/GPL";
 
 struct key_t {
+    __u32 pid;
     char name[256];
     char comm[128];
+};
+
+typedef int pid_t;
+struct task_struct {
+	pid_t pid;
+    pid_t tgid;
 };
 
 struct {
@@ -15,7 +22,9 @@ struct {
 
 SEC("kprobe/sys_execve")
 int do_sys_execve(struct pt_regs *ctx) {
-    struct key_t key = {};
+    struct task_struct *task = (struct task_struct *) bpf_get_current_task();
+    int pid = task->pid;
+    struct key_t key = {.pid = pid};
     bpf_probe_read_user_str(&key.name, sizeof(key.name),
                     (void *)(long)PT_REGS_PARM1(ctx));
     bpf_get_current_comm(&key.comm, sizeof(key.comm));

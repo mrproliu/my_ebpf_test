@@ -23,7 +23,6 @@ import (
 type Event struct {
 	Name [256]byte
 	Comm [128]byte
-	Res  int32
 }
 
 func main() {
@@ -81,12 +80,11 @@ func main() {
 		}
 
 		// Parse the perf event entry into an Event structure.
-		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.BigEndian, &event); err != nil {
+		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
 			log.Printf("parsing perf event: %s", err)
 			continue
 		}
 
-		fmt.Printf("name: %s, comm: %s, res: %d\n", event.Name, event.Comm, event.Res)
+		fmt.Printf("name: %s, comm: %s\n", event.Name, event.Comm)
 	}
-
 }

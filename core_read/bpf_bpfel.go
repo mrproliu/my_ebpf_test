@@ -54,7 +54,7 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
-	DoSysOpen *ebpf.ProgramSpec `ebpf:"do_sys_open"`
+	DoSysExecve *ebpf.ProgramSpec `ebpf:"do_sys_execve"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
@@ -96,12 +96,12 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
-	DoSysOpen *ebpf.Program `ebpf:"do_sys_open"`
+	DoSysExecve *ebpf.Program `ebpf:"do_sys_execve"`
 }
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
-		p.DoSysOpen,
+		p.DoSysExecve,
 	)
 }
 

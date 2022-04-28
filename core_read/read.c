@@ -5,15 +5,15 @@
 char __license[] SEC("license") = "Dual MIT/GPL";
 
 struct key_t {
-    __u32 pid;
+    int pid;
     char name[256];
     char comm[128];
 };
 
 typedef int pid_t;
 struct task_struct {
-	pid_t pid;
-    pid_t tgid;
+	int pid;
+    int tgid;
 };
 
 struct {

@@ -15,7 +15,7 @@ typedef int pid_t;
 struct task_struct {
 	int pid;
     int tgid;
-} __attribute__((preserve_access_index));
+};
 
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);

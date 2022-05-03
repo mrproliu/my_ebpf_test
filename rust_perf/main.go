@@ -175,7 +175,7 @@ func readSymbols(pid int, file string) *Elf {
 		}
 		addrStartInx = startAddr
 		found = true
-		fmt.Printf("found the execute file in map file start addr: %d, original: %s, map line: %s\n", addrStartInx, addrInfo[0], info)
+		fmt.Printf("found the execute file in map file start addr: %d, original: %s, map line: %s, realPath: %s\n", addrStartInx, addrInfo[0], info, realPath)
 	}
 	if !found {
 		log.Fatal("could not found the execute file map start addr")

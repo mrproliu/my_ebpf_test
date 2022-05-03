@@ -158,7 +158,7 @@ func readSymbols(pid int, file string) *Elf {
 	}
 	mapFile, _ := os.Open(fmt.Sprintf("/proc/%d/maps", pid))
 	scanner := bufio.NewScanner(mapFile)
-	var addrStartInx int64
+	var addrStartInx uint64
 	var found = false
 	for scanner.Scan() {
 		info := strings.Split(scanner.Text(), " ")
@@ -169,7 +169,7 @@ func readSymbols(pid int, file string) *Elf {
 			continue
 		}
 		addrInfo := strings.Split(info[0], "-")
-		startAddr, err := strconv.ParseInt(addrInfo[0], 16, 10)
+		startAddr, err := strconv.ParseUint(addrInfo[0], 16, 10)
 		if err != nil {
 			log.Fatal(err)
 		}

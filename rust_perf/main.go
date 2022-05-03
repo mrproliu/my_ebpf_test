@@ -195,7 +195,7 @@ func readSymbols(pid int, file string) *Elf {
 	for _, sym := range symbols {
 		d = append(d, &Symbol{
 			Name: sym.Name,
-			Addr: uint64(addrStartInx) + sym.Value,
+			Addr: addrStartInx + sym.Value,
 		})
 	}
 	return &Elf{symbols: d}
@@ -212,12 +212,14 @@ type Symbol struct {
 // FindSymbolName by address
 func (i *Elf) FindSymbolName(address uint64) string {
 	symbols := i.symbols
+	fmt.Printf("need to found addr: %d\n", address)
 
 	start := 0
 	end := len(symbols) - 1
 	for start < end {
 		mid := start + (end-start)/2
-		result := int64(address) - int64(symbols[mid].Addr)
+		result := address - symbols[mid].Addr
+		fmt.Printf("current mid inx: %d, mid addr: %d\n", mid, symbols[mid].Addr)
 
 		if result < 0 {
 			end = mid

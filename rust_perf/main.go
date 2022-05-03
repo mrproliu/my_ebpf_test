@@ -165,6 +165,7 @@ func readSymbols(pid int, file string) *Elf {
 		if len(info) < 6 {
 			continue
 		}
+		fmt.Printf("info[5] = %s, info[1][2] = %s\n", info[5], info[1][2])
 		if !(info[5] == realPath && info[1][2] == 'x') {
 			continue
 		}

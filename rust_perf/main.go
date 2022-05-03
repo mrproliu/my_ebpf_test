@@ -230,7 +230,7 @@ func (i *Elf) FindSymbolName(address uint64) string {
 		}
 	}
 
-	fmt.Printf("ready to last found: start addr: %d, current addr: %d, need addr: %d",
+	fmt.Printf("ready to last found: start addr: %d, current addr: %d, need addr: %d\n",
 		symbols[start-1].Addr, symbols[start].Addr, address)
 	if start >= 1 && symbols[start-1].Addr < address && address < symbols[start].Addr {
 		return symbols[start-1].Name

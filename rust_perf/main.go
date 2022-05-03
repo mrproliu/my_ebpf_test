@@ -4,7 +4,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"debug/elf"
 	"encoding/binary"
@@ -18,7 +17,6 @@ import (
 	"os/signal"
 	"runtime"
 	"strconv"
-	"strings"
 	"syscall"
 	"time"
 )
@@ -152,36 +150,47 @@ func main() {
 }
 
 func readSymbols(pid int, file string) *Elf {
-	realPath, err := os.Readlink(file)
-	if err != nil {
-		log.Fatal(err)
-	}
-	mapFile, _ := os.Open(fmt.Sprintf("/proc/%d/maps", pid))
-	scanner := bufio.NewScanner(mapFile)
-	var addrStartInx uint64
-	var found = false
-	for scanner.Scan() {
-		info := strings.Split(scanner.Text(), " ")
-		if len(info) < 6 {
-			continue
-		}
-		fmt.Printf("data: %v\n", info)
-		if !(info[5] == realPath && info[1][2] == 'x') {
-			continue
-		}
-		addrInfo := strings.Split(info[0], "-")
-		startAddr, err := strconv.ParseUint(addrInfo[0], 16, 64)
-		if err != nil {
-			log.Fatal(err)
-		}
-		addrStartInx = startAddr
-		found = true
-		fmt.Printf("found the execute file in map file start addr: %d, original: %s, map line: %s, realPath: %s\n", addrStartInx, addrInfo[0], info, realPath)
-		break
-	}
-	if !found {
-		log.Fatal("could not found the execute file map start addr")
-	}
+	// TODO using maps file to read(/proc/{pid}/maps)
+	//var addrStartInx int64 = 93966328557568
+	//var offset int64 = 20608
+	//var symbolOffset = needToFind - addrStartInx + offset
+	//realPath, err := os.Readlink(file)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//mapFile, _ := os.Open(fmt.Sprintf("/proc/%d/maps", pid))
+	//scanner := bufio.NewScanner(mapFile)
+	//var addrStartInx uint64
+	//var found = true
+	//for scanner.Scan() {
+	//	info := strings.Split(scanner.Text(), " ")
+	//	if len(info) < 6 {
+	//		continue
+	//	}
+	//	if info[5] != realPath && info[1][2] != 'x' {
+	//		continue
+	//	}
+	//	addrInfo := strings.Split(info[0], "-")
+	//	startAddr, err := strconv.ParseUint(addrInfo[0], 16, 64)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//	addrStartInx = startAddr
+	//	found = true
+	//	fmt.Printf("found the execute file in map file start addr: %d, original: %s, map line: %s, realPath: %s\n", addrStartInx, addrInfo[0], info, realPath)
+	//}
+	//if !found {
+	//	log.Fatal("could not found the execute file map start addr")
+	//}
+	// and name not start with
+	//mapname[0] && !(
+	//	STARTS_WITH(mapname, "//anon") ||
+	//		STARTS_WITH(mapname, "/dev/zero") ||
+	//		STARTS_WITH(mapname, "/anon_hugepage") ||
+	//		STARTS_WITH(mapname, "[stack") ||
+	//		STARTS_WITH(mapname, "/SYSV") ||
+	//		STARTS_WITH(mapname, "[heap]") ||
+	//		STARTS_WITH(mapname, "[vsyscall]"));
 
 	elfFile, err := elf.Open(file)
 	if err != nil {
@@ -199,7 +208,7 @@ func readSymbols(pid int, file string) *Elf {
 	for _, sym := range symbols {
 		d = append(d, &Symbol{
 			Name: sym.Name,
-			Addr: addrStartInx + sym.Value,
+			Addr: sym.Value,
 			Real: sym.Value,
 		})
 	}
@@ -218,6 +227,10 @@ type Symbol struct {
 // FindSymbolName by address
 func (i *Elf) FindSymbolName(address uint64) string {
 	symbols := i.symbols
+	var addrStartInx int64 = 93966328557568
+	var offset int64 = 20608
+	address = uint64(int64(address) - addrStartInx + offset)
+
 	fmt.Printf("need to found addr: %d\n", address)
 
 	start := 0

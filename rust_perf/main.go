@@ -152,34 +152,34 @@ func main() {
 }
 
 func readSymbols(pid int, file string) *Elf {
-	realPath, err := os.Readlink(file)
-	if err != nil {
-		log.Fatal(err)
-	}
-	mapFile, _ := os.Open(fmt.Sprintf("/proc/%d/maps", pid))
-	scanner := bufio.NewScanner(mapFile)
-	var addrStartInx uint64
-	var found = false
-	for scanner.Scan() {
-		info := strings.Split(scanner.Text(), " ")
-		if len(info) < 6 {
-			continue
-		}
-		if info[5] != realPath && info[1][2] != 'x' {
-			continue
-		}
-		addrInfo := strings.Split(info[0], "-")
-		startAddr, err := strconv.ParseUint(addrInfo[0], 16, 64)
-		if err != nil {
-			log.Fatal(err)
-		}
-		addrStartInx = startAddr
-		found = true
-		fmt.Printf("found the execute file in map file start addr: %d, original: %s, map line: %s, realPath: %s\n", addrStartInx, addrInfo[0], info, realPath)
-	}
-	if !found {
-		log.Fatal("could not found the execute file map start addr")
-	}
+	//realPath, err := os.Readlink(file)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//mapFile, _ := os.Open(fmt.Sprintf("/proc/%d/maps", pid))
+	//scanner := bufio.NewScanner(mapFile)
+	var addrStartInx uint64 = 93966328557568
+	//var found = true
+	//for scanner.Scan() {
+	//	info := strings.Split(scanner.Text(), " ")
+	//	if len(info) < 6 {
+	//		continue
+	//	}
+	//	if info[5] != realPath && info[1][2] != 'x' {
+	//		continue
+	//	}
+	//	addrInfo := strings.Split(info[0], "-")
+	//	startAddr, err := strconv.ParseUint(addrInfo[0], 16, 64)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//	addrStartInx = startAddr
+	//	found = true
+	//	fmt.Printf("found the execute file in map file start addr: %d, original: %s, map line: %s, realPath: %s\n", addrStartInx, addrInfo[0], info, realPath)
+	//}
+	//if !found {
+	//	log.Fatal("could not found the execute file map start addr")
+	//}
 
 	elfFile, err := elf.Open(file)
 	if err != nil {

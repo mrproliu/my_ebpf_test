@@ -169,7 +169,7 @@ func readSymbols(pid int, file string) *Elf {
 			continue
 		}
 		addrInfo := strings.Split(info[0], "-")
-		startAddr, err := strconv.ParseUint(addrInfo[0], 16, 10)
+		startAddr, err := strconv.ParseUint(addrInfo[0], 16, 64)
 		if err != nil {
 			log.Fatal(err)
 		}

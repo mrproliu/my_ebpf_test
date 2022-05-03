@@ -220,10 +220,10 @@ func (i *Elf) FindSymbolName(address uint64) string {
 		mid := start + (end-start)/2
 		fmt.Printf("current mid inx: %d, mid addr: %d, result: %d\n", mid, symbols[mid].Addr)
 
-		if address > symbols[mid].Addr {
+		if address < symbols[mid].Addr {
 			fmt.Printf("mid -> end\n")
 			end = mid
-		} else if address < symbols[mid].Addr {
+		} else if address > symbols[mid].Addr {
 			fmt.Printf("mid -> start\n")
 			start = mid + 1
 		} else {

@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"sort"
 	"strconv"
 	"syscall"
 	"time"
@@ -203,15 +204,23 @@ func readSymbols(pid int, file string) *Elf {
 	if err != nil {
 		os.Exit(1)
 	}
+	dysymbols, err := elfFile.DynamicSymbols()
+	if err != nil {
+		os.Exit(1)
+	}
+	symbols = append(symbols, dysymbols...)
 
 	d := make([]*Symbol, 0)
 	for _, sym := range symbols {
 		d = append(d, &Symbol{
 			Name: sym.Name,
 			Addr: sym.Value,
-			Real: sym.Value,
+			Size: sym.Size,
 		})
 	}
+	sort.SliceStable(d, func(i, j int) bool {
+		return d[i].Addr < d[j].Addr
+	})
 	return &Elf{symbols: d}
 }
 
@@ -221,7 +230,7 @@ type Elf struct {
 type Symbol struct {
 	Name string
 	Addr uint64
-	Real uint64
+	Size uint64
 }
 
 // FindSymbolName by address
@@ -232,24 +241,41 @@ func (i *Elf) FindSymbolName(address uint64) string {
 	fmt.Printf("need to found addr: %d\n", address)
 	address = uint64(int64(address) - addrStartInx + offset)
 
-	start := 0
-	end := len(symbols) - 1
-	for start < end {
-		mid := start + (end-start)/2
-		result := int64(address) - int64(symbols[mid].Addr)
-
-		if result < 0 {
-			end = mid
-		} else if result > 0 {
-			start = mid + 1
-		} else {
-			return symbols[mid].Name
+	// all symbol need to bigger them symbol offset
+	for i, sym := range symbols {
+		if int64(sym.Addr) > int64(address) {
+			symbols = symbols[:i]
+			break
 		}
 	}
 
-	if start >= 1 && symbols[start-1].Addr < address && address < symbols[start].Addr {
-		return symbols[start-1].Name
+	var lastSym string
+	for i := len(symbols) - 1; i >= 0; i-- {
+		if int64(address) < int64(symbols[i].Addr)+int64(symbols[i].Size) {
+			ym := symbols[i]
+			fmt.Printf("found symbol: %v\n", ym)
+			lastSym = ym.Name
+		}
 	}
-
-	return ""
+	return lastSym
+	//start := 0
+	//end := len(symbols) - 1
+	//for start < end {
+	//	mid := start + (end-start)/2
+	//	result := int64(address) - int64(symbols[mid].Addr)
+	//
+	//	if result < 0 {
+	//		end = mid
+	//	} else if result > 0 {
+	//		start = mid + 1
+	//	} else {
+	//		return symbols[mid].Name
+	//	}
+	//}
+	//
+	//if start >= 1 && symbols[start-1].Addr < address && address < symbols[start].Addr {
+	//	return symbols[start-1].Name
+	//}
+	//
+	//return ""
 }

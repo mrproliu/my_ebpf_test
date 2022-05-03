@@ -235,6 +235,7 @@ func (i *Elf) FindSymbolName(address uint64) string {
 		"symbols[start-1].Addr: %v, address < symbols[start].Addr: %v\n",
 		symbols[start-1].Addr, symbols[start].Addr, address, start >= 1, symbols[start-1].Addr < address, address < symbols[start].Addr)
 	if start >= 1 && symbols[start-1].Addr < address && address < symbols[start].Addr {
+		fmt.Printf("-----------------found symbol: %s\n", symbols[start-1].Name)
 		return symbols[start-1].Name
 	}
 

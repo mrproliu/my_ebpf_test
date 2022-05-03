@@ -237,7 +237,7 @@ type Symbol struct {
 func (i *Elf) FindSymbolName(address uint64) string {
 	symbols := i.symbols
 	var addrStartInx int64 = 93966328557568
-	var offset int64 = 20608
+	var offset int64 = 20480
 	fmt.Printf("need to found addr: %d\n", address)
 	address = uint64(int64(address) - addrStartInx + offset)
 

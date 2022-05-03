@@ -238,7 +238,6 @@ func (i *Elf) FindSymbolName(address uint64) string {
 	symbols := i.symbols
 	var addrStartInx int64 = 93966328557568
 	var offset int64 = 20480
-	fmt.Printf("need to found addr: %d\n", address)
 	address = uint64(int64(address) - addrStartInx + offset)
 
 	// all symbol need to bigger them symbol offset
@@ -253,7 +252,6 @@ func (i *Elf) FindSymbolName(address uint64) string {
 	for i := len(symbols) - 1; i >= 0; i-- {
 		if int64(address) < int64(symbols[i].Addr)+int64(symbols[i].Size) {
 			ym := symbols[i]
-			fmt.Printf("found symbol: %v\n", ym)
 			lastSym = ym.Name
 		}
 	}

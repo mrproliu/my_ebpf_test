@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"debug/elf"
 	"encoding/binary"
@@ -17,6 +18,7 @@ import (
 	"os/signal"
 	"runtime"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -84,7 +86,7 @@ func main() {
 	}
 	defer rd.Close()
 
-	elfFile := readSymbols(fmt.Sprintf("/proc/%d/exe", pid))
+	elfFile := readSymbols(pid, fmt.Sprintf("/proc/%d/exe", pid))
 	if err != nil {
 		log.Fatalf("read symbols error: %v", err)
 		return
@@ -149,7 +151,35 @@ func main() {
 	}
 }
 
-func readSymbols(file string) *Elf {
+func readSymbols(pid int, file string) *Elf {
+	realPath, err := os.Readlink(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+	mapFile, _ := os.Open(fmt.Sprintf("/proc/%d/maps", pid))
+	scanner := bufio.NewScanner(mapFile)
+	var addrStartInx int64
+	var found = false
+	for scanner.Scan() {
+		info := strings.Split(scanner.Text(), " ")
+		if len(info) < 6 {
+			continue
+		}
+		if info[5] != realPath && info[1][2] != 'x' {
+			continue
+		}
+		addrInfo := strings.Split(info[0], "-")
+		startAddr, err := strconv.ParseInt(addrInfo[0], 16, 10)
+		if err != nil {
+			log.Fatal(err)
+		}
+		addrStartInx = startAddr
+		found = true
+	}
+	if !found {
+		log.Fatal("could not found the execute file map start addr")
+	}
+
 	elfFile, err := elf.Open(file)
 	if err != nil {
 		os.Exit(1)
@@ -166,7 +196,7 @@ func readSymbols(file string) *Elf {
 	for _, sym := range symbols {
 		d = append(d, &Symbol{
 			Name: sym.Name,
-			Addr: sym.Value,
+			Addr: uint64(addrStartInx) + sym.Value,
 		})
 	}
 	return &Elf{symbols: d}

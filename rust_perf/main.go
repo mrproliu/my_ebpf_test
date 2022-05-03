@@ -236,10 +236,11 @@ func (i *Elf) FindSymbolName(address uint64) string {
 	end := len(symbols) - 1
 	for start < end {
 		mid := start + (end-start)/2
+		result := address - symbols[mid].Addr
 
-		if address < symbols[mid].Addr {
+		if result < 0 {
 			end = mid
-		} else if address > symbols[mid].Addr {
+		} else if result > 0 {
 			start = mid + 1
 		} else {
 			return symbols[mid].Name

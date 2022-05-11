@@ -1,15 +1,9 @@
-
 #[inline(never)]
-fn sqrt1() {
+fn sqrt() {
     let positive = 4.0_f64;
     loop {
         _ = positive.sqrt();
     }
-}
-
-#[inline(never)]
-fn sqrt() {
-    sqrt1()
 }
 
 #[inline(never)]

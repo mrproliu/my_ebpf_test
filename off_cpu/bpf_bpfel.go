@@ -54,7 +54,7 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
-	BpfSockSendmsg *ebpf.ProgramSpec `ebpf:"bpf_sock_sendmsg"`
+	DoStackSwitch *ebpf.ProgramSpec `ebpf:"do_stack_switch"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
@@ -63,6 +63,7 @@ type bpfProgramSpecs struct {
 type bpfMapSpecs struct {
 	Counts *ebpf.MapSpec `ebpf:"counts"`
 	Stacks *ebpf.MapSpec `ebpf:"stacks"`
+	Starts *ebpf.MapSpec `ebpf:"starts"`
 }
 
 // bpfObjects contains all objects after they have been loaded into the kernel.
@@ -86,12 +87,14 @@ func (o *bpfObjects) Close() error {
 type bpfMaps struct {
 	Counts *ebpf.Map `ebpf:"counts"`
 	Stacks *ebpf.Map `ebpf:"stacks"`
+	Starts *ebpf.Map `ebpf:"starts"`
 }
 
 func (m *bpfMaps) Close() error {
 	return _BpfClose(
 		m.Counts,
 		m.Stacks,
+		m.Starts,
 	)
 }
 
@@ -99,12 +102,12 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
-	BpfSockSendmsg *ebpf.Program `ebpf:"bpf_sock_sendmsg"`
+	DoStackSwitch *ebpf.Program `ebpf:"do_stack_switch"`
 }
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
-		p.BpfSockSendmsg,
+		p.DoStackSwitch,
 	)
 }
 

@@ -54,7 +54,7 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
-	BpfBlkAccountIoStart *ebpf.ProgramSpec `ebpf:"bpf_blk_account_io_start"`
+	BpfSockSendmsg *ebpf.ProgramSpec `ebpf:"bpf_sock_sendmsg"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
@@ -99,12 +99,12 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
-	BpfBlkAccountIoStart *ebpf.Program `ebpf:"bpf_blk_account_io_start"`
+	BpfSockSendmsg *ebpf.Program `ebpf:"bpf_sock_sendmsg"`
 }
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
-		p.BpfBlkAccountIoStart,
+		p.BpfSockSendmsg,
 	)
 }
 

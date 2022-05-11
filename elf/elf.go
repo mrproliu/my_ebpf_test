@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
+	"sort"
 	"strings"
 	"unsafe"
 )
@@ -15,24 +17,66 @@ func main() {
 	//file := ReadElfFile("/Users/hanliu/Documents/go_workspace/github/tetrate/tctl/build/bin/linux/amd64/tctl")
 	//fmt.Printf("%v", file)
 
-	findName := "Reconcile"
+	//findName := "Reconcile"
+	mapFileContentRegex := regexp.MustCompile("(?P<StartAddr>[a-g\\d]+)\\-(?P<EndAddr>[a-g\\d]+)\\s(?P<Perm>[^\\s]+)" +
+		"\\s(?P<Offset>\\d+)\\s\\d+\\:\\d+\\s\\d+\\s+(?P<Name>[^\\n]+)")
+	submatch := mapFileContentRegex.FindStringSubmatch("55763da22000-55763da27000 r--p 00000000 08:01 4065067                    /home/liuhan/projects/my_ebpf_test/rust_perf/sqrt")
+	fmt.Printf("%v", submatch)
 
-	file, err := elf.Open("/Users/hanliu/Documents/go_workspace/github/tetrate/tctl/build/bin/linux/amd64/tctl")
+	file, err := elf.Open("/Users/hanliu/Documents/go_workspace/mytest/ebpf_test/rust_perf/sqrt")
 	if err != nil {
 		os.Exit(1)
 	}
 	defer file.Close()
 
-	symbols, err := file.Symbols()
-	if err != nil {
-		os.Exit(1)
-	}
-
-	for _, sym := range symbols {
-		if strings.Contains(sym.Name, findName) {
-			fmt.Printf("%d: %s\n", sym.Value, sym.Name)
+	for _, sec := range file.Sections {
+		secHeader := sec.SectionHeader
+		secName := secHeader.Name
+		if secName == ".text" {
+			fmt.Printf("found not text, name: %s, addr: %d, offset: %d\n", secName, secHeader.Addr, secHeader.Offset)
 		}
 	}
+
+	var addrStartInx int64 = 93966328557568
+	var offset int64 = 20480
+	var needToFind int64 = 93966328564462
+	var symbolOffset = needToFind - addrStartInx + offset
+
+	// all symbol need to bigger them symbol offset
+	symbols, _ := file.Symbols()
+	dynamicSymbols, _ := file.DynamicSymbols()
+	symbols = append(symbols, dynamicSymbols...)
+
+	sort.SliceStable(symbols, func(i, j int) bool {
+		return symbols[i].Value < symbols[j].Value
+	})
+
+	for i, sym := range symbols {
+		if int64(sym.Value) >= symbolOffset {
+			symbols = symbols[:i]
+			break
+		}
+	}
+
+	for i := len(symbols) - 1; i >= 0; i-- {
+		if symbolOffset < int64(symbols[i].Value)+int64(symbols[i].Size) {
+			ym := symbols[i]
+			fmt.Printf("found symbol: %v\n", ym)
+		}
+	}
+
+	fmt.Printf("%v", symbols)
+
+	//symbols, err := file.Symbols()
+	//if err != nil {
+	//	os.Exit(1)
+	//}
+	//
+	//for _, sym := range symbols {
+	//	if strings.Contains(sym.Name, findName) {
+	//		fmt.Printf("%d: %s\n", sym.Value, sym.Name)
+	//	}
+	//}
 
 }
 

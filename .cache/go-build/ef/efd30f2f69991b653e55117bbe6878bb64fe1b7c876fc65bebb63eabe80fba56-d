@@ -1,6 +1,0 @@
-./compile.go
-./doc.go
-./example_bpfel.go
-./main.go
-./output.go
-./tools.go

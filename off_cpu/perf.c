@@ -22,12 +22,14 @@ struct task_struct {
 
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx, struct task_struct *prev) {
-    __u32 pid = 0;
+    struct key_t key = {};
+    bpf_probe_read(&key.pid, sizeof(key.pid), &prev->pid);
+//    __u32 pid = 0;
     __u64 ts = 0;
 
 	// create map key
-    struct key_t key = {};
-    key.pid = pid;
+//    struct key_t key = {};
+//    key.pid = pid;
     key.ts = ts;
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));

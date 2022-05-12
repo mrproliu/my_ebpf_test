@@ -26,8 +26,8 @@ struct {
     __uint(max_entries, 10000);
 } stacks SEC(".maps");
 
-SEC("kprobe/sock_sendmsg")
-int bpf_sock_sendmsg(struct pt_regs *ctx) {
+SEC("kprobe/finish_task_switch")
+int do_finish_task_switch(struct pt_regs *ctx) {
     u64 id = bpf_get_current_pid_tgid();
     u32 tgid = id >> 32;
     u32 tid = id;

@@ -1,17 +1,17 @@
 package main
 
 import (
-	"math"
+	"log"
 	"net/http"
+	"time"
 )
 
-func hello(w http.ResponseWriter, req *http.Request) {
-	for {
-		math.Sqrt(100000000000000.0)
-	}
-}
-
 func main() {
-	http.HandleFunc("/", hello)
-	http.ListenAndServe(":8000", nil)
+	for true {
+		_, err := http.Get("http://www.google.com")
+		if err != nil {
+			log.Fatalln(err)
+		}
+		time.Sleep(1 * time.Second)
+	}
 }

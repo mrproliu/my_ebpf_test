@@ -21,7 +21,7 @@ struct task_struct {
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
-    struct task_struct *p = (void *) PT_REGS_PARM1(ctx);
+    struct task_struct *p = (void *) bpf_get_current_task();
     /* record previous thread sleep time */
     __u32 pid = _(p->pid);
 //    struct task_struct *p = (void *) PT_REGS_PARM1(ctx);

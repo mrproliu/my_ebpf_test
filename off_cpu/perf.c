@@ -26,10 +26,25 @@ struct {
     __uint(max_entries, 10000);
 } stacks SEC(".maps");
 
+struct task_struct {
+	int pid;
+    int tgid;
+};
+
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx, struct task_struct *prev) {
+    u32 mustPid = 2798;
+
+    u32 pid = prev->pid;
+    u32 tgid = prev->tgid;
+    u64 ts;
+
+    if (tgid == mustPid) {
+        ts = bpf_ktime_get_ns();
+        bpf_printk("hello:%d, pid:%d\n", ts, pid);
+    }
     u64 id = bpf_get_current_pid_tgid();
-    u32 tgid = id >> 32;
+    tgid = id >> 32;
     u32 tid = id;
 
 	// create map key

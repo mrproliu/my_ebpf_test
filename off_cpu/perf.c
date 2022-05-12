@@ -31,10 +31,11 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     bpf_probe_read_user(&key.prevPid, sizeof(key.prevPid), &prev->pid);
     struct task_struct *curr = (struct task_struct *) bpf_get_current_task();
     bpf_probe_read_user(&key.currTgid, sizeof(key.currTgid), &curr->tgid);
-    bpf_probe_read_user(&key.currPid, sizeof(key.currPid), &curr->pid);
+    long ret = bpf_probe_read_user(&key.currPid, sizeof(key.currPid), &curr->pid);
 //    __u32 pid = 0;
     __u64 ts = bpf_ktime_get_ns();
 
+    bpf_printk("hello: prev: %d:%d, ret: %d\n", key.prevTgid, key.prevPid, ret);
 	// create map key
 //    struct key_t key = {};
 //    key.pid = pid;

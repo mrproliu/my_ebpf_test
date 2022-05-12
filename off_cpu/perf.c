@@ -26,19 +26,19 @@ struct task_struct {
 #define _(P)                                                                   \
 	({                                                                     \
 		typeof(P) val = 0;                                             \
-		bpf_probe_read_kernel(&val, sizeof(val), &(P));                \
+		bpf_probe_read(&val, sizeof(val), &(P));                \
 		val;                                                           \
 	})
 
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx) {
     struct key_t key = {};
-    struct task_struct *prev = (struct task_struct *) PT_REGS_PARM1(ctx);
-    bpf_probe_read_user(&key.prevTgid, sizeof(key.prevTgid), &prev->tgid);
-    bpf_probe_read_user(&key.prevPid, sizeof(key.prevPid), &prev->pid);
-    struct task_struct *curr = (struct task_struct *) bpf_get_current_task();
-    bpf_probe_read_user(&key.currTgid, sizeof(key.currTgid), &curr->tgid);
-    bpf_probe_read_user(&key.currPid, sizeof(key.currPid), &curr->pid);
+//    struct task_struct *prev = (struct task_struct *) PT_REGS_PARM1(ctx);
+//    bpf_probe_read_user(&key.prevTgid, sizeof(key.prevTgid), &prev->tgid);
+//    bpf_probe_read_user(&key.prevPid, sizeof(key.prevPid), &prev->pid);
+//    struct task_struct *curr = (struct task_struct *) bpf_get_current_task();
+//    bpf_probe_read_user(&key.currTgid, sizeof(key.currTgid), &curr->tgid);
+//    bpf_probe_read_user(&key.currPid, sizeof(key.currPid), &curr->pid);
 //    __u32 pid = 0;
     __u64 ts = bpf_ktime_get_ns();
 

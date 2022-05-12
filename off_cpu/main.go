@@ -18,7 +18,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 )
 
@@ -33,15 +32,15 @@ type Event struct {
 }
 
 func main() {
-	if len(os.Args) <= 1 {
-		log.Fatal("please input the pid need to be monitor")
-		return
-	}
-	pid, err := strconv.Atoi(os.Args[1])
-	if err != nil {
-		log.Fatal("could not reconized the pid: %s", os.Args[1])
-		return
-	}
+	//if len(os.Args) <= 1 {
+	//	log.Fatal("please input the pid need to be monitor")
+	//	return
+	//}
+	//pid, err := strconv.Atoi(os.Args[1])
+	//if err != nil {
+	//	log.Fatal("could not reconized the pid: %s", os.Args[1])
+	//	return
+	//}
 
 	stopper := make(chan os.Signal, 1)
 	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
@@ -64,14 +63,14 @@ func main() {
 		log.Fatalf("loading objects: %s", err)
 		return
 	}
-	funcName := "do_stack_switch"
-	for i, ins := range spec.Programs[funcName].Instructions {
-		if ins.Reference == "MY_CONST" {
-			spec.Programs[funcName].Instructions[i].Constant = int64(pid)
-			spec.Programs[funcName].Instructions[i].Offset = 0
-			fmt.Printf("found the my_const and replaced, index: %d, opCode: %d\n", i, ins.OpCode)
-		}
-	}
+	//funcName := "do_stack_switch"
+	//for i, ins := range spec.Programs[funcName].Instructions {
+	//	if ins.Reference == "MY_CONST" {
+	//		spec.Programs[funcName].Instructions[i].Constant = int64(pid)
+	//		spec.Programs[funcName].Instructions[i].Offset = 0
+	//		fmt.Printf("found the my_const and replaced, index: %d, opCode: %d\n", i, ins.OpCode)
+	//	}
+	//}
 	if err := spec.LoadAndAssign(&objs, nil); err != nil {
 		log.Fatalf("loading objects: %s", err)
 	}

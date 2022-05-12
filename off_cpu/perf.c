@@ -40,8 +40,7 @@ struct task_struct {
 SEC("kprobe/finish_task_switch")
 int do_stack_switch(struct pt_regs *ctx, struct task_struct *prev) {
     // should change the pid value
-    int mustPid;
-    asm("%0 = MY_CONST ll" : "=r"(mustPid));
+    int mustPid = 2798;
 
     u32 pid = prev->pid;
     u32 tgid = prev->tgid;

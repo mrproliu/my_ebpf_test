@@ -41,7 +41,7 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     void* prevTaskV = (void*)PT_REGS_PARM1(ctx);
     struct task_struct prevTask;
     bpf_probe_read_user(&prevTask, sizeof(prevTask), prevTaskV);
-    bpf_probe_read(&key.prevPid, sizeof(key.prevPid), &prevTask->pid);
+    bpf_probe_read(&key.prevPid, sizeof(key.prevPid), &prevTask.pid);
     bpf_printk("hello: test: %d:%d\n", id, key.prevPid);
 	// create map key
 //    struct key_t key = {};

@@ -61,7 +61,6 @@ type bpfProgramSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfMapSpecs struct {
-	Counts *ebpf.MapSpec `ebpf:"counts"`
 }
 
 // bpfObjects contains all objects after they have been loaded into the kernel.
@@ -83,13 +82,10 @@ func (o *bpfObjects) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfMaps struct {
-	Counts *ebpf.Map `ebpf:"counts"`
 }
 
 func (m *bpfMaps) Close() error {
-	return _BpfClose(
-		m.Counts,
-	)
+	return _BpfClose()
 }
 
 // bpfPrograms contains all programs after they have been loaded into the kernel.

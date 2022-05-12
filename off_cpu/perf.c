@@ -37,7 +37,9 @@ int do_finish_task_switch(struct pt_regs *ctx, struct task_struct *prev) {
     u32 tgid = prev->tgid;
     u64 ts = 0;
 
-    ts = bpf_ktime_get_ns();
+    if (pid == 2795) {
+        ts = bpf_ktime_get_ns();
+    }
     u64 id = bpf_get_current_pid_tgid();
     tgid = id >> 32;
     u32 tid = id;

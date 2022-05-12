@@ -26,8 +26,6 @@ int do_finish_task_switch(struct pt_regs *ctx, struct task_struct *prev) {
     u32 pid = prev->pid;
     u64 ts = 0;
 
-    ts = bpf_ktime_get_ns();
-
 	// create map key
     struct key_t key = {};
     key.pid = pid;

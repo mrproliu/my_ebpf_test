@@ -22,8 +22,9 @@ struct task_struct {
 
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx, struct task_struct *prev) {
+    struct task_struct *task = (struct task_struct *) bpf_get_current_task();
     struct key_t key = {};
-    bpf_probe_read(&key.pid, sizeof(key.pid), &prev->pid);
+    bpf_probe_read(&key.pid, sizeof(key.pid), &task->pid);
 //    __u32 pid = 0;
     __u64 ts = 0;
 

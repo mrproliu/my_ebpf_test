@@ -17,6 +17,13 @@ struct key_t {
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
 } counts SEC(".maps");
+
+struct {
+    __uint(type, BPF_MAP_TYPE_STACK_TRACE);
+    __uint(key_size, sizeof(u32));
+    __uint(value_size, 100 * sizeof(u64));
+    __uint(max_entries, 10000);
+} stacks SEC(".maps");
 //
 //struct {
 //    __uint(type, BPF_MAP_TYPE_STACK_TRACE);
@@ -38,7 +45,7 @@ struct {
 //};
 
 SEC("kprobe/finish_task_switch")
-int do_stack_switch(struct pt_regs *ctx, struct task_struct *prev) {
+int do_stack_switch(struct pt_regs *ctx) {
     // should change the pid value
     u32 mustPid = 2798;
     bpf_printk("recieve event123%d\n", mustPid);

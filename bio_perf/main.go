@@ -60,7 +60,7 @@ func main() {
 	}
 	defer objs.Close()
 
-	kprobe, err := link.Kprobe("blk_account_io_start", objs.BpfSockSendmsg)
+	kprobe, err := link.Kprobe("sock_sendmsg", objs.BpfSockSendmsg)
 
 	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
 	if err != nil {

@@ -1,13 +1,12 @@
 // +build ignore
 
-#include "common.h"
-#include "bpf_helpers.h"
+#include "api.h"
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
 struct key_t {
-    u32 pid;
-    u64 ts;
+    __u32 pid;
+    __u64 ts;
 };
 
 #define MAX_ENTRIES	10000
@@ -23,9 +22,9 @@ struct task_struct {
 
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx, struct task_struct *prev) {
-    u32 pid;
+    __u32 pid;
     bpf_probe_read(&pid, sizeof(pid), &prev->pid);
-    u64 ts = 0;
+    __u64 ts = 0;
 
 	// create map key
     struct key_t key = {};

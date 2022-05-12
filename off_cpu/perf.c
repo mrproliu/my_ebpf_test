@@ -14,28 +14,28 @@ struct key_t {
 
 #define MAX_ENTRIES	10000
 
-struct {
-	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
-} counts SEC(".maps");
+//struct {
+//	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+//} counts SEC(".maps");
+//
+//struct {
+//    __uint(type, BPF_MAP_TYPE_STACK_TRACE);
+//    __uint(key_size, sizeof(u32));
+//    __uint(value_size, 100 * sizeof(u64));
+//    __uint(max_entries, 10000);
+//} stacks SEC(".maps");
+//
+//struct {
+//	__uint(type, BPF_MAP_TYPE_LRU_HASH);
+//	__uint(key_size, sizeof(u32));
+//	__uint(value_size, sizeof(u64));
+//    __uint(max_entries, 10000);
+//} starts SEC(".maps");
 
-struct {
-    __uint(type, BPF_MAP_TYPE_STACK_TRACE);
-    __uint(key_size, sizeof(u32));
-    __uint(value_size, 100 * sizeof(u64));
-    __uint(max_entries, 10000);
-} stacks SEC(".maps");
-
-struct {
-	__uint(type, BPF_MAP_TYPE_LRU_HASH);
-	__uint(key_size, sizeof(u32));
-	__uint(value_size, sizeof(u64));
-    __uint(max_entries, 10000);
-} starts SEC(".maps");
-
-struct task_struct {
-	int pid;
-    int tgid;
-};
+//struct task_struct {
+//	int pid;
+//    int tgid;
+//};
 
 SEC("kprobe/finish_task_switch")
 int do_stack_switch(struct pt_regs *ctx, struct task_struct *prev) {

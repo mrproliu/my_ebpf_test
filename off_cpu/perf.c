@@ -1,10 +1,14 @@
 // +build ignore
 
-#include "api.h"
+#include <stddef.h>
+#include <linux/sched.h>
+#include <linux/bpf.h>
+#include <linux/ptrace.h>
+#include <bpf/bpf_helpers.h>
+#include <bpf/bpf_tracing.h>
+#include <bpf/bpf_core_read.h>
 
 char __license[] SEC("license") = "Dual MIT/GPL";
-
-#define MAX_ENTRIES	10000
 
 struct task_struct {
 	__u32 pid;

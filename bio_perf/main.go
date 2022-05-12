@@ -113,9 +113,9 @@ func main() {
 			continue
 		}
 
-		//if int(event.Pid) != pid {
-		//	continue
-		//}
+		if int(event.Pid) != pid {
+			continue
+		}
 		fmt.Printf("pid: %d, taskid: %d, name: %s, stack: %d:%d\n", event.Pid, event.TaskId, event.Name, event.UserStackId, event.KernelStackId)
 
 		//if int(event.Pid) == pid {

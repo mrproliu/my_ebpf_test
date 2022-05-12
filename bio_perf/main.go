@@ -4,10 +4,7 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
-	"debug/elf"
-	"debug/gosym"
 	"ebpf_test/tools"
 	"encoding/binary"
 	"errors"
@@ -18,9 +15,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"sort"
 	"strconv"
-	"strings"
 	"syscall"
 )
 
@@ -148,137 +143,4 @@ func main() {
 		}
 		fmt.Printf("---------------\n")
 	}
-}
-
-func findKernelSymbol(symbols []kernelSymbol, addr uint64) string {
-	start := 0
-	end := len(symbols)
-
-	for start < end {
-		mid := start + (end-start)/2
-		result := int64(addr) - int64(symbols[mid].Addr)
-
-		//c := int64(-symbols[mid].Addr)
-		//d := uint64(c)
-		//f := atomic.AddUint64(&copyAddr, d)
-		//fmt.Printf("%d-%d=%d\n", addr, symbols[mid].Addr, f)
-		//fmt.Printf("start: %d, end: %d, mid: %d, addr(%d)-symAddr(%d) = %d\n", start, end, mid, addr, symbols[mid].Addr, result)
-		if result < 0 {
-			end = mid
-		} else if result > 0 {
-			start = mid + 1
-		} else {
-			return symbols[mid].Symbol
-		}
-	}
-
-	if start >= 1 && symbols[start-1].Addr < addr && addr < symbols[start].Addr {
-		return symbols[start-1].Symbol
-	}
-
-	return "NOT FOUND!!!!"
-}
-
-type kernelSymbol struct {
-	Addr   uint64
-	Symbol string
-}
-
-func testSysSymbol() ([]kernelSymbol, error) {
-	file, err := os.Open("/proc/kallsyms")
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	// read the file line by line using scanner
-	scanner := bufio.NewScanner(file)
-
-	symbols := make([]kernelSymbol, 0)
-	count := 0
-	for scanner.Scan() {
-		count++
-		info := strings.Split(scanner.Text(), " ")
-		//stype := info[1]
-		//if stype == "T" || stype == "t" || stype == "W" || stype == "w" {
-		atoi, err := strconv.ParseUint(info[0], 16, 64)
-
-		if strings.HasPrefix(info[0], "ffffffff9435d7d0") {
-			fmt.Printf("Addr: %s, \t, type: %s, symbol: %s, toint: %d\n", info[0], info[1], info[2], uint64(atoi))
-		}
-		//fmt.Printf("index: %d: %d -> %s\n", count, atoi, info[2])
-		if err != nil {
-			return nil, fmt.Errorf("error read addr: %s, %v", info[0], err)
-		}
-		symbols = append(symbols, kernelSymbol{
-			Addr:   atoi,
-			Symbol: info[2],
-		})
-		//}
-	}
-
-	sort.SliceStable(symbols, func(i, j int) bool {
-		return symbols[i].Addr < symbols[j].Addr
-	})
-	fmt.Printf("total count: %d\n", count)
-	last := len(symbols) - 1
-	fmt.Printf("last symbole: %d: addr: %d, name: %d", last, symbols[last].Addr, symbols[last].Symbol)
-	return symbols, nil
-}
-
-type symbolInter struct {
-	symbols []kernelSymbol
-}
-
-func (s *symbolInter) Len() int {
-	return len(s.symbols)
-}
-
-func (s *symbolInter) Less(i, j int) bool {
-	return s.symbols[i].Addr < s.symbols[j].Addr
-}
-
-func (s *symbolInter) Swap(i, j int) {
-	tmp := s.symbols[i]
-	s.symbols[j] = s.symbols[i]
-	s.symbols[i] = tmp
-}
-
-func readSymbols(file string) (*elf.File, *gosym.Table, error) {
-	// Open self
-	f, err := elf.Open(file)
-	if err != nil {
-		return nil, nil, err
-	}
-	table, err := parse(f)
-	if err != nil {
-		return nil, nil, err
-	}
-	return f, table, err
-}
-
-func parse(f *elf.File) (*gosym.Table, error) {
-	s := f.Section(".gosymtab")
-	if s == nil {
-		return nil, fmt.Errorf("no symbles")
-	}
-	symdat, err := s.Data()
-	if err != nil {
-		f.Close()
-		return nil, fmt.Errorf("read symbols failure: %v", err)
-	}
-	pclndat, err := f.Section(".gopclntab").Data()
-	if err != nil {
-		f.Close()
-		return nil, fmt.Errorf("read gopclntab failure: %v", err)
-	}
-
-	pcln := gosym.NewLineTable(pclndat, f.Section(".text").Addr)
-	tab, err := gosym.NewTable(symdat, pcln)
-	if err != nil {
-		f.Close()
-		return nil, fmt.Errorf("parse gosymtab failure: %v", err)
-	}
-
-	return tab, nil
 }

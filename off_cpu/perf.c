@@ -33,7 +33,7 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     bpf_probe_read(&key.currTgid, sizeof(key.currTgid), &curr->tgid);
     bpf_probe_read(&key.currPid, sizeof(key.currPid), &curr->pid);
 //    __u32 pid = 0;
-    __u64 ts = 0;
+    __u64 ts = bpf_ktime_get_ns();
 
 	// create map key
 //    struct key_t key = {};

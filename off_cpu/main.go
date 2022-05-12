@@ -95,6 +95,6 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("prev: (%d:%d), curr: (%d:%d)tid: %d\n", event.PrevPid, event.PrevTgid, event.CurrPid, event.CurrTgid)
+		fmt.Printf("prev: (%d:%d), curr: (%d:%d)tid: %d\n", event.PrevPid, event.PrevTgid, event.CurrPid, event.CurrTgid, event.Time)
 	}
 }

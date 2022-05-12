@@ -41,15 +41,16 @@ SEC("kprobe/finish_task_switch")
 int do_stack_switch(struct pt_regs *ctx, struct task_struct *prev) {
     // should change the pid value
     u32 mustPid = 2798;
+    bpf_printk("recieve event123%d\n", mustPid);
 
-    u32 pid = prev->pid;
-    u32 tgid = prev->tgid;
-    u64 ts;
-
-    if (tgid == mustPid) {
-        ts = bpf_ktime_get_ns();
-        bpf_map_update_elem(&starts, &pid, &ts, BPF_ANY);
-    }
+//    u32 pid = prev->pid;
+//    u32 tgid = prev->tgid;
+//    u64 ts;
+//
+//    if (tgid == mustPid) {
+//        ts = bpf_ktime_get_ns();
+//        bpf_map_update_elem(&starts, &pid, &ts, BPF_ANY);
+//    }
 
 //    pid = bpf_get_current_pid_tgid();
 //    tgid = bpf_get_current_pid_tgid() >> 32;

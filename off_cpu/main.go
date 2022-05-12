@@ -25,10 +25,10 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpfel -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf perf.c -- -I$HOME/headers/noinclude/ -D__TARGET_ARCH_x86
 
 type Event struct {
-	PrevPid  uint32
-	PrevTgid uint32
-	CurrPid  uint32
-	CurrTgid uint32
+	PrevPid  int64
+	PrevTgid int64
+	CurrPid  int64
+	CurrTgid int64
 	Time     uint64
 }
 

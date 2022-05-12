@@ -5,10 +5,10 @@
 char __license[] SEC("license") = "Dual MIT/GPL";
 
 struct key_t {
-    __u32 prevPid;
-    __u32 prevTgid;
-    __u32 currPid;
-    __u32 currTgid;
+    __u64 prevPid;
+    __u64 prevTgid;
+    __u64 currPid;
+    __u64 currTgid;
     __u64 ts;
 };
 

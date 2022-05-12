@@ -67,7 +67,7 @@ func main() {
 		log.Fatalf("creating perf event reader: %s", err)
 	}
 
-	kprobe, err := link.Kprobe("finish_task_switch", objs.DoStackSwitch)
+	kprobe, err := link.Kprobe("finish_task_switch", objs.BpfSockSendmsg)
 	if err != nil {
 		log.Fatalf("link to finish task swtich failure: %v", err)
 	}

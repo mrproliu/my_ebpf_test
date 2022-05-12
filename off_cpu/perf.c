@@ -27,29 +27,13 @@ struct refcount_struct {
 typedef struct refcount_struct refcount_t;
 
 struct task_struct {
-	struct thread_info thread_info;
-	unsigned int __state;
-	void *stack;
-	refcount_t usage;
-	unsigned int flags;
-    unsigned int ptrace;
-    int on_cpu;
-};
+	int pid;
+} __attribute__((preserve_access_index));
 
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx) {
-    struct task_struct *p;
-    struct thread_info *t;
-    bpf_probe_read(&p, sizeof(p), (void *) PT_REGS_PARM1(ctx));
-    bpf_probe_read(&t, sizeof(t), &(p->thread_info));
-    __u32 status;
-    long unsigned int syscall_work;
-    bpf_probe_read(&status, sizeof(status), &(t->status));
-    bpf_probe_read(&syscall_work, sizeof(syscall_work), &(t->syscall_work));
-    int on_cpu;
-    bpf_probe_read(&on_cpu, sizeof(on_cpu), &(p->on_cpu));
-//    __u32 pid = 0;
-//    bpf_probe_read(&pid, sizeof(pid), &(p->pid));
-    bpf_printk("prev status: %d->%d\n", on_cpu, syscall_work);
+    struct task_struct *p = (void *)PT_REGS_PARM1_CORE(ctx);
+    int pid = BPF_CORE_READ(p, pid);
+    bpf_printk("prev status: %d\n", pid);
     return 0;
 }

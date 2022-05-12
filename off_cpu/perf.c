@@ -40,7 +40,7 @@ struct task_struct {
 SEC("kprobe/finish_task_switch")
 int do_stack_switch(struct pt_regs *ctx, struct task_struct *prev) {
     // should change the pid value
-    int mustPid = 2798;
+    u32 mustPid = 2798;
 
     u32 pid = prev->pid;
     u32 tgid = prev->tgid;
@@ -57,24 +57,24 @@ int do_stack_switch(struct pt_regs *ctx, struct task_struct *prev) {
     if (tsp == 0) {
         return 0;        // missed start or filtered
     }
-
-    // calculate current thread's delta time
-    u64 t_start = *tsp;
-    u64 t_end = bpf_ktime_get_ns();
-    bpf_map_delete_elem(&starts, &pid);
-    if (t_start > t_end) {
-        return 0;
-    }
-
-    u64 delta = t_end - t_start;
-	// create map key
-    struct key_t key = {};
-    key.tid = pid;
-    key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);
-    key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
-    key.t = delta;
-
-    bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
+//
+//    // calculate current thread's delta time
+//    u64 t_start = *tsp;
+//    u64 t_end = bpf_ktime_get_ns();
+//    bpf_map_delete_elem(&starts, &pid);
+//    if (t_start > t_end) {
+//        return 0;
+//    }
+//
+//    u64 delta = t_end - t_start;
+//	// create map key
+//    struct key_t key = {};
+//    key.tid = pid;
+//    key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);
+//    key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
+//    key.t = delta;
+//
+//    bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
 
     return 0;
 }

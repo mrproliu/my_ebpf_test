@@ -9,10 +9,11 @@ import (
 // nolint
 func doRequest() {
 	for true {
-		_, err := http.Get("http://www.google.com")
+		t, err := http.Get("http://www.google.com")
 		if err != nil {
 			log.Fatalln(err)
 		}
+		t.Body.Close()
 		time.Sleep(1 * time.Second)
 	}
 }

@@ -36,9 +36,9 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     __u64 ts = bpf_ktime_get_ns();
 
     __u64 id = bpf_get_current_pid_tgid();
-    __u32 tgid = id >> 32;
-    __u32 cuPid = curr->pid;
-    bpf_printk("hello: test: %d:%d\n", cuPid, tgid);
+//    __u32 tgid = id >> 32;
+    bpf_probe_read(&key.prevPid, sizeof(key.prevPid), &curr->pid);
+    bpf_printk("hello: test: %d:%d\n", id, key.prevPid);
 	// create map key
 //    struct key_t key = {};
 //    key.pid = pid;

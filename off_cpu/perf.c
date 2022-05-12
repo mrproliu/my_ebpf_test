@@ -32,8 +32,8 @@ struct task_struct {
 
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx) {
-    struct task_struct *p = (void *)PT_REGS_PARM1_CORE(ctx);
-    int pid = BPF_CORE_READ(p, pid);
+    struct task_struct *t = (void *)PT_REGS_PARM1_CORE(ctx);
+    int pid = BPF_CORE_READ(t, pid);
     bpf_printk("prev status: %d\n", pid);
     return 0;
 }

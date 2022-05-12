@@ -37,7 +37,6 @@ int do_finish_task_switch(struct pt_regs *ctx, struct task_struct *prev) {
     u32 tgid = 0;
     u64 ts = 0;
 
-    bpf_printk("hello:%d:%d:%d", pid, tgid, ts);
     u64 id = bpf_get_current_pid_tgid();
     tgid = id >> 32;
     u32 tid = id;
@@ -45,6 +44,9 @@ int do_finish_task_switch(struct pt_regs *ctx, struct task_struct *prev) {
 	// create map key
     struct key_t key = {.pid = tgid};
     key.tid = tid;
+    key.tid = pid;
+    key.tid = tgid;
+    key.tid = ts;
     bpf_get_current_comm(&key.name, sizeof(key.name));
 
     // get stacks

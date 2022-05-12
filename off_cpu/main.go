@@ -25,11 +25,7 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpfel -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf perf.c -- -I$HOME/headers/noinclude/ -D__TARGET_ARCH_x86
 
 type Event struct {
-	PrevPid int64
-	//PrevTgid int64
-	//CurrPid  int64
-	//CurrTgid int64
-	//Time     uint64
+	Tid int64
 }
 
 func main() {
@@ -97,7 +93,7 @@ func main() {
 			continue
 		}
 
-		//fmt.Printf("prev: (%d:%d), curr: (%d:%d)tid: %d\n", event.PrevPid, event.PrevTgid, event.CurrPid, event.CurrTgid, event.Time)
-		fmt.Printf("prev: (%d:%d), curr: (%d:%d)tid: %d\n", event.PrevPid)
+		//fmt.Printf("prev: (%d:%d), curr: (%d:%d)tid: %d\n", event.Tid, event.PrevTgid, event.CurrPid, event.CurrTgid, event.Time)
+		fmt.Printf("prev: (%d:%d), curr: (%d:%d)tid: %d\n", event.Tid)
 	}
 }

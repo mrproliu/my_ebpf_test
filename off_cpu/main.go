@@ -25,14 +25,16 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpfel -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf perf.c -- -I$HOME/headers/noinclude/ -D__TARGET_ARCH_x86
 
 type Event struct {
-	PrevPid int64
-	//PrevTgid int64
-	//CurrPid  int64
-	//CurrTgid int64
-	//Time     uint64
+	Pid  int32
+	Tgid int32
+	Name [256]byte
+	Comm [128]byte
 }
 
 func main() {
+	var mySlice = []byte{148, 28, 0, 0}
+	data := binary.BigEndian.Uint64(mySlice)
+	fmt.Println(data)
 	stopper := make(chan os.Signal, 1)
 	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
 
@@ -92,12 +94,12 @@ func main() {
 		}
 
 		// Parse the perf event entry into an Event structure.
-		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.BigEndian, &event); err != nil {
+		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
 			log.Printf("parsing perf event: %s, original data: %v", err, record.RawSample)
 			continue
 		}
 
 		//fmt.Printf("prev: (%d:%d), curr: (%d:%d)tid: %d\n", event.PrevPid, event.PrevTgid, event.CurrPid, event.CurrTgid, event.Time)
-		fmt.Printf("prev: (%d:%d), curr: (%d:%d)tid: %d\n", event.PrevPid)
+		fmt.Printf("prev: (%d:%d), curr: (%d:%d)tid: %d\n", event.Pid)
 	}
 }

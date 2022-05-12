@@ -19,15 +19,18 @@ struct task_struct {
 } __attribute__((preserve_access_index));
 
 struct key_t {
-    __u32 tid;
+    __u32 pid;
+    __u32 tgid;
+    char name[256];
+    char comm[128];
 };
 
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx) {
     struct task_struct *p = (struct task_struct *) PT_REGS_PARM1(ctx);
     struct key_t key = {};
-    bpf_core_read(&key.tid, sizeof(key.tid), &p->pid);
+    bpf_core_read(&key.pid, sizeof(key.pid), &p->pid);
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
-    bpf_printk("hello:%d\n", key.tid);
+    bpf_printk("hello:%d\n", key.pid);
     return 0;
 }

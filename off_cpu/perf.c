@@ -28,5 +28,6 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     struct key_t key = {};
     bpf_core_read(&key.tid, sizeof(key.tid), &p->pid);
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
+    bpf_printk("hello\n");
     return 0;
 }

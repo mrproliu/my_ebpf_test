@@ -10,17 +10,26 @@
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
+struct thread_info {
+	long unsigned int flags;
+	long unsigned int syscall_work;
+	__u32 status;
+};
+
 struct task_struct {
-	__u32 pid;
-    __u32 tgid;
+	struct thread_info thread_info;
 };
 
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx) {
     struct task_struct *p;
+    struct thread_info *t;
     bpf_probe_read(&p, sizeof(p), (void *) PT_REGS_PARM1(ctx));
-    __u32 pid = 0;
-    bpf_probe_read(&pid, sizeof(pid), &(p->pid));
-    bpf_printk("prev pid: %d\n", p);
+    bpf_probe_read(&t, sizeof(t), &(p->thread_info));
+    __u32 status;
+    bpf_probe_read(&status, sizeof(status), &(t->status));
+//    __u32 pid = 0;
+//    bpf_probe_read(&pid, sizeof(pid), &(p->pid));
+    bpf_printk("prev status: %d\n", status);
     return 0;
 }

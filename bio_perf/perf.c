@@ -29,7 +29,7 @@ struct {
 SEC("kprobe/sock_sendmsg")
 int bpf_sock_sendmsg(struct pt_regs *ctx) {
     u64 id = bpf_get_current_pid_tgid();
-    u32 tgid = id >> 32;
+    u32 tgid = bpf_get_current_pid_tgid() >> 32;
     u32 tid = id;
 
 	// create map key

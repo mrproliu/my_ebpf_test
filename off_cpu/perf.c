@@ -27,9 +27,11 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     bpf_probe_read(&p, sizeof(p), (void *) PT_REGS_PARM1(ctx));
     bpf_probe_read(&t, sizeof(t), &(p->thread_info));
     __u32 status;
+    long unsigned int syscall_work;
     bpf_probe_read(&status, sizeof(status), &(t->status));
+    bpf_probe_read(&syscall_work, sizeof(syscall_work), &(t->syscall_work));
 //    __u32 pid = 0;
 //    bpf_probe_read(&pid, sizeof(pid), &(p->pid));
-    bpf_printk("prev status: %d\n", status);
+    bpf_printk("prev status: %d->%d\n", status, syscall_work);
     return 0;
 }

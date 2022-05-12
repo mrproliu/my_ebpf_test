@@ -23,6 +23,13 @@ struct task_struct {
     int tgid;
 };
 
+#define _(P)                                                                   \
+	({                                                                     \
+		typeof(P) val = 0;                                             \
+		bpf_probe_read_kernel(&val, sizeof(val), &(P));                \
+		val;                                                           \
+	})
+
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx) {
     struct key_t key = {};
@@ -38,11 +45,15 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
 //    __u32 tgid = id >> 32;
 
-    void* prevTaskV = (void*)PT_REGS_PARM1(ctx);
-    struct task_struct prevTask;
-    bpf_probe_read_user(&prevTask, sizeof(prevTask), prevTaskV);
-    bpf_probe_read(&key.prevPid, sizeof(key.prevPid), &prevTask.pid);
-    bpf_printk("hello: test: %d:%d\n", id, key.prevPid);
+    struct task_struct *tsk;
+    tsk = (void *)PT_REGS_PARM1(ctx);
+    __u32 pid;
+    pid = _(tsk->pid);
+//    void* prevTaskV = (void*)PT_REGS_PARM1(ctx);
+//    struct task_struct prevTask;
+//    bpf_probe_read_user(&prevTask, sizeof(prevTask), prevTaskV);
+//    bpf_probe_read(&key.prevPid, sizeof(key.prevPid), &prevTask.pid);
+    bpf_printk("hello: test: %d:%d:%d\n", id, pid);
 	// create map key
 //    struct key_t key = {};
 //    key.pid = pid;

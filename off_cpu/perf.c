@@ -27,11 +27,11 @@ SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx) {
     struct key_t key = {};
     struct task_struct *prev = (struct task_struct *) PT_REGS_PARM1(ctx);
-    bpf_probe_read(&key.prevTgid, sizeof(key.prevTgid), &prev->tgid);
-    bpf_probe_read(&key.prevPid, sizeof(key.prevPid), &prev->pid);
+    bpf_probe_read_kernel(&key.prevTgid, sizeof(key.prevTgid), &prev->tgid);
+    bpf_probe_read_kernel(&key.prevPid, sizeof(key.prevPid), &prev->pid);
     struct task_struct *curr = (struct task_struct *) bpf_get_current_task();
-    bpf_probe_read(&key.currTgid, sizeof(key.currTgid), &curr->tgid);
-    bpf_probe_read(&key.currPid, sizeof(key.currPid), &curr->pid);
+    bpf_probe_read_kernel(&key.currTgid, sizeof(key.currTgid), &curr->tgid);
+    bpf_probe_read_kernel(&key.currPid, sizeof(key.currPid), &curr->pid);
 //    __u32 pid = 0;
     __u64 ts = bpf_ktime_get_ns();
 

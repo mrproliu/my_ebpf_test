@@ -14,9 +14,9 @@ struct key_t {
 
 #define MAX_ENTRIES	10000
 
-//struct {
-//	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
-//} counts SEC(".maps");
+struct {
+	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+} counts SEC(".maps");
 //
 //struct {
 //    __uint(type, BPF_MAP_TYPE_STACK_TRACE);

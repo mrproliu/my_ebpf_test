@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"debug/elf"
 	"debug/gosym"
+	"ebpf_test/tools"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -72,23 +73,20 @@ func main() {
 	}
 	defer rd.Close()
 
-	elfFile, symbols, err := readSymbols(fmt.Sprintf("/proc/%d/exe", pid))
+	kernelFile, err := tools.KernelFileProfilingStat()
 	if err != nil {
 		log.Fatalf("read symbols error: %v", err)
 		return
 	}
-
-	kernelSymbols, err := testSysSymbol()
+	processFile, err := tools.ExecutableFileProfilingStat(fmt.Sprintf("/proc/%d/exe", pid))
 	if err != nil {
-		log.Fatalf("read kernel symbol error: %v", err)
+		log.Fatalf("read symbols error: %v", err)
 		return
 	}
 
 	go func() {
 		<-stopper
 		log.Println("Received signal, exiting program..")
-
-		_ = elfFile.Close()
 
 		kprobe.Close()
 		if err := rd.Close(); err != nil {
@@ -132,25 +130,10 @@ func main() {
 			fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
 			continue
 		}
-		for _, addr := range stackIdList {
-			if addr == 0 {
-				continue
-			}
-			toFunc := symbols.PCToFunc(addr)
-			if toFunc != nil {
-				fmt.Printf("%d:", addr)
-				fmt.Printf("%s", toFunc.Name)
-				fmt.Printf("(")
-				for i, p := range toFunc.Params {
-					if i > 0 {
-						fmt.Printf(", ")
-					}
-					fmt.Printf("%s", p.Name)
-				}
-				fmt.Printf(")\n")
-				continue
-			}
-			fmt.Printf("not found!!!")
+		symbols := processFile.FindSymbols(stackIdList, "MISSING")
+		fmt.Printf("user stack:\n")
+		for _, s := range symbols {
+			fmt.Printf("%s\n", s)
 		}
 
 		err = objs.Stacks.Lookup(event.KernelStackId, &stackIdList)
@@ -158,23 +141,11 @@ func main() {
 			fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
 			continue
 		}
-		for _, addr := range stackIdList {
-			if addr == 0 {
-				continue
-			}
-			//fmt.Printf("total kernel size: %d\n", len(kernelSymbols))
-			symbol := findKernelSymbol(kernelSymbols, addr)
-			//for _, sym := range kernelSymbols {
-			//	if sym.Addr == addr {
-			//		fmt.Printf("%s\n", sym.Symbol)
-			//		break
-			//	}
-			//}
-			fmt.Printf("kernel: %s\n", symbol)
-			//fmt.Printf("Not Found!!!id: %v\n", strconv.FormatUint(addr, 16))
+		fmt.Printf("kernel stack:\n")
+		symbols = kernelFile.FindSymbols(stackIdList, "MISSING")
+		for _, s := range symbols {
+			fmt.Printf("%s\n", s)
 		}
-		//}
-
 		fmt.Printf("---------------\n")
 	}
 }

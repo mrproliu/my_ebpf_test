@@ -50,12 +50,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//processStat, err := tools.ExecutableFileProfilingStat(fmt.Sprintf("/proc/%d/exe", pid))
-	//if err != nil {
-	//	log.Fatalf("read symbols error in file: %s: %v", fmt.Sprintf("/proc/%d/exe", pid), err)
-	//	return
-	//}
-	//
 	// load bpf
 	objs := bpfObjects{}
 	spec, err := loadBpf()
@@ -63,14 +57,6 @@ func main() {
 		log.Fatalf("loading objects: %s", err)
 		return
 	}
-	//funcName := "do_stack_switch"
-	//for i, ins := range spec.Programs[funcName].Instructions {
-	//	if ins.Reference == "MY_CONST" {
-	//		spec.Programs[funcName].Instructions[i].Constant = int64(pid)
-	//		spec.Programs[funcName].Instructions[i].Offset = 0
-	//		fmt.Printf("found the my_const and replaced, index: %d, opCode: %d\n", i, ins.OpCode)
-	//	}
-	//}
 	if err := spec.LoadAndAssign(&objs, nil); err != nil {
 		log.Fatalf("loading objects: %s", err)
 	}

@@ -71,7 +71,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("link to finish task swtich failure: %v", err)
 	}
-	defer kprobe.Close()
+	go func() {
+		<-stopper
+		log.Println("Received signal, exiting program..")
+
+		kprobe.Close()
+		if err := rd.Close(); err != nil {
+			log.Fatal("close reader error: %s", err)
+		}
+	}()
 
 	// listen the event
 	var event Event

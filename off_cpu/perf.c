@@ -5,7 +5,10 @@
 char __license[] SEC("license") = "Dual MIT/GPL";
 
 struct key_t {
-    __u32 pid;
+    __u32 prevPid;
+    __u32 prevTgid;
+    __u32 currPid;
+    __u32 currTgid;
     __u64 ts;
 };
 
@@ -22,9 +25,13 @@ struct task_struct {
 
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx) {
-    struct task_struct *task = (struct task_struct *) PT_REGS_PARM1(ctx);
     struct key_t key = {};
-    bpf_probe_read(&key.pid, sizeof(key.pid), &task->tgid);
+    struct task_struct *prev = (struct task_struct *) PT_REGS_PARM1(ctx);
+    bpf_probe_read(&key.prevTgid, sizeof(key.prevTgid), &prev->tgid);
+    bpf_probe_read(&key.prevPid, sizeof(key.prevPid), &prev->pid);
+    struct task_struct *curr = (struct task_struct *) bpf_get_current_task();
+    bpf_probe_read(&key.currTgid, sizeof(key.currTgid), &curr->tgid);
+    bpf_probe_read(&key.currPid, sizeof(key.currPid), &curr->pid);
 //    __u32 pid = 0;
     __u64 ts = 0;
 

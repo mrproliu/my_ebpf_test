@@ -22,8 +22,7 @@ struct task_struct {
 
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx, struct task_struct *prev) {
-    __u32 pid;
-    bpf_probe_read(&pid, sizeof(pid), &prev->pid);
+    __u32 pid = 0;
     __u64 ts = 0;
 
 	// create map key

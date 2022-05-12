@@ -27,7 +27,7 @@ struct {
 } stacks SEC(".maps");
 
 SEC("kprobe/finish_task_switch")
-int do_finish_task_switch(struct pt_regs *ctx) {
+int do_finish_task_switch(struct pt_regs *ctx, struct task_struct *prev) {
     u64 id = bpf_get_current_pid_tgid();
     u32 tgid = id >> 32;
     u32 tid = id;

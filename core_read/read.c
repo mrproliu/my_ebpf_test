@@ -13,9 +13,10 @@ struct key_t {
 
 typedef int pid_t;
 struct task_struct {
-	int pid;
-    int tgid;
-};
+    int pid;
+    char comm[16];
+    struct task_struct *group_leader;
+} __attribute__((preserve_access_index));
 
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
@@ -23,15 +24,14 @@ struct {
 
 SEC("kprobe/sys_execve")
 int do_sys_execve(struct pt_regs *ctx) {
-    struct task_struct *task = (struct task_struct *) bpf_get_current_task();
+    struct task_struct *t = (void *)bpf_get_current_task();
     struct key_t key = {};
-    long ad = BPF_CORE_READ(ctx, rdi);
-    bpf_probe_read_user_str(&key.name, sizeof(key.name),
-                       (void *)(long)ad);
-    bpf_probe_read(&(key.pid), sizeof(key.pid), &(task->pid));
-    bpf_probe_read(&(key.tgid), sizeof(key.pid), &(task->tgid));
-//    bpf_probe_read_str(&key.name, sizeof(key.name),
-//                    (void *)PT_REGS_PARM1(ctx));
+    int pid = BPF_CORE_READ(t, pid);
+    key.pid = pid;
+//    bpf_probe_read_user_str(&key.name, sizeof(key.name),
+//                       (void *)(long)ad);
+//    bpf_probe_read(&(key.pid), sizeof(key.pid), &(task->pid));
+//    bpf_probe_read(&(key.tgid), sizeof(key.pid), &(task->tgid));
     bpf_get_current_comm(&key.comm, sizeof(key.comm));
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));

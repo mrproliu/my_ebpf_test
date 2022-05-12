@@ -33,8 +33,8 @@ struct task_struct {
 
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx, struct task_struct *prev) {
-    u32 pid = 0;
-    u32 tgid = 0;
+    u32 pid = prev->pid;
+    u32 tgid = prev->tgid;
     u64 ts = 0;
 
     u64 id = bpf_get_current_pid_tgid();

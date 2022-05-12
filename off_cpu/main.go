@@ -25,23 +25,11 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf perf.c -- -I../headers
 
 type Event struct {
-	Pid           uint32
-	UserStackId   uint32
-	KernelStackId uint32
-	Time          uint32
+	Pid  uint32
+	Time uint64
 }
 
 func main() {
-	//if len(os.Args) <= 1 {
-	//	log.Fatal("please input the pid need to be monitor")
-	//	return
-	//}
-	//pid, err := strconv.Atoi(os.Args[1])
-	//if err != nil {
-	//	log.Fatal("could not reconized the pid: %s", os.Args[1])
-	//	return
-	//}
-
 	stopper := make(chan os.Signal, 1)
 	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
 
@@ -104,6 +92,6 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("tid: %d, userStackId: %d, kernelStackId: %s, time: %d\n", event.Pid, event.UserStackId, event.KernelStackId, event.Time)
+		fmt.Printf("tid: %d, time: %d\n", event.Pid, event.Time)
 	}
 }

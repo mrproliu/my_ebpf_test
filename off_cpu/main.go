@@ -53,7 +53,7 @@ func main() {
 	//	log.Fatalf("creating perf event reader: %s", err)
 	//}
 
-	kprobe, err := link.Kprobe("finish_task_switch", objs.DoFinishTaskSwitch)
+	kprobe, err := link.Kprobe("finish_task_switch.isra.0", objs.DoFinishTaskSwitch)
 	if err != nil {
 		log.Fatalf("link to finish task swtich failure: %v", err)
 	}

@@ -45,10 +45,9 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
 //    __u32 tgid = id >> 32;
 
-    struct task_struct *tsk;
-    tsk = (void *)PT_REGS_PARM1(ctx);
+    struct task_struct *p = (void *) PT_REGS_PARM1(ctx);
     __u32 pid;
-    pid = _(tsk->pid);
+    pid = _(p->pid);
 //    void* prevTaskV = (void*)PT_REGS_PARM1(ctx);
 //    struct task_struct prevTask;
 //    bpf_probe_read_user(&prevTask, sizeof(prevTask), prevTaskV);

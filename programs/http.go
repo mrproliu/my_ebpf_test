@@ -6,7 +6,8 @@ import (
 	"time"
 )
 
-func main() {
+// nolint
+func doRequest() {
 	for true {
 		_, err := http.Get("http://www.google.com")
 		if err != nil {
@@ -14,4 +15,8 @@ func main() {
 		}
 		time.Sleep(1 * time.Second)
 	}
+}
+
+func main() {
+	doRequest()
 }

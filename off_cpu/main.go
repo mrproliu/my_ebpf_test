@@ -32,9 +32,6 @@ type Event struct {
 }
 
 func main() {
-	var mySlice = []byte{148, 28, 0, 0}
-	data := binary.BigEndian.Uint64(mySlice)
-	fmt.Println(data)
 	stopper := make(chan os.Signal, 1)
 	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
 

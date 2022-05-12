@@ -17,8 +17,8 @@ struct task_struct {
 
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx) {
-    struct task_struct *p = (void *) PT_REGS_PARM1(ctx);
-    bpf_printk("before log: p->pid:%d\n", p->pid);
+    struct task_struct *p;
+    bpf_probe_read(&p, sizeof(p), (void *) PT_REGS_PARM1(ctx));
     __u32 pid = 0;
     bpf_probe_read(&pid, sizeof(pid), &(p->pid));
     bpf_printk("prev pid: %d\n", pid);

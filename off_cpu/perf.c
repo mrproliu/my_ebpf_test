@@ -27,8 +27,8 @@ struct key_t {
 };
 
 SEC("kprobe/finish_task_switch")
-int do_finish_task_switch(struct pt_regs *ctx) {
-    struct task_struct *p = (void *) PT_REGS_PARM1(ctx);
+int do_finish_task_switch(struct pt_regs *ctx, void *prev) {
+    struct task_struct *p = prev;
     struct key_t key = {};
     bpf_probe_read(&key.pid, sizeof(key.pid), &(p->pid));
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));

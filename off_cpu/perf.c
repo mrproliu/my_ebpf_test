@@ -1,9 +1,10 @@
 // +build ignore
 
-#include <stddef.h>
-#include <linux/sched.h>
-#include <linux/bpf.h>
-#include <linux/ptrace.h>
+//#include <stddef.h>
+//#include <linux/sched.h>
+//#include <linux/bpf.h>
+//#include <linux/ptrace.h>
+#include <vmlinux.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
 #include <bpf/bpf_core_read.h>
@@ -13,11 +14,6 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
 } counts SEC(".maps");
-
-struct task_struct {
-	__u32 pid;
-    __u32 tgid;
-};
 
 struct key_t {
     __u32 pid;

@@ -32,6 +32,7 @@ type Event struct {
 }
 
 func main() {
+	log.Printf("start executing")
 	stopper := make(chan os.Signal, 1)
 	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
 

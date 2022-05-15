@@ -11,7 +11,7 @@
 char __license[] SEC("license") = "Dual MIT/GPL";
 
 struct key_t {
-    __u32 tid;
+    __u64 tid;
     int user_stack_id;
     int kernel_stack_id;
     __u64 t;
@@ -42,19 +42,19 @@ struct task_struct {
 
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx) {
-    __u32 pid;
+    __u64 pid;
     __u64 ts, *tsp;
 
     struct task_struct *prev = (void *) PT_REGS_PARM1(ctx);
     bpf_probe_read(&pid, sizeof(pid), &(prev->pid));
-    bpf_printk("prev pid: %d\n", pid);
+    bpf_printk("prev pid: %d", pid);
 
     ts = bpf_ktime_get_ns();
     bpf_map_update_elem(&starts, &pid, &ts, BPF_ANY);
 
     pid = bpf_get_current_pid_tgid();
     tsp = bpf_map_lookup_elem(&starts, &pid);
-    bpf_printk("current pid: %d\n", pid);
+    bpf_printk("current pid: %d", pid);
     if (tsp == 0) {
         return 0;        // missed start or filtered
     }
@@ -62,11 +62,12 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     __u64 t_start = *tsp;
     __u64 t_end = bpf_ktime_get_ns();
     bpf_map_delete_elem(&starts, &pid);
+    bpf_printk("current pid11111: %d", pid);
     if (t_start > t_end) {
         return 0;
     }
 
-    bpf_printk("start: %d, end: %d\n", t_end, t_start);
+    bpf_printk("start: %d, end: %d", t_end, t_start);
     __u64 delta = t_end - t_start;
     // create map key
     struct key_t key = {};
@@ -74,7 +75,7 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);
     key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
     key.t = delta;
-    bpf_printk("aaaa pid: %d\n", pid);
+    bpf_printk("aaaa pid: %d", pid);
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
     return 0;

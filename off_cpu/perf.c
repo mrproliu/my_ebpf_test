@@ -11,7 +11,7 @@
 char __license[] SEC("license") = "Dual MIT/GPL";
 
 struct key_t {
-    __u64 tid;
+    __u32 tid;
     int user_stack_id;
     int kernel_stack_id;
     __u64 t;
@@ -52,7 +52,8 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     ts = bpf_ktime_get_ns();
     bpf_map_update_elem(&starts, &pid, &ts, BPF_ANY);
 
-    pid = bpf_get_current_pid_tgid();
+    struct task_struct *current = (void *)bpf_get_current_task();
+    bpf_probe_read(&pid, sizeof(pid), &(current->pid));
     tsp = bpf_map_lookup_elem(&starts, &pid);
     bpf_printk("current pid: %d", pid);
     if (tsp == 0) {

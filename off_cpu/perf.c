@@ -40,21 +40,27 @@ struct task_struct {
     __u32 tgid;
 };
 
+#define _(P)                                                                   \
+	({                                                                     \
+		typeof(P) val;                                                 \
+		bpf_probe_read_kernel(&val, sizeof(val), &(P));                \
+		val;                                                           \
+	})
+
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx) {
     __u32 pid;
     __u64 ts, *tsp;
 
     struct task_struct *prev = (void *) PT_REGS_PARM1(ctx);
-    bpf_probe_read_kernel(&pid, sizeof(pid), &(prev->pid));
+    pid = _(prev->pid);
     bpf_printk("prev pid: %d", pid);
 
     ts = bpf_ktime_get_ns();
     bpf_map_update_elem(&starts, &pid, &ts, BPF_ANY);
 
     __u64 id = bpf_get_current_pid_tgid();
-    __u32 tid = id;
-    pid = tid;
+    pid = id;
     bpf_printk("current pid: %d", pid);
     tsp = bpf_map_lookup_elem(&starts, &pid);
     if (tsp == 0) {

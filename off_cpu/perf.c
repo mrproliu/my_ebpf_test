@@ -56,8 +56,10 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     pid = _(prev->pid);
     bpf_printk("prev pid: %d", pid);
 
-    ts = bpf_ktime_get_ns();
-    bpf_map_update_elem(&starts, &pid, &ts, BPF_ANY);
+    if (pid == 31018) {
+        ts = bpf_ktime_get_ns();
+        bpf_map_update_elem(&starts, &pid, &ts, BPF_ANY);
+    }
 
     __u64 id = bpf_get_current_pid_tgid();
     pid = id;

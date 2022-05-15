@@ -47,12 +47,14 @@ int do_finish_task_switch(struct pt_regs *ctx) {
 
     struct task_struct *prev = (void *) PT_REGS_PARM1(ctx);
     bpf_probe_read(&pid, sizeof(pid), &(prev->pid));
+    bpf_printk("prev pid: %d\n", pid);
 
     ts = bpf_ktime_get_ns();
     bpf_map_update_elem(&starts, &pid, &ts, BPF_ANY);
 
     pid = bpf_get_current_pid_tgid();
     tsp = bpf_map_lookup_elem(&starts, &pid);
+    bpf_printk("current pid: %d\n", pid);
     if (tsp == 0) {
         return 0;        // missed start or filtered
     }
@@ -64,6 +66,7 @@ int do_finish_task_switch(struct pt_regs *ctx) {
         return 0;
     }
 
+    bpf_printk("start: %d, end: %d\n", t_end, t_start);
     __u64 delta = t_end - t_start;
     // create map key
     struct key_t key = {};

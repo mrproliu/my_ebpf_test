@@ -46,14 +46,14 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     __u64 ts, *tsp;
 
     struct task_struct *prev = (void *) PT_REGS_PARM1(ctx);
-    bpf_probe_read_user(&pid, sizeof(pid), &(prev->pid));
+    bpf_probe_read_kernel(&pid, sizeof(pid), &(prev->pid));
     bpf_printk("prev pid: %d", pid);
 
     ts = bpf_ktime_get_ns();
     bpf_map_update_elem(&starts, &pid, &ts, BPF_ANY);
 
     struct task_struct *current = (void *)bpf_get_current_task();
-    bpf_probe_read_user(&pid, sizeof(pid), &(current->pid));
+    bpf_probe_read_kernel(&pid, sizeof(pid), &(current->pid));
     bpf_printk("current pid: %d", pid);
     tsp = bpf_map_lookup_elem(&starts, &pid);
     if (tsp == 0) {

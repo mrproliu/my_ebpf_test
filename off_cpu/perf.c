@@ -59,10 +59,10 @@ int do_finish_task_switch(struct pt_regs *ctx) {
         return 0;        // missed start or filtered
     }
 
+    bpf_printk("current pid11111: %d", pid);
     __u64 t_start = *tsp;
     __u64 t_end = bpf_ktime_get_ns();
     bpf_map_delete_elem(&starts, &pid);
-    bpf_printk("current pid11111: %d", pid);
     if (t_start > t_end) {
         return 0;
     }

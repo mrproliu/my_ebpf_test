@@ -25,7 +25,7 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpfel -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf perf.c -- -I$HOME/headers/noinclude/ -D__TARGET_ARCH_x86
 
 type Event struct {
-	Pid           uint64
+	Pid           uint32
 	UserStackId   uint32
 	KernelStackId uint32
 	Time          uint64

@@ -19,6 +19,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
@@ -28,7 +29,7 @@ type Event struct {
 	Pid           uint32
 	UserStackId   uint32
 	KernelStackId uint32
-	Time          uint64
+	Time          int64
 }
 
 func main() {
@@ -97,6 +98,7 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("pid: %d, user stack: %d, kernel stack: %d, time: %d\n", event.Pid, event.UserStackId, event.KernelStackId, event.Time)
+		exeTime := time.Duration(event.Time)
+		fmt.Printf("pid: %d, user stack: %d, kernel stack: %d, time: %d\n", event.Pid, event.UserStackId, event.KernelStackId, exeTime.Milliseconds())
 	}
 }

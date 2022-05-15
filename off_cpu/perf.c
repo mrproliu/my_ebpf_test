@@ -14,7 +14,7 @@ struct key_t {
     __u32 tid;
     int user_stack_id;
     int kernel_stack_id;
-    __u64 t;
+    __u32 t;
 };
 
 struct {
@@ -54,7 +54,6 @@ int do_finish_task_switch(struct pt_regs *ctx) {
 
     struct task_struct *prev = (void *) PT_REGS_PARM1(ctx);
     pid = _(prev->pid);
-    bpf_printk("prev pid: %d", pid);
 
     if (pid == 31018) {
         ts = bpf_ktime_get_ns();
@@ -63,7 +62,6 @@ int do_finish_task_switch(struct pt_regs *ctx) {
 
     __u64 id = bpf_get_current_pid_tgid();
     pid = id;
-    bpf_printk("current pid: %d", pid);
     tsp = bpf_map_lookup_elem(&starts, &pid);
     if (tsp == 0) {
         return 0;        // missed start or filtered

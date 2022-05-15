@@ -38,7 +38,7 @@ struct {
 struct task_struct {
 	__u32 pid;
     __u32 tgid;
-};
+}  __attribute__((preserve_access_index));
 
 #define _(P)                                                                   \
 	({                                                                     \

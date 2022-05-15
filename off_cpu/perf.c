@@ -52,15 +52,15 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     ts = bpf_ktime_get_ns();
     bpf_map_update_elem(&starts, &pid, &ts, BPF_ANY);
 
-    struct task_struct *current = (void *)bpf_get_current_task();
-    bpf_probe_read_kernel(&pid, sizeof(pid), &(current->pid));
+    __u64 id = bpf_get_current_pid_tgid();
+    __u32 tid = id;
+    pid = tid;
     bpf_printk("current pid: %d", pid);
     tsp = bpf_map_lookup_elem(&starts, &pid);
     if (tsp == 0) {
         return 0;        // missed start or filtered
     }
 
-    bpf_printk("current pid11111: %d", pid);
     __u64 t_start = *tsp;
     __u64 t_end = bpf_ktime_get_ns();
     bpf_map_delete_elem(&starts, &pid);
@@ -76,7 +76,6 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);
     key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
     key.t = delta;
-    bpf_printk("aaaa pid: %d", pid);
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
     return 0;

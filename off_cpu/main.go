@@ -9,6 +9,7 @@ package main
 
 import (
 	"bytes"
+	"ebpf_test/tools"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -40,6 +41,16 @@ func main() {
 	// Allow the current process to lock memory for eBPF resources.
 	if err := rlimit.RemoveMemlock(); err != nil {
 		log.Fatal(err)
+	}
+
+	kernelFileProfilingStat, err := tools.KernelFileProfilingStat()
+	if err != nil {
+		log.Fatalf("load kernel symbol error: %v", err)
+	}
+
+	exeProfilingStat, err := tools.ExecutableFileProfilingStat("/proc/31018/exe")
+	if err != nil {
+		log.Fatalf("load exe symbol error: %v", err)
 	}
 
 	// load bpf
@@ -100,5 +111,30 @@ func main() {
 
 		exeTime := time.Duration(event.Time)
 		fmt.Printf("pid: %d, user stack: %d, kernel stack: %d, time: %d\n", event.Pid, event.UserStackId, event.KernelStackId, exeTime.Milliseconds())
+
+		//if int(event.Pid) == pid {
+		stackIdList := make([]uint64, 100)
+		err = objs.Stacks.Lookup(event.UserStackId, &stackIdList)
+		if err != nil {
+			fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
+			continue
+		}
+		symbols := exeProfilingStat.FindSymbols(stackIdList, "MISSING")
+		fmt.Printf("user stack:\n")
+		for _, s := range symbols {
+			fmt.Printf("%s\n", s)
+		}
+
+		err = objs.Stacks.Lookup(event.KernelStackId, &stackIdList)
+		if err != nil {
+			fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
+			continue
+		}
+		fmt.Printf("kernel stack:\n")
+		symbols = kernelFileProfilingStat.FindSymbols(stackIdList, "MISSING")
+		for _, s := range symbols {
+			fmt.Printf("%s\n", s)
+		}
+		fmt.Printf("---------------\n")
 	}
 }

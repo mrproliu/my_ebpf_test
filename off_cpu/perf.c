@@ -74,7 +74,6 @@ int do_finish_task_switch(struct pt_regs *ctx) {
         return 0;
     }
 
-    bpf_printk("start: %d, end: %d", t_end, t_start);
     __u64 delta = t_end - t_start;
     // create map key
     struct key_t key = {};

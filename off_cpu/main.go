@@ -29,6 +29,11 @@ type Event struct {
 	KernelStackId uint32
 }
 
+type EventValue struct {
+	Counts uint64
+	Deltas uint64
+}
+
 func main() {
 	if len(os.Args) <= 1 {
 		log.Fatal("please input the pid need to be monitor")
@@ -85,7 +90,7 @@ func main() {
 
 	timer := time.NewTicker(5 * time.Second)
 	var event Event
-	var val uint64
+	var val EventValue
 	for {
 		select {
 		case <-timer.C:
@@ -97,7 +102,7 @@ func main() {
 				eachCount++
 				//exeTime := time.Duration(val)
 				//fmt.Printf("found event, userStack: %d, kernelStack: %d, time: %dms\n", event.UserStackId, event.KernelStackId, exeTime.Milliseconds())
-				fmt.Printf("found event, userStack: %d, kernelStack: %d, times: %d\n", event.UserStackId, event.KernelStackId, val)
+				fmt.Printf("found event, userStack: %d, kernelStack: %d, execute count: %d, total duration: %d\n", event.UserStackId, event.KernelStackId, val.Counts, val.Deltas)
 
 				stackIdList := make([]uint64, 100)
 				err = objs.Stacks.Lookup(event.UserStackId, &stackIdList)

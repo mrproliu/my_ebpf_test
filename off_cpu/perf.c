@@ -16,6 +16,11 @@ struct key_t {
     int kernel_stack_id;
 };
 
+struct value_t {
+    __u64 counts;
+    __u64 deltas;
+};
+
 struct {
     __uint(type, BPF_MAP_TYPE_STACK_TRACE);
     __uint(key_size, sizeof(__u32));
@@ -33,7 +38,7 @@ struct {
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);
 	__type(key, struct key_t);
-	__type(value, __u64);
+	__type(value, struct value_t);
 	__uint(max_entries, 10000);
 } counts SEC(".maps");
 
@@ -55,7 +60,7 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     asm("%0 = MONITOR_PID ll" : "=r"(monitor_pid));
 
     __u32 pid;
-    __u64 ts, *tsp, *val, zero = 0;
+    __u64 ts, *tsp;
 
     struct task_struct *prev = (void *) PT_REGS_PARM1(ctx);
     pid = _(prev->pid);
@@ -86,13 +91,16 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);
     key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
 
+    struct value_t *val;
     val = bpf_map_lookup_elem(&counts, &key);
     if (!val) {
-         bpf_map_update_elem(&counts, &key, &zero, BPF_NOEXIST);
+        struct value_t value = {};
+         bpf_map_update_elem(&counts, &key, &value, BPF_NOEXIST);
          val = bpf_map_lookup_elem(&counts, &key);
          if (!val)
              return 0;
     }
-    (*val) += 1;
+    (*val).counts += 1;
+    (*val).deltas += t_end - t_start;
     return 0;
 }

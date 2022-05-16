@@ -10,6 +10,7 @@ package main
 import (
 	"ebpf_test/tools"
 	"fmt"
+	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/rlimit"
 	"log"
@@ -35,10 +36,6 @@ type EventValue struct {
 }
 
 func main() {
-	err := printSysInfo()
-	if err != nil {
-		log.Fatalf("load uname error: %v", err)
-	}
 	if len(os.Args) <= 1 {
 		log.Fatal("please input the pid need to be monitor")
 		return
@@ -55,6 +52,12 @@ func main() {
 	// Allow the current process to lock memory for eBPF resources.
 	if err := rlimit.RemoveMemlock(); err != nil {
 		log.Fatal(err)
+	}
+
+	btf, err := findKernelBTF()
+	if err != nil {
+		log.Fatalf("load btf file error: %v", err)
+		return
 	}
 
 	kernelFileProfilingStat, err := tools.KernelFileProfilingStat()
@@ -82,7 +85,11 @@ func main() {
 			fmt.Printf("found the monitor_pid and replaced, index: %d, opCode: %d\n", i, ins.OpCode)
 		}
 	}
-	if err := spec.LoadAndAssign(&objs, nil); err != nil {
+	var option *ebpf.CollectionOptions
+	if btf != nil {
+		option = &ebpf.CollectionOptions{Programs: ebpf.ProgramOptions{TargetBTF: btf}}
+	}
+	if err := spec.LoadAndAssign(&objs, option); err != nil {
 		log.Fatalf("loading objects: %s", err)
 	}
 	defer objs.Close()

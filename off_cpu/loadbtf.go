@@ -2,27 +2,57 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"embed"
 	"fmt"
 	"golang.org/x/sys/unix"
+	"io"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
-////go:embed *
-//var assets embed.FS
+//go:embed *
+var assets embed.FS
+
 //
-//func asset(file string) ([]byte, error) {
-//	return assets.ReadFile(filepath.ToSlash(file))
-//}
+func asset(file string) ([]byte, error) {
+	return assets.ReadFile(filepath.ToSlash(file))
+}
+
 //
 //func assetDir(dir string) ([]fs.DirEntry, error) {
 //	return assets.ReadDir(filepath.ToSlash(dir))
 //}
 
-func printSysInfo() error {
+func findKernelBTF() (io.ReaderAt, error) {
+	_, err := os.Stat("/sys/kernel/btf/vmlinux")
+	if err == nil {
+		return nil, nil
+	}
+	distributution, version, err := getDistributionAndVersion()
+	if err != nil {
+		return nil, err
+	}
+	u := unix.Utsname{}
+	err = unix.Uname(&u)
+	if err != nil {
+		return nil, err
+	}
+	btfPath := fmt.Sprintf("btf/%s/%s/x86_64/%s.btf", distributution, version, charsToString(u.Release))
+	fmt.Printf("trying to load btf path: %s\n", btfPath)
+	data, err := asset(btfPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes.NewReader(data), nil
+}
+
+func getDistributionAndVersion() (string, string, error) {
 	file, err := os.Open("/etc/lsb-release")
 	if err != nil {
-		return err
+		return "", "", err
 	}
 	scanner := bufio.NewScanner(file)
 	var distrib, release string
@@ -39,7 +69,7 @@ func printSysInfo() error {
 		}
 	}
 	fmt.Printf("dis: %s, release: %s\n", distrib, release)
-	return nil
+	return distrib, release, nil
 }
 
 func getOSUnamer() (*UnameInfo, error) {

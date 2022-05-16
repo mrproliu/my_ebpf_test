@@ -93,7 +93,7 @@ func main() {
 			fmt.Printf("-------------------------------------------\n")
 			iterate := objs.Counts.Iterate()
 			eachCount := 0
-			if iterate.Next(&event, &val) {
+			for iterate.Next(&event, &val) {
 				eachCount++
 				//exeTime := time.Duration(val)
 				//fmt.Printf("found event, userStack: %d, kernelStack: %d, time: %dms\n", event.UserStackId, event.KernelStackId, exeTime.Milliseconds())
@@ -121,8 +121,6 @@ func main() {
 				for _, s := range symbols {
 					fmt.Printf("%s\n", s)
 				}
-			} else {
-				fmt.Printf("could not found data\n")
 			}
 			fmt.Printf("-------------------------------------------\n")
 			fmt.Printf("total each count: %d\n", eachCount)

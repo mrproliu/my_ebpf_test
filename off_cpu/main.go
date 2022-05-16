@@ -92,7 +92,9 @@ func main() {
 			fmt.Printf("total off cpu for %d\n", pid)
 			fmt.Printf("-------------------------------------------\n")
 			iterate := objs.Counts.Iterate()
+			eachCount := 0
 			if iterate.Next(&event, &val) {
+				eachCount++
 				fmt.Printf("found event, userStack: %d, kernelStack: %d, time: %d\n", event.UserStackId, event.KernelStackId, val)
 
 				stackIdList := make([]uint64, 100)
@@ -120,6 +122,8 @@ func main() {
 			} else {
 				fmt.Printf("could not found data\n")
 			}
+			fmt.Printf("-------------------------------------------\n")
+			fmt.Printf("total each count: %d\n", eachCount)
 			fmt.Printf("-------------------------------------------\n")
 		case <-stopper:
 			_ = kprobe.Close()

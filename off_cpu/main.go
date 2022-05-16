@@ -90,7 +90,7 @@ func main() {
 		select {
 		case <-timer.C:
 			fmt.Printf("total off cpu for %d\n", pid)
-			fmt.Printf("-------------------------------------------")
+			fmt.Printf("-------------------------------------------\n")
 			iterate := objs.Counts.Iterate()
 			if iterate.Next(&event, &val) {
 				fmt.Printf("found event, userStack: %d, kernelStack: %d, time: %d\n", event.UserStackId, event.KernelStackId, val)
@@ -120,7 +120,7 @@ func main() {
 			} else {
 				fmt.Printf("could not found data\n")
 			}
-			fmt.Printf("-------------------------------------------")
+			fmt.Printf("-------------------------------------------\n")
 		case <-stopper:
 			_ = kprobe.Close()
 			log.Println("Received signal, exiting program..")

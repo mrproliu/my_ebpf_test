@@ -83,16 +83,17 @@ func main() {
 		log.Fatalf("link to finish task swtich failure: %v", err)
 	}
 
-	timer := time.NewTimer(5 * time.Second)
+	timer := time.NewTicker(5 * time.Second)
 	for {
 		select {
 		case <-timer.C:
-			fmt.Printf("reach 5 second")
+			fmt.Printf("reach 5 second\n")
 		case <-stopper:
 			_ = kprobe.Close()
 			log.Println("Received signal, exiting program..")
 
 			kprobe.Close()
+			return
 		}
 	}
 	//// listen the event

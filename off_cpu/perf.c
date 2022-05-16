@@ -79,7 +79,7 @@ int do_finish_task_switch(struct pt_regs *ctx) {
         return 0;
     }
 
-    __u64 delta = t_end - t_start;
+//    __u64 delta = t_end - t_start;
     // create map key
     struct key_t key = {};
     key.tid = pid;
@@ -93,6 +93,6 @@ int do_finish_task_switch(struct pt_regs *ctx) {
          if (!val)
              return 0;
     }
-    (*val) += delta;
+    (*val) += 1;
     return 0;
 }

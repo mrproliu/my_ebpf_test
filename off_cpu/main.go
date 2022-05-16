@@ -95,8 +95,9 @@ func main() {
 			eachCount := 0
 			if iterate.Next(&event, &val) {
 				eachCount++
-				exeTime := time.Duration(val)
-				fmt.Printf("found event, userStack: %d, kernelStack: %d, time: %dms\n", event.UserStackId, event.KernelStackId, exeTime.Milliseconds())
+				//exeTime := time.Duration(val)
+				//fmt.Printf("found event, userStack: %d, kernelStack: %d, time: %dms\n", event.UserStackId, event.KernelStackId, exeTime.Milliseconds())
+				fmt.Printf("found event, userStack: %d, kernelStack: %d, times: %d\n", event.UserStackId, event.KernelStackId, val)
 
 				stackIdList := make([]uint64, 100)
 				err = objs.Stacks.Lookup(event.UserStackId, &stackIdList)

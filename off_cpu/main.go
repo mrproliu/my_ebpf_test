@@ -10,7 +10,6 @@ package main
 import (
 	"fmt"
 	"github.com/cilium/ebpf/link"
-	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
 	"log"
 	"os"
@@ -79,25 +78,10 @@ func main() {
 	}
 	defer objs.Close()
 
-	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
-	if err != nil {
-		log.Fatalf("creating perf event reader: %s", err)
-	}
-
 	kprobe, err := link.Kprobe("finish_task_switch", objs.DoFinishTaskSwitch)
 	if err != nil {
 		log.Fatalf("link to finish task swtich failure: %v", err)
 	}
-
-	go func() {
-		_ = kprobe.Close()
-		log.Println("Received signal, exiting program..")
-
-		kprobe.Close()
-		if err := rd.Close(); err != nil {
-			log.Fatal("close reader error: %s", err)
-		}
-	}()
 
 	timer := time.NewTimer(5 * time.Second)
 	for {
@@ -109,9 +93,6 @@ func main() {
 			log.Println("Received signal, exiting program..")
 
 			kprobe.Close()
-			if err := rd.Close(); err != nil {
-				log.Fatal("close reader error: %s", err)
-			}
 		}
 	}
 	//// listen the event

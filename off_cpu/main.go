@@ -9,12 +9,16 @@ package main
 
 import (
 	"ebpf_test/tools"
+	"embed"
 	"fmt"
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/rlimit"
+	"io/fs"
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"runtime"
 	"strconv"
 	"syscall"
 	"time"
@@ -34,7 +38,19 @@ type EventValue struct {
 	Deltas uint64
 }
 
+//go:embed *
+var assets embed.FS
+
+func asset(file string) ([]byte, error) {
+	return assets.ReadFile(filepath.ToSlash(file))
+}
+
+func assetDir(dir string) ([]fs.DirEntry, error) {
+	return assets.ReadDir(filepath.ToSlash(dir))
+}
+
 func main() {
+	fmt.Printf("arch: %s, goos: %s\n", runtime.GOARCH, runtime.GOOS)
 	if len(os.Args) <= 1 {
 		log.Fatal("please input the pid need to be monitor")
 		return

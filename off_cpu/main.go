@@ -19,6 +19,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -34,7 +35,16 @@ type Event struct {
 }
 
 func main() {
-	log.Printf("start executing")
+	if len(os.Args) <= 1 {
+		log.Fatal("please input the pid need to be monitor")
+		return
+	}
+	pid, err := strconv.Atoi(os.Args[1])
+	if err != nil {
+		log.Fatal("could not reconized the pid: %s", os.Args[1])
+		return
+	}
+
 	stopper := make(chan os.Signal, 1)
 	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
 
@@ -48,7 +58,7 @@ func main() {
 		log.Fatalf("load kernel symbol error: %v", err)
 	}
 
-	exeProfilingStat, err := tools.ExecutableFileProfilingStat("/proc/31018/exe")
+	exeProfilingStat, err := tools.ExecutableFileProfilingStat(fmt.Sprintf("/proc/%d/exe", pid))
 	if err != nil {
 		log.Fatalf("load exe symbol error: %v", err)
 	}
@@ -59,6 +69,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("loading objects: %s", err)
 		return
+	}
+	funcName := "do_finish_task_switch"
+	for i, ins := range spec.Programs[funcName].Instructions {
+		if ins.Reference == "MONITOR_PID" {
+			spec.Programs[funcName].Instructions[i].Constant = int64(pid)
+			spec.Programs[funcName].Instructions[i].Offset = 0
+			fmt.Printf("found the monitor_pid and replaced, index: %d, opCode: %d\n", i, ins.OpCode)
+		}
 	}
 	if err := spec.LoadAndAssign(&objs, nil); err != nil {
 		log.Fatalf("loading objects: %s", err)

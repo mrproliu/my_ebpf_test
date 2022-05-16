@@ -49,13 +49,15 @@ struct task_struct {
 
 SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx) {
+    int monitor_pid;
+    asm("%0 = MONITOR_PID ll" : "=r"(monitor_pid));
     __u32 pid;
     __u64 ts, *tsp;
 
     struct task_struct *prev = (void *) PT_REGS_PARM1(ctx);
     pid = _(prev->pid);
 
-    if (pid == 31018) {
+    if (pid == monitor_pid) {
         ts = bpf_ktime_get_ns();
         bpf_map_update_elem(&starts, &pid, &ts, BPF_ANY);
     }

@@ -1,3 +1,5 @@
+github.com/apache/skywalking-rover v0.0.0-20220516094940-6dad4c290a03 h1:0UbOVu3p+fmfsRSk063ui3vmunTk6xl591fOZNRtKTc=
+github.com/apache/skywalking-rover v0.0.0-20220516094940-6dad4c290a03/go.mod h1:oI5v5cxvwEfeO3EfCLPzxF9EkBtApNG1NdIDh3yitZY=
 github.com/cilium/ebpf v0.8.1 h1:bLSSEbBLqGPXxls55pGr5qWZaTqcmfDJHhou7t254ao=
 github.com/cilium/ebpf v0.8.1/go.mod h1:f5zLIM0FSNuAkSyLAN7X+Hy6yznlF1mNiWUMfxMtrgk=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=

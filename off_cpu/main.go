@@ -8,8 +8,8 @@
 package main
 
 import (
-	"ebpf_test/tools"
 	"fmt"
+	"github.com/apache/skywalking-rover/pkg/tools"
 	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/rlimit"
@@ -65,7 +65,7 @@ func main() {
 		log.Fatalf("load kernel symbol error: %v", err)
 	}
 
-	exeProfilingStat, err := tools.ExecutableFileProfilingStat(fmt.Sprintf("/proc/%d/exe", pid))
+	exeProfilingStat, err := tools.ProcessProfilingStat(int32(pid), fmt.Sprintf("/proc/%d/exe", pid))
 	if err != nil {
 		log.Fatalf("load exe symbol error: %v", err)
 	}

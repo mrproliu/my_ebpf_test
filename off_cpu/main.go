@@ -35,12 +35,10 @@ type EventValue struct {
 }
 
 func main() {
-	uname, err := getOSUnamer()
+	err := printSysInfo()
 	if err != nil {
 		log.Fatalf("load uname error: %v", err)
 	}
-
-	fmt.Printf("sysname: %s, release: %s, version: %s, machine: %s\n", uname.SysName, uname.Release, uname.Version, uname.Machine)
 	if len(os.Args) <= 1 {
 		log.Fatal("please input the pid need to be monitor")
 		return

@@ -1,7 +1,11 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"golang.org/x/sys/unix"
+	"os"
+	"strings"
 )
 
 ////go:embed *
@@ -14,6 +18,29 @@ import (
 //func assetDir(dir string) ([]fs.DirEntry, error) {
 //	return assets.ReadDir(filepath.ToSlash(dir))
 //}
+
+func printSysInfo() error {
+	file, err := os.Open("/etc/lsb-release")
+	if err != nil {
+		return err
+	}
+	scanner := bufio.NewScanner(file)
+	var distrib, release string
+	for scanner.Scan() {
+		// example fields: cgroup2 /sys/fs/cgroup/unified cgroup2 rw,nosuid,nodev,noexec,relatime 0 0
+		fields := strings.Split(scanner.Text(), " ")
+		if len(fields) != 2 {
+			continue
+		}
+		if fields[0] == "DISTRIB_ID" {
+			distrib = strings.ToLower(fields[1])
+		} else if fields[1] == "DISTRIB_RELEASE" {
+			release = strings.ToLower(fields[1])
+		}
+	}
+	fmt.Printf("dis: %s, release: %s\n", distrib, release)
+	return nil
+}
 
 func getOSUnamer() (*UnameInfo, error) {
 	u := unix.Utsname{}

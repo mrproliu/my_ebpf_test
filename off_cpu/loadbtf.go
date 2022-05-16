@@ -34,7 +34,7 @@ func printSysInfo() error {
 		}
 		if fields[0] == "DISTRIB_ID" {
 			distrib = strings.ToLower(fields[1])
-		} else if fields[1] == "DISTRIB_RELEASE" {
+		} else if fields[0] == "DISTRIB_RELEASE" {
 			release = strings.ToLower(fields[1])
 		}
 	}

@@ -204,8 +204,7 @@ func printSysInfo() error {
 	scanner := bufio.NewScanner(file)
 	var distrib, release string
 	for scanner.Scan() {
-		// example fields: cgroup2 /sys/fs/cgroup/unified cgroup2 rw,nosuid,nodev,noexec,relatime 0 0
-		fields := strings.Split(scanner.Text(), " ")
+		fields := strings.Split(scanner.Text(), "=")
 		if len(fields) != 2 {
 			continue
 		}

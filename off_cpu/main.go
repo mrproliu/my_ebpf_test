@@ -8,10 +8,6 @@
 package main
 
 import (
-	"bytes"
-	"ebpf_test/tools"
-	"encoding/binary"
-	"errors"
 	"fmt"
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/perf"
@@ -53,15 +49,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	kernelFileProfilingStat, err := tools.KernelFileProfilingStat()
-	if err != nil {
-		log.Fatalf("load kernel symbol error: %v", err)
-	}
-
-	exeProfilingStat, err := tools.ExecutableFileProfilingStat(fmt.Sprintf("/proc/%d/exe", pid))
-	if err != nil {
-		log.Fatalf("load exe symbol error: %v", err)
-	}
+	//kernelFileProfilingStat, err := tools.KernelFileProfilingStat()
+	//if err != nil {
+	//	log.Fatalf("load kernel symbol error: %v", err)
+	//}
+	//
+	//exeProfilingStat, err := tools.ExecutableFileProfilingStat(fmt.Sprintf("/proc/%d/exe", pid))
+	//if err != nil {
+	//	log.Fatalf("load exe symbol error: %v", err)
+	//}
 
 	// load bpf
 	objs := bpfObjects{}
@@ -94,7 +90,6 @@ func main() {
 	}
 
 	go func() {
-		<-stopper
 		_ = kprobe.Close()
 		log.Println("Received signal, exiting program..")
 
@@ -104,55 +99,70 @@ func main() {
 		}
 	}()
 
-	// listen the event
-	var event Event
+	timer := time.NewTimer(5 * time.Second)
 	for {
-		record, err := rd.Read()
-		if err != nil {
-			if errors.Is(err, perf.ErrClosed) {
-				return
+		select {
+		case <-timer.C:
+			fmt.Printf("reach 5 second")
+		case <-stopper:
+			_ = kprobe.Close()
+			log.Println("Received signal, exiting program..")
+
+			kprobe.Close()
+			if err := rd.Close(); err != nil {
+				log.Fatal("close reader error: %s", err)
 			}
-			log.Printf("reading from perf event reader: %s", err)
-			continue
 		}
-
-		if record.LostSamples != 0 {
-			log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
-			continue
-		}
-
-		// Parse the perf event entry into an Event structure.
-		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
-			log.Printf("parsing perf event: %s, original data: %v", err, record.RawSample)
-			continue
-		}
-
-		exeTime := time.Duration(event.Time)
-		fmt.Printf("pid: %d, user stack: %d, kernel stack: %d, time: %d\n", event.Pid, event.UserStackId, event.KernelStackId, exeTime.Milliseconds())
-
-		//if int(event.Pid) == pid {
-		stackIdList := make([]uint64, 100)
-		err = objs.Stacks.Lookup(event.UserStackId, &stackIdList)
-		if err != nil {
-			fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
-			continue
-		}
-		symbols := exeProfilingStat.FindSymbols(stackIdList, "MISSING")
-		fmt.Printf("user stack:\n")
-		for _, s := range symbols {
-			fmt.Printf("%s\n", s)
-		}
-
-		err = objs.Stacks.Lookup(event.KernelStackId, &stackIdList)
-		if err != nil {
-			fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
-			continue
-		}
-		fmt.Printf("kernel stack:\n")
-		symbols = kernelFileProfilingStat.FindSymbols(stackIdList, "MISSING")
-		for _, s := range symbols {
-			fmt.Printf("%s\n", s)
-		}
-		fmt.Printf("---------------\n")
 	}
+	//// listen the event
+	//var event Event
+	//for {
+	//	record, err := rd.Read()
+	//	if err != nil {
+	//		if errors.Is(err, perf.ErrClosed) {
+	//			return
+	//		}
+	//		log.Printf("reading from perf event reader: %s", err)
+	//		continue
+	//	}
+	//
+	//	if record.LostSamples != 0 {
+	//		log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
+	//		continue
+	//	}
+	//
+	//	// Parse the perf event entry into an Event structure.
+	//	if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
+	//		log.Printf("parsing perf event: %s, original data: %v", err, record.RawSample)
+	//		continue
+	//	}
+	//
+	//	exeTime := time.Duration(event.Time)
+	//	fmt.Printf("pid: %d, user stack: %d, kernel stack: %d, time: %d\n", event.Pid, event.UserStackId, event.KernelStackId, exeTime.Milliseconds())
+	//
+	//	//if int(event.Pid) == pid {
+	//	stackIdList := make([]uint64, 100)
+	//	err = objs.Stacks.Lookup(event.UserStackId, &stackIdList)
+	//	if err != nil {
+	//		fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
+	//		continue
+	//	}
+	//	symbols := exeProfilingStat.FindSymbols(stackIdList, "MISSING")
+	//	fmt.Printf("user stack:\n")
+	//	for _, s := range symbols {
+	//		fmt.Printf("%s\n", s)
+	//	}
+	//
+	//	err = objs.Stacks.Lookup(event.KernelStackId, &stackIdList)
+	//	if err != nil {
+	//		fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
+	//		continue
+	//	}
+	//	fmt.Printf("kernel stack:\n")
+	//	symbols = kernelFileProfilingStat.FindSymbols(stackIdList, "MISSING")
+	//	for _, s := range symbols {
+	//		fmt.Printf("%s\n", s)
+	//	}
+	//	fmt.Printf("---------------\n")
+	//}
 }

@@ -14,7 +14,6 @@ struct key_t {
     __u32 tid;
     int user_stack_id;
     int kernel_stack_id;
-    __u32 t;
 };
 
 struct {
@@ -32,7 +31,10 @@ struct {
 } starts SEC(".maps");
 
 struct {
-	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__type(key, struct key_t);
+	__type(value, __u64);
+	__uint(max_entries, 10000);
 } counts SEC(".maps");
 
 struct task_struct {
@@ -51,8 +53,9 @@ SEC("kprobe/finish_task_switch")
 int do_finish_task_switch(struct pt_regs *ctx) {
     int monitor_pid;
     asm("%0 = MONITOR_PID ll" : "=r"(monitor_pid));
+
     __u32 pid;
-    __u64 ts, *tsp;
+    __u64 ts, *tsp, *val, zero = 0;
 
     struct task_struct *prev = (void *) PT_REGS_PARM1(ctx);
     pid = _(prev->pid);
@@ -82,8 +85,14 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     key.tid = pid;
     key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);
     key.user_stack_id = bpf_get_stackid(ctx, &stacks, (1ULL << 8));
-    key.t = delta;
 
-    bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
+    val = bpf_map_lookup_elem(&counts, &key);
+    if (!val) {
+         bpf_map_update_elem(&counts, &key, &zero, BPF_NOEXIST);
+         val = bpf_map_lookup_elem(&counts, &key);
+         if (!val)
+             return 0;
+    }
+    (*val) += delta;
     return 0;
 }

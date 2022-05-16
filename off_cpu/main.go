@@ -8,6 +8,7 @@
 package main
 
 import (
+	"ebpf_test/tools"
 	"fmt"
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/rlimit"
@@ -26,7 +27,6 @@ type Event struct {
 	Pid           uint32
 	UserStackId   uint32
 	KernelStackId uint32
-	Time          int64
 }
 
 func main() {
@@ -48,15 +48,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//kernelFileProfilingStat, err := tools.KernelFileProfilingStat()
-	//if err != nil {
-	//	log.Fatalf("load kernel symbol error: %v", err)
-	//}
-	//
-	//exeProfilingStat, err := tools.ExecutableFileProfilingStat(fmt.Sprintf("/proc/%d/exe", pid))
-	//if err != nil {
-	//	log.Fatalf("load exe symbol error: %v", err)
-	//}
+	kernelFileProfilingStat, err := tools.KernelFileProfilingStat()
+	if err != nil {
+		log.Fatalf("load kernel symbol error: %v", err)
+	}
+
+	exeProfilingStat, err := tools.ExecutableFileProfilingStat(fmt.Sprintf("/proc/%d/exe", pid))
+	if err != nil {
+		log.Fatalf("load exe symbol error: %v", err)
+	}
 
 	// load bpf
 	objs := bpfObjects{}
@@ -84,10 +84,43 @@ func main() {
 	}
 
 	timer := time.NewTicker(5 * time.Second)
+	var event Event
+	var val uint64
 	for {
 		select {
 		case <-timer.C:
-			fmt.Printf("reach 5 second\n")
+			fmt.Printf("total off cpu for %d\n", pid)
+			fmt.Printf("-------------------------------------------")
+			iterate := objs.Counts.Iterate()
+			if iterate.Next(&event, &val) {
+				fmt.Printf("found event, userStack: %d, kernelStack: %d, time: %d\n", event.UserStackId, event.KernelStackId, val)
+
+				stackIdList := make([]uint64, 100)
+				err = objs.Stacks.Lookup(event.UserStackId, &stackIdList)
+				if err != nil {
+					fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
+					continue
+				}
+				symbols := exeProfilingStat.FindSymbols(stackIdList, "MISSING")
+				fmt.Printf("user stack:\n")
+				for _, s := range symbols {
+					fmt.Printf("%s\n", s)
+				}
+
+				err = objs.Stacks.Lookup(event.KernelStackId, &stackIdList)
+				if err != nil {
+					fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
+					continue
+				}
+				fmt.Printf("kernel stack:\n")
+				symbols = kernelFileProfilingStat.FindSymbols(stackIdList, "MISSING")
+				for _, s := range symbols {
+					fmt.Printf("%s\n", s)
+				}
+			} else {
+				fmt.Printf("could not found data\n")
+			}
+			fmt.Printf("-------------------------------------------")
 		case <-stopper:
 			_ = kprobe.Close()
 			log.Println("Received signal, exiting program..")

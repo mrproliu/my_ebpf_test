@@ -8,3 +8,8 @@ require (
 )
 
 require github.com/ianlancetaylor/demangle v0.0.0-20220319035150-800ac71e25c2
+
+require (
+	github.com/hashicorp/errwrap v1.0.0 // indirect
+	github.com/hashicorp/go-multierror v1.1.1 // indirect
+)

@@ -8,8 +8,8 @@
 package main
 
 import (
+	"ebpf_test/tools"
 	"fmt"
-	"github.com/apache/skywalking-rover/pkg/tools"
 	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/rlimit"

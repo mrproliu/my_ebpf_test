@@ -74,8 +74,7 @@ int do_finish_task_switch(struct pt_regs *ctx) {
         bpf_printk("current: %d:%d\n", curpid, curtgid);
     }
 
-
-    if (pid == monitor_pid) {
+    if (tgid == monitor_pid) {
         ts = bpf_ktime_get_ns();
         bpf_map_update_elem(&starts, &pid, &ts, BPF_ANY);
     }

@@ -69,8 +69,11 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     __u64 curid = bpf_get_current_pid_tgid();
     __u32 curpid = curid;
     __u32 curtgid = curid >> 32;
-    bpf_printk("prev %d:%d\n", pid, tgid);
-    bpf_printk("current: %d:%d\n", curpid, curtgid);
+    if (curpid != curtgid) {
+        bpf_printk("prev %d:%d\n", pid, tgid);
+        bpf_printk("current: %d:%d\n", curpid, curtgid);
+    }
+
 
     if (pid == monitor_pid) {
         ts = bpf_ktime_get_ns();

@@ -59,12 +59,12 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     int monitor_pid;
     asm("%0 = MONITOR_PID ll" : "=r"(monitor_pid));
 
-    __u32 pid;
+    __u32 pid, tgid;
     __u64 ts, *tsp;
 
     struct task_struct *prev = (void *) PT_REGS_PARM1(ctx);
     pid = _(prev->pid);
-    __u32 tgid = _(prev->tgid);
+    tgid = _(prev->tgid);
 
     __u64 curid = bpf_get_current_pid_tgid();
     __u32 curpid = curid;

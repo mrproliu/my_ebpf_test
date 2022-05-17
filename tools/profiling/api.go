@@ -18,6 +18,7 @@
 package profiling
 
 import (
+	"fmt"
 	"github.com/ianlancetaylor/demangle"
 )
 
@@ -89,7 +90,7 @@ func (i *Info) FindSymbols(addresses []uint64, defaultSymbol string) []string {
 		}
 		s := i.FindSymbolName(addr)
 		if s == "" {
-			s = defaultSymbol
+			s = fmt.Sprintf("%s - [%d]", defaultSymbol, addr)
 		}
 		result = append(result, s)
 	}

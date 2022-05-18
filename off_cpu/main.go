@@ -102,15 +102,19 @@ func main() {
 	timer := time.NewTicker(5 * time.Second)
 	var event Event
 	var val EventValue
+	count := 0
 	for {
 		select {
 		case <-timer.C:
-			fmt.Printf("total off cpu for %d\n", pid)
+			count++
+			fmt.Printf("total off cpu for %d, cycle:%d\n", pid, count)
 			fmt.Printf("-------------------------------------------\n")
 			iterate := objs.Counts.Iterate()
 			eachCount := 0
+			var totalDuration int64 = 0
 			for iterate.Next(&event, &val) {
 				eachCount++
+				totalDuration += int64(val.Deltas)
 				exeTime := time.Duration(val.Deltas)
 				fmt.Printf("found event, userStack: %d, kernelStack: %d, execute count: %d, total duration: %dms\n", event.UserStackId, event.KernelStackId, val.Counts, exeTime.Milliseconds())
 
@@ -138,7 +142,8 @@ func main() {
 				}
 			}
 			fmt.Printf("-------------------------------------------\n")
-			fmt.Printf("total each count: %d\n", eachCount)
+			fmt.Printf("total each count: %d, cycle: %d\n", eachCount, count)
+			fmt.Printf("total duration: %fs", time.Duration(totalDuration).Seconds())
 			fmt.Printf("-------------------------------------------\n")
 		case <-stopper:
 			_ = kprobe.Close()

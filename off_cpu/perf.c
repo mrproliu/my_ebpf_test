@@ -66,19 +66,17 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     pid = _(prev->pid);
     tgid = _(prev->tgid);
 
-    __u64 curid = bpf_get_current_pid_tgid();
-    __u32 curtgid = curid >> 32;
-    if (curtgid == monitor_pid || tgid == monitor_pid) {
-        bpf_printk("off->on: %d:%d\n", tgid, curtgid);
-    }
-
     if (tgid == monitor_pid) {
         ts = bpf_ktime_get_ns();
         bpf_map_update_elem(&starts, &pid, &ts, BPF_ANY);
     }
 
-    __u64 id = bpf_get_current_pid_tgid();
-    pid = id;
+    struct task_struct *current = (void *)bpf_get_current_task();
+    pid = _(current->pid);
+    tgid = _(current->tgid);
+    if (tgid != monitor_pid) {
+        return 0;
+    }
     tsp = bpf_map_lookup_elem(&starts, &pid);
     if (tsp == 0) {
         return 0;        // missed start or filtered
@@ -91,7 +89,6 @@ int do_finish_task_switch(struct pt_regs *ctx) {
         return 0;
     }
 
-//    __u64 delta = t_end - t_start;
     // create map key
     struct key_t key = {};
     key.tid = pid;
@@ -109,5 +106,6 @@ int do_finish_task_switch(struct pt_regs *ctx) {
     }
     (*val).counts += 1;
     (*val).deltas += t_end - t_start;
+    bpf_printk("pid: >%d, time: %d", pid, t_end - t_start);
     return 0;
 }

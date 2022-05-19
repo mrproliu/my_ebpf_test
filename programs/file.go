@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
 )
 
 func main() {
@@ -15,6 +14,6 @@ func main() {
 			break
 		}
 
-		time.Sleep(time.Second * 1)
+		//time.Sleep(time.Second * 1)
 	}
 }

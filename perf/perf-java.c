@@ -35,10 +35,10 @@ int do_perf_event(struct pt_regs *ctx) {
     u32 tgid = id >> 32;
     u32 tid = id;
 
+    bpf_printk("current pid: needpid: %d, %d, tgid: %d\n", pid, tgid, tid);
     if (tgid != pid) {
         return 0;
     }
-    bpf_printk("current pid: %d, tgid: %d\n", tgid, tid);
 
 	// create map key
     struct key_t key = {.pid = tgid};

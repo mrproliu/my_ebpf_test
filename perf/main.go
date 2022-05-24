@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"debug/elf"
 	"debug/gosym"
-	"ebpf_test/perf/third_perf"
 	"ebpf_test/tools"
 	"encoding/binary"
 	"errors"
@@ -95,33 +94,23 @@ func main() {
 	//duration, _ := time.ParseDuration("9ms")
 	//t := duration
 	for i := 0; i < runtime.NumCPU(); i++ {
-		ca := new(third_perf.Attr)
-		third_perf.CPUClock.Configure(ca)
-		ca.SetSampleFreq(49)
-		open, err := third_perf.Open(ca, pid, i, nil)
-		if err != nil {
-			log.Fatalf("test1: %v", err)
+		eventAttr := &unix.PerfEventAttr{
+			Type:        unix.PERF_TYPE_SOFTWARE,
+			Config:      unix.PERF_COUNT_SW_CPU_CLOCK,
+			Sample_type: unix.PERF_SAMPLE_RAW,
+			Bits:        unix.PerfBitFreq,
+			Sample:      49,
+			Wakeup:      1,
 		}
-		//eventAttr := &unix.PerfEventAttr{
-		//	Type:        unix.PERF_TYPE_SOFTWARE,
-		//	Config:      unix.PERF_COUNT_SW_CPU_CLOCK,
-		//	Bits: 		 unix.PerfBitFreq,
-		//	Sample:      uint64(t.Nanoseconds()),
-		//	Wakeup:      1,
-		//}
-		//fd, err := unix.PerfEventOpen(
-		//	eventAttr,
-		//	pid,
-		//	i,
-		//	-1,
-		//	0,
-		//)
-		//if err != nil {
-		//	log.Fatal("test1", err)
-		//}
-		fd, err := open.FD()
+		fd, err := unix.PerfEventOpen(
+			eventAttr,
+			pid,
+			i,
+			-1,
+			0,
+		)
 		if err != nil {
-			log.Fatalf("test2: %v", err)
+			log.Fatal("test1", err)
 		}
 		perfEvents = append(perfEvents, fd)
 

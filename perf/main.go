@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"debug/elf"
 	"debug/gosym"
+	"ebpf_test/tools"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -126,17 +127,14 @@ func main() {
 	}
 	defer rd.Close()
 
-	elfFile, symbols, err := readSymbols(fmt.Sprintf("/proc/%d/exe", pid))
+	_, err = tools.ProcessProfilingStat(int32(pid), fmt.Sprintf("/proc/%d/exe", pid))
 	if err != nil {
-		log.Fatalf("read symbols error: %v", err)
-		return
+		log.Fatalf("read symbol error: %v", err)
 	}
 
 	go func() {
 		<-stopper
 		log.Println("Received signal, exiting program..")
-
-		_ = elfFile.Close()
 
 		for _, fd := range perfEvents {
 			if err := unix.IoctlSetInt(fd, unix.PERF_EVENT_IOC_DISABLE, 0); err != nil {
@@ -181,42 +179,42 @@ func main() {
 
 		fmt.Printf("stack id to bytes: %d %d\n", event.KernelStackId, event.UserStackId)
 
-		if int(event.Pid) == pid {
-			val := make([]uint64, 100)
-			err = objs.Stacks.Lookup(event.UserStackId, &val)
-			if err != nil {
-				fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
-				continue
-			}
-			for _, addr := range val {
-				if addr == 0 {
-					continue
-				}
-				toFunc := symbols.PCToFunc(addr)
-				if toFunc != nil {
-					fmt.Printf("%s", toFunc.Name)
-					fmt.Printf("(")
-					for i, p := range toFunc.Params {
-						if i > 0 {
-							fmt.Printf(", ")
-						}
-						fmt.Printf("%s", p.Name)
-					}
-					fmt.Printf(")\n")
-					continue
-				}
-				fmt.Printf("not found!!!")
-			}
-		} else if int(event.Pid) == 0 {
-			val := make([]uint64, 100)
-			err = objs.Stacks.Lookup(event.KernelStackId, &val)
-			if err != nil {
-				fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
-				continue
-			}
-
-			fmt.Printf("find kernel stack: %v\n", val)
-		}
+		//if int(event.Pid) == pid {
+		//	val := make([]uint64, 100)
+		//	err = objs.Stacks.Lookup(event.UserStackId, &val)
+		//	if err != nil {
+		//		fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
+		//		continue
+		//	}
+		//	for _, addr := range val {
+		//		if addr == 0 {
+		//			continue
+		//		}
+		//		toFunc := symbols.PCToFunc(addr)
+		//		if toFunc != nil {
+		//			fmt.Printf("%s", toFunc.Name)
+		//			fmt.Printf("(")
+		//			for i, p := range toFunc.Params {
+		//				if i > 0 {
+		//					fmt.Printf(", ")
+		//				}
+		//				fmt.Printf("%s", p.Name)
+		//			}
+		//			fmt.Printf(")\n")
+		//			continue
+		//		}
+		//		fmt.Printf("not found!!!")
+		//	}
+		//} else if int(event.Pid) == 0 {
+		//	val := make([]uint64, 100)
+		//	err = objs.Stacks.Lookup(event.KernelStackId, &val)
+		//	if err != nil {
+		//		fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
+		//		continue
+		//	}
+		//
+		//	fmt.Printf("find kernel stack: %v\n", val)
+		//}
 
 		fmt.Printf("---------------\n")
 	}

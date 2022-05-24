@@ -35,7 +35,7 @@ int do_perf_event(struct pt_regs *ctx) {
     u32 tgid = id >> 32;
     u32 tid = id;
 
-    if (tgid != pid && tgid != 0) {
+    if (tgid != pid) {
         return 0;
     }
     bpf_printk("current pid: %d, tgid: %d\n", tgid, tid);

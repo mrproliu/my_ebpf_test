@@ -76,14 +76,14 @@ func main() {
 		return
 	}
 	// adjust the pid
-	funcName := "do_perf_event"
-	for _, ins := range spec.Programs[funcName].Instructions {
-		if ins.Constant == int64(999) {
-			ins.Constant = int64(pid)
-			fmt.Printf("found the pid and replaced, pid: %d\n", pid)
-			break
-		}
-	}
+	//funcName := "do_perf_event"
+	//for _, ins := range spec.Programs[funcName].Instructions {
+	//	if ins.Constant == int64(999) {
+	//		ins.Constant = int64(pid)
+	//		fmt.Printf("found the pid and replaced, pid: %d\n", pid)
+	//		break
+	//	}
+	//}
 
 	if err := spec.LoadAndAssign(&objs, nil); err != nil {
 		log.Fatalf("loading objects: %s", err)

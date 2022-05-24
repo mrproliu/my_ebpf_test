@@ -29,7 +29,7 @@ struct {
 SEC("perf_event")
 int do_perf_event(struct pt_regs *ctx) {
     // should change the pid value
-    const u32 pid = 999;
+    const u32 pid = 10511;
 
     u64 id = bpf_get_current_pid_tgid();
     u32 tgid = id >> 32;

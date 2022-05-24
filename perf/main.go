@@ -80,7 +80,7 @@ func main() {
 	for _, ins := range spec.Programs[funcName].Instructions {
 		if ins.Constant == int64(999) {
 			ins.Constant = int64(pid)
-			fmt.Printf("found the pid and replaced\n")
+			fmt.Printf("found the pid and replaced, pid: %d\n", pid)
 			break
 		}
 	}

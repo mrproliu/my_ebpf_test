@@ -102,7 +102,7 @@ func main() {
 		}
 		fd, err := unix.PerfEventOpen(
 			eventAttr,
-			-1,
+			pid,
 			i,
 			-1,
 			0,

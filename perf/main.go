@@ -91,15 +91,14 @@ func main() {
 	defer objs.Close()
 
 	perfEvents := make([]int, 0)
-	duration, _ := time.ParseDuration("9ms")
-	t := duration
+	//duration, _ := time.ParseDuration("9ms")
+	//t := duration
 	for i := 0; i < runtime.NumCPU(); i++ {
 		eventAttr := &unix.PerfEventAttr{
-			Type:        unix.PERF_TYPE_SOFTWARE,
-			Config:      unix.PERF_COUNT_SW_CPU_CLOCK,
-			Sample_type: unix.PERF_SAMPLE_RAW,
-			Sample:      uint64(t.Nanoseconds()),
-			Wakeup:      1,
+			Type:   unix.PERF_TYPE_SOFTWARE,
+			Config: unix.PERF_COUNT_SW_CPU_CLOCK,
+			Sample: 49,
+			Wakeup: 1,
 		}
 		fd, err := unix.PerfEventOpen(
 			eventAttr,

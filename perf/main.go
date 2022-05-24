@@ -128,7 +128,7 @@ func main() {
 	}
 	defer rd.Close()
 
-	_, err = tools.ProcessProfilingStat(int32(pid), fmt.Sprintf("/proc/%d/exe", pid))
+	stat, err := tools.ProcessProfilingStat(int32(pid), fmt.Sprintf("/proc/%d/exe", pid))
 	if err != nil {
 		log.Fatalf("read symbol error: %v", err)
 	}
@@ -180,42 +180,29 @@ func main() {
 
 		fmt.Printf("stack id to bytes: %d %d\n", event.KernelStackId, event.UserStackId)
 
-		//if int(event.Pid) == pid {
-		//	val := make([]uint64, 100)
-		//	err = objs.Stacks.Lookup(event.UserStackId, &val)
-		//	if err != nil {
-		//		fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
-		//		continue
-		//	}
-		//	for _, addr := range val {
-		//		if addr == 0 {
-		//			continue
-		//		}
-		//		toFunc := symbols.PCToFunc(addr)
-		//		if toFunc != nil {
-		//			fmt.Printf("%s", toFunc.Name)
-		//			fmt.Printf("(")
-		//			for i, p := range toFunc.Params {
-		//				if i > 0 {
-		//					fmt.Printf(", ")
-		//				}
-		//				fmt.Printf("%s", p.Name)
-		//			}
-		//			fmt.Printf(")\n")
-		//			continue
-		//		}
-		//		fmt.Printf("not found!!!")
-		//	}
-		//} else if int(event.Pid) == 0 {
-		//	val := make([]uint64, 100)
-		//	err = objs.Stacks.Lookup(event.KernelStackId, &val)
-		//	if err != nil {
-		//		fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
-		//		continue
-		//	}
-		//
-		//	fmt.Printf("find kernel stack: %v\n", val)
-		//}
+		if int(event.Pid) == pid {
+			val := make([]uint64, 100)
+			err = objs.Stacks.Lookup(event.UserStackId, &val)
+			if err != nil {
+				fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
+				continue
+			}
+			symbols := stat.FindSymbols(val, "[MISSING]")
+			for _, s := range symbols {
+				fmt.Printf("%s\n", s)
+			}
+
+			fmt.Printf("kernel:")
+			err = objs.Stacks.Lookup(event.KernelStackId, &val)
+			if err != nil {
+				fmt.Printf("err look up : %d, %v\n", event.KernelStackId, err)
+				continue
+			}
+			symbols = stat.FindSymbols(val, "[MISSING]")
+			for _, s := range symbols {
+				fmt.Printf("%s\n", s)
+			}
+		}
 
 		fmt.Printf("---------------\n")
 	}

@@ -99,7 +99,7 @@ func main() {
 			Type:   unix.PERF_TYPE_SOFTWARE,
 			Config: unix.PERF_COUNT_SW_CPU_CLOCK,
 			Bits:   unix.PerfBitFreq,
-			Sample: 1,
+			Sample: 10,
 			Wakeup: 1,
 		}
 		fd, err := unix.PerfEventOpen(

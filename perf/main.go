@@ -19,6 +19,7 @@ import (
 	"runtime"
 	"strconv"
 	"syscall"
+	"time"
 )
 
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
@@ -173,7 +174,8 @@ func main() {
 		//if int(event.Pid) != pid {
 		//	continue
 		//}
-		fmt.Printf("pid: %d, taskid: %d, name: %s, stack: %d:%d\n", event.Pid, event.TaskId, event.Name, event.KernelStackId, event.UserStackId)
+		ti := time.Now().Format("2006-01-02 15:04:05")
+		fmt.Printf("%s: pid: %d, taskid: %d, name: %s, stack: %d:%d\n", ti, event.Pid, event.TaskId, event.Name, event.KernelStackId, event.UserStackId)
 
 		fmt.Printf("stack id to bytes: %d %d\n", event.KernelStackId, event.UserStackId)
 

@@ -183,6 +183,7 @@ func main() {
 		if int(event.Pid) == pid {
 			val := make([]uint64, 100)
 			err = objs.Stacks.Lookup(event.UserStackId, &val)
+			fmt.Printf("user:\n")
 			if err != nil {
 				fmt.Printf("err look up : %d, %v\n", event.UserStackId, err)
 				continue
@@ -192,7 +193,7 @@ func main() {
 				fmt.Printf("%s\n", s)
 			}
 
-			fmt.Printf("kernel:")
+			fmt.Printf("kernel:\n")
 			err = objs.Stacks.Lookup(event.KernelStackId, &val)
 			if err != nil {
 				fmt.Printf("err look up : %d, %v\n", event.KernelStackId, err)

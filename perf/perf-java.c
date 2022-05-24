@@ -29,14 +29,15 @@ struct {
 SEC("perf_event")
 int do_perf_event(struct pt_regs *ctx) {
     // should change the pid value
-    const u32 pid = 999;
+    int monitor_pid;
+    asm("%0 = MONITOR_PID ll" : "=r"(monitor_pid));
 
     u64 id = bpf_get_current_pid_tgid();
     u32 tgid = id >> 32;
     u32 tid = id;
 
-    bpf_printk("current pid: needpid: %d, %d, tgid: %d\n", pid, tgid, tid);
-    if (tgid != pid) {
+    bpf_printk("current pid: needpid: %d, %d, tgid: %d\n", monitor_pid, tgid, tid);
+    if (tgid != monitor_pid) {
         return 0;
     }
 

@@ -77,9 +77,10 @@ func main() {
 	}
 	// adjust the pid
 	funcName := "do_perf_event"
-	for _, ins := range spec.Programs[funcName].Instructions {
-		if ins.Constant == int64(999) {
-			ins.Constant = int64(pid)
+	for i, ins := range spec.Programs[funcName].Instructions {
+		if ins.Reference == "MONITOR_PID" {
+			spec.Programs[funcName].Instructions[i].Constant = int64(pid)
+			spec.Programs[funcName].Instructions[i].Offset = 0
 			fmt.Printf("found the pid and replaced, pid: %d\n", pid)
 			break
 		}

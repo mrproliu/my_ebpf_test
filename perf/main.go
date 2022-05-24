@@ -91,8 +91,8 @@ func main() {
 	defer objs.Close()
 
 	perfEvents := make([]int, 0)
-	//duration, _ := time.ParseDuration("9ms")
-	t := time.Second
+	duration, _ := time.ParseDuration("9ms")
+	t := duration
 	for i := 0; i < runtime.NumCPU(); i++ {
 		eventAttr := &unix.PerfEventAttr{
 			Type:        unix.PERF_TYPE_SOFTWARE,

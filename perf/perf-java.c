@@ -29,7 +29,7 @@ struct {
 SEC("perf_event")
 int do_perf_event(struct pt_regs *ctx) {
     // should change the pid value
-//    const u32 pid = 999;
+    const u32 pid = 999;
 
     u64 id = bpf_get_current_pid_tgid();
     u32 tgid = id >> 32;
@@ -42,7 +42,7 @@ int do_perf_event(struct pt_regs *ctx) {
 	// create map key
     struct key_t key = {.pid = tgid};
     key.tid = tid;
-//    key.pid = pid;
+    key.pid = pid;
     bpf_get_current_comm(&key.name, sizeof(key.name));
 
     // get stacks

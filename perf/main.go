@@ -132,6 +132,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("read symbol error: %v", err)
 	}
+	kernelFileProfilingStat, err := tools.KernelFileProfilingStat()
+	if err != nil {
+		log.Fatalf("read symbol error: %v", err)
+	}
 
 	go func() {
 		<-stopper
@@ -199,7 +203,7 @@ func main() {
 				fmt.Printf("err look up : %d, %v\n", event.KernelStackId, err)
 				continue
 			}
-			symbols = stat.FindSymbols(val, "[MISSING]")
+			symbols = kernelFileProfilingStat.FindSymbols(val, "[MISSING]")
 			for _, s := range symbols {
 				fmt.Printf("%s\n", s)
 			}

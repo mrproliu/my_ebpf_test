@@ -97,7 +97,7 @@ func main() {
 		eventAttr := &unix.PerfEventAttr{
 			Type:   unix.PERF_TYPE_SOFTWARE,
 			Config: unix.PERF_COUNT_SW_CPU_CLOCK,
-			Sample: 49,
+			Sample: 1,
 			Wakeup: 1,
 		}
 		fd, err := unix.PerfEventOpen(

@@ -95,10 +95,11 @@ func main() {
 	//t := duration
 	for i := 0; i < runtime.NumCPU(); i++ {
 		eventAttr := &unix.PerfEventAttr{
-			Type:   unix.PERF_TYPE_SOFTWARE,
-			Config: unix.PERF_COUNT_SW_CPU_CLOCK,
-			Sample: 1,
-			Wakeup: 1,
+			Type:        unix.PERF_TYPE_SOFTWARE,
+			Config:      unix.PERF_COUNT_SW_CPU_CLOCK,
+			Sample_type: unix.PERF_COUNT_HW_CPU_CYCLES,
+			Sample:      49,
+			Wakeup:      1,
 		}
 		fd, err := unix.PerfEventOpen(
 			eventAttr,

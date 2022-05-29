@@ -80,5 +80,5 @@ func main() {
 type myHandler struct{}
 
 func (*myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("this is version 3"))
+	w.Write([]byte("hello"))
 }

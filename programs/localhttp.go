@@ -53,6 +53,7 @@ func main() {
 						return
 					default:
 						localhttpRequest(counter)
+						counter = atomic.AddInt64(&counter, 1)
 					}
 				}
 			}()
@@ -87,5 +88,4 @@ func localhttpRequest(counter int64) {
 	}
 	defer resp.Body.Close()
 	_, err = io.ReadAll(resp.Body)
-	atomic.AddInt64(&counter, 1)
 }

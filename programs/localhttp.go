@@ -34,17 +34,13 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 
+	go func() {
+		log.Fatal(s.ListenAndServe())
+	}()
+
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)
 	c := make(chan bool, 1)
-
-	go func() {
-		<-quit
-		close(c)
-		if err := s.Close(); err != nil {
-			log.Fatal("Close server:", err)
-		}
-	}()
 
 	log.Printf("starting send requests...")
 	var counter int64
@@ -75,8 +71,11 @@ func main() {
 		}
 	}()
 
-	log.Printf("starting the HTTP server")
-	log.Fatal(s.ListenAndServe())
+	<-quit
+	close(c)
+	if err := s.Close(); err != nil {
+		log.Fatal("Close server:", err)
+	}
 }
 
 func localhttpRequest(counter int64) {

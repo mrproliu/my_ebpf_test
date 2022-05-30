@@ -27,6 +27,7 @@ func main() {
 	server := &http.Server{
 		Addr: ":5415",
 		Handler: http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			defer request.Body.Close()
 			writer.Write([]byte("ok"))
 		}),
 	}

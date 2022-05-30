@@ -62,6 +62,18 @@ func main() {
 			}()
 		}
 	}()
+
+	go func() {
+		timer := time.NewTicker(5 * time.Second)
+		for true {
+			select {
+			case <-c:
+				return
+			case <-timer.C:
+				log.Printf("total send request count: %d", counter)
+			}
+		}
+	}()
 }
 
 func localhttpRequest(counter int64) {
@@ -72,7 +84,5 @@ func localhttpRequest(counter int64) {
 	}
 	defer resp.Body.Close()
 	_, err = io.ReadAll(resp.Body)
-	if atomic.AddInt64(&counter, 1)%1000 == 0 {
-		log.Printf("send requests: %d", counter)
-	}
+	atomic.AddInt64(&counter, 1)
 }

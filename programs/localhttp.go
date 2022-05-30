@@ -54,6 +54,9 @@ func main() {
 						if e != nil {
 							log.Printf("read error: %v", e)
 						}
+						if get == nil || get.Body == nil {
+							continue
+						}
 						_, e = ioutil.ReadAll(get.Body)
 						if e != nil {
 							log.Printf("read error: %v", e)

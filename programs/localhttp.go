@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"sync/atomic"
 	"time"
 )
 
@@ -46,6 +47,7 @@ func main() {
 		}
 	}()
 
+	var counter int64
 	go func() {
 		for i := 0; i < count; i++ {
 			go func() {
@@ -54,7 +56,7 @@ func main() {
 					case <-c:
 						return
 					default:
-						localhttpRequest()
+						localhttpRequest(counter)
 					}
 				}
 			}()
@@ -62,7 +64,7 @@ func main() {
 	}()
 }
 
-func localhttpRequest() {
+func localhttpRequest(counter int64) {
 	resp, err := http.Get("http://localhost:5415")
 	if err != nil {
 		// handle error
@@ -70,4 +72,7 @@ func localhttpRequest() {
 	}
 	defer resp.Body.Close()
 	_, err = io.ReadAll(resp.Body)
+	if atomic.AddInt64(&counter, 1)%1000 == 0 {
+		log.Printf("send requests: %d", counter)
+	}
 }

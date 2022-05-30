@@ -26,8 +26,8 @@ func main() {
 	s := &http.Server{
 		Addr: ":5415",
 		Handler: http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			defer request.Body.Close()
-			writer.Write([]byte("ok"))
+			_, _ = writer.Write([]byte("ok"))
+			_ = request.Body.Close()
 		}),
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
@@ -67,7 +67,8 @@ func main() {
 			case <-c:
 				return
 			case <-timer.C:
-				log.Printf("total send request count: %d", counter)
+				swapInt64 := atomic.SwapInt64(&counter, 0)
+				log.Printf("total send request count in 5 secs: %d", swapInt64)
 			}
 		}
 	}()
@@ -86,6 +87,6 @@ func localhttpRequest(counter int64) {
 		log.Printf("get error: %v", err)
 		return
 	}
-	defer resp.Body.Close()
 	_, err = io.ReadAll(resp.Body)
+	_ = resp.Body.Close()
 }

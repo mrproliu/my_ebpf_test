@@ -1,12 +1,13 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
+	"time"
 )
 
 func main() {
@@ -20,22 +21,27 @@ func main() {
 		log.Fatal("could not reconized the count: %s", os.Args[1])
 		return
 	}
-	quit := make(chan os.Signal)
-	signal.Notify(quit, os.Interrupt)
-	c := make(chan bool, 1)
 
-	server := &http.Server{
-		Addr: ":5415",
+	s := &http.Server{
+		Addr: ":8080",
 		Handler: http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 			defer request.Body.Close()
 			writer.Write([]byte("ok"))
 		}),
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
 	}
+	go log.Fatal(s.ListenAndServe())
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	c := make(chan bool, 1)
 
 	go func() {
 		<-quit
 		close(c)
-		if err := server.Close(); err != nil {
+		if err := s.Close(); err != nil {
 			log.Fatal("Close server:", err)
 		}
 	}()
@@ -54,30 +60,14 @@ func main() {
 			}()
 		}
 	}()
-
-	log.Println("Starting httpserver")
-	err = server.ListenAndServe()
-	if err != nil {
-		// 正常退出
-		if err == http.ErrServerClosed {
-			log.Fatal("Server closed under request")
-		} else {
-			log.Fatal("Server closed unexpected", err)
-		}
-	}
 }
 
 func localhttpRequest() {
-	get, e := http.Get("http://localhost:5415")
-	if e != nil {
-		log.Printf("read error: %v", e)
+	resp, err := http.Get("http://localhost:5415")
+	if err != nil {
+		// handle error
+		log.Printf("get error: %v", err)
 	}
-	if get == nil || get.Body == nil {
-		return
-	}
-	defer get.Body.Close()
-	_, e = ioutil.ReadAll(get.Body)
-	if e != nil {
-		log.Printf("read error: %v", e)
-	}
+	defer resp.Body.Close()
+	_, err = io.ReadAll(resp.Body)
 }

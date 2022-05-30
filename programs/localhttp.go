@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
-	"time"
 )
 
 func main() {
@@ -25,13 +24,11 @@ func main() {
 	signal.Notify(quit, os.Interrupt)
 	c := make(chan bool, 1)
 
-	mux := http.NewServeMux()
-	mux.Handle("/", &myHandler{})
-
 	server := &http.Server{
-		Addr:         ":5415",
-		WriteTimeout: time.Second * 4,
-		Handler:      mux,
+		Addr: ":5415",
+		Handler: http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			writer.Write([]byte("ok"))
+		}),
 	}
 
 	go func() {
@@ -50,18 +47,7 @@ func main() {
 					case <-c:
 						return
 					default:
-						get, e := http.Get("http://localhost:5415")
-						if e != nil {
-							log.Printf("read error: %v", e)
-						}
-						if get == nil || get.Body == nil {
-							continue
-						}
-						_, e = ioutil.ReadAll(get.Body)
-						if e != nil {
-							log.Printf("read error: %v", e)
-						}
-						_ = get.Body.Close()
+						localhttpRequest()
 					}
 				}
 			}()
@@ -80,8 +66,17 @@ func main() {
 	}
 }
 
-type myHandler struct{}
-
-func (*myHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("hello"))
+func localhttpRequest() {
+	get, e := http.Get("http://localhost:5415")
+	if e != nil {
+		log.Printf("read error: %v", e)
+	}
+	if get == nil || get.Body == nil {
+		return
+	}
+	defer get.Body.Close()
+	_, e = ioutil.ReadAll(get.Body)
+	if e != nil {
+		log.Printf("read error: %v", e)
+	}
 }

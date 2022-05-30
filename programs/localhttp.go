@@ -84,6 +84,7 @@ func localhttpRequest(counter int64) {
 	if err != nil {
 		// handle error
 		log.Printf("get error: %v", err)
+		return
 	}
 	defer resp.Body.Close()
 	_, err = io.ReadAll(resp.Body)

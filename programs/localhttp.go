@@ -33,7 +33,9 @@ func main() {
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
+	log.Printf("prepare starting http")
 	go log.Fatal(s.ListenAndServe())
+	log.Printf("post starting http")
 
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)

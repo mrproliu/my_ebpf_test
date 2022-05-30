@@ -47,6 +47,7 @@ func main() {
 		}
 	}()
 
+	log.Printf("starting send requests...")
 	var counter int64
 	go func() {
 		for i := 0; i < count; i++ {
@@ -65,7 +66,7 @@ func main() {
 
 	go func() {
 		timer := time.NewTicker(5 * time.Second)
-		for true {
+		for {
 			select {
 			case <-c:
 				return

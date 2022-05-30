@@ -33,10 +33,6 @@ func main() {
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-	go func() {
-		log.Fatal(s.ListenAndServe())
-	}()
-	log.Printf("aa")
 
 	quit := make(chan os.Signal)
 	signal.Notify(quit, os.Interrupt)
@@ -78,6 +74,9 @@ func main() {
 			}
 		}
 	}()
+
+	log.Printf("starting the HTTP server")
+	log.Fatal(s.ListenAndServe())
 }
 
 func localhttpRequest(counter int64) {

@@ -37,8 +37,7 @@ struct sock {
 SEC("kprobe/tcp_v4_connect")
 int bpf_tcp_v4_connect(struct pt_regs *ctx) {
     struct sock *sk = (void *)PT_REGS_PARM1(ctx);
-    struct sock_common c = _(sk->__sk_common);
-    short fromaddr = _(c.skc_family);
+    short fromaddr = BPF_CORE_READ(sk, __sk_common.skc_family);
 	bpf_printk("send tcp v4 connect: %d\n", fromaddr);
 	return 0;
 }

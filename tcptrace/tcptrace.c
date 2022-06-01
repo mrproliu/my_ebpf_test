@@ -53,7 +53,7 @@ struct {
 } connect_socks SEC(".maps");
 
 SEC("tracepoint/syscalls/sys_enter_connect")
-int bpf_tcp_v4_connect(int sockfd, const struct sockaddr* addr) {
+int bpf_tcp_v4_connect(__u64 sockfd, const struct sockaddr* addr) {
     bpf_printk("enter connect: %d\n", sockfd);
 //    int fd = PT_REGS_PARM1(ctx);
 ////    struct sockaddr *addr = (void *)PT_REGS_PARM2(ctx);

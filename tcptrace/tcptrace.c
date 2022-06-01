@@ -46,9 +46,11 @@ struct sock {
 } __attribute__((preserve_access_index));
 
 struct {
-	__uint(type, BPF_MAP_TYPE_LRU_HASH);
-	__uint(key_size, sizeof(__u32));
-	__uint(value_size, sizeof(struct sock));
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__type(key, __u64);
+    __type(value, struct sock);
+//	__uint(key_size, sizeof(__u32));
+//	__uint(value_size, sizeof(struct sock));
     __uint(max_entries, 10000);
 } connect_socks SEC(".maps");
 
@@ -56,8 +58,7 @@ SEC("kprobe/tcp_v4_connect")
 int bpf_tcp_v4_connect(struct pt_regs *ctx) {
     struct sock *sk = (void *)PT_REGS_PARM1(ctx);
     __u64 pid = bpf_get_current_pid_tgid();
-    __be32 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_rcv_saddr);
-	bpf_printk("send tcp v4 connect before: %d, %d\n", skc_rcv_saddr, pid);
+    bpf_map_update_elem(&connect_socks, &pid, &sk, BPF_ANY);
 	return 0;
 }
 

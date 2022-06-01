@@ -44,12 +44,12 @@ func main() {
 	// map value once per second.
 	kp, err := link.Tracepoint("syscalls", "sys_enter_connect", objs.BpfTcpV4Connect)
 	if err != nil {
-		log.Fatalf("opening kprobe: %s", err)
+		log.Fatalf("opening enter connect: %s", err)
 	}
 	defer kp.Close()
 	kpre, err := link.Tracepoint("syscalls", "sys_exit_connect", objs.BpfTcpV4ConnectRet)
 	if err != nil {
-		log.Fatalf("opening kprobe: %s", err)
+		log.Fatalf("opening exit connect: %s", err)
 	}
 	defer kpre.Close()
 

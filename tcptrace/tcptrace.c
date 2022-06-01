@@ -52,7 +52,7 @@ struct {
     __uint(max_entries, 10000);
 } connect_socks SEC(".maps");
 
-SEC("tracepoint/tcp_v4_connect")
+SEC("syscall/tcp_v4_connect")
 int bpf_tcp_v4_connect(struct pt_regs *ctx) {
     int fd = PT_REGS_PARM1(ctx);
 //    struct sockaddr *addr = (void *)PT_REGS_PARM2(ctx);
@@ -62,7 +62,7 @@ int bpf_tcp_v4_connect(struct pt_regs *ctx) {
 	return 0;
 }
 
-SEC("tracepoint/tcp_v4_connect_ret")
+SEC("syscall/tcp_v4_connect_ret")
 int bpf_tcp_v4_connect_ret(struct pt_regs *ctx) {
 //    __u64 pid = bpf_get_current_pid_tgid();
 //    struct sock *sk;

@@ -67,13 +67,13 @@ int bpf_tcp_v4_connect_ret(struct pt_regs *ctx) {
 //    __u64 pid = bpf_get_current_pid_tgid();
 //    struct sock *sk;
 
-    struct sock *sk = (void *)PT_REGS_PARM1(ctx);
+//    struct sock *sk = (void *)PT_REGS_PARM1(ctx);
 //    if (sk == NULL) {
 //        return 0;        // missed start or filtered
 //    }
 
-    __u16 skc_daddr = BPF_CORE_READ(sk, __sk_common.skc_num);
-    __be16 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_dport);
-	bpf_printk("send tcp v4 connect return: %d, %d\n", skc_daddr, skc_rcv_saddr);
+//    __u16 skc_daddr = BPF_CORE_READ(sk, __sk_common.skc_num);
+//    __be16 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_dport);
+//	bpf_printk("send tcp v4 connect return: %d, %d\n", skc_daddr, skc_rcv_saddr);
 	return 0;
 }

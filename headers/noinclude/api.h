@@ -43,4 +43,11 @@
 #include <bpf/bpf_tracing.h>
 #include <bpf/bpf_core_read.h>
 
+#define _(P)                                                                   \
+	({                                                                     \
+		typeof(P) val;                                                 \
+		bpf_probe_read_kernel(&val, sizeof(val), &(P));                \
+		val;                                                           \
+	})
+
 #endif /* __HEADERS__ */

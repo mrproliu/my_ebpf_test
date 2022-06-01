@@ -143,7 +143,7 @@ func main() {
 			}
 			fmt.Printf("-------------------------------------------\n")
 			fmt.Printf("total each count: %d, cycle: %d\n", eachCount, count)
-			fmt.Printf("total duration: %fs", time.Duration(totalDuration).Seconds())
+			fmt.Printf("total duration: %fs\n", time.Duration(totalDuration).Seconds())
 			fmt.Printf("-------------------------------------------\n")
 		case <-stopper:
 			_ = kprobe.Close()

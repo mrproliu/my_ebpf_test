@@ -55,7 +55,7 @@ struct {
 struct sockaddr {
 	__u64	sa_family;	/* address family, AF_xxx	*/
 	char		sa_data[14];	/* 14 bytes of protocol address	*/
-};
+} __attribute__((preserve_access_index));
 
 SEC("kprobe/tcp_v4_connect")
 int bpf_tcp_v4_connect(struct pt_regs *ctx) {

@@ -45,10 +45,17 @@ struct sock {
 	struct sock_common	__sk_common;
 } __attribute__((preserve_access_index));
 
+typedef unsigned short __kernel_sa_family_t;
+typedef __kernel_sa_family_t	sa_family_t;
+struct sockaddr {
+	sa_family_t	sa_family;	/* address family, AF_xxx	*/
+	char		sa_data[14];	/* 14 bytes of protocol address	*/
+} __attribute__((preserve_access_index));
+
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);
 	__uint(key_size, sizeof(__u64));
-	__uint(value_size, sizeof(struct sock));
+	__uint(value_size, sizeof(struct sockaddr));
     __uint(max_entries, 10000);
 } connect_socks SEC(".maps");
 
@@ -57,8 +64,8 @@ int bpf_tcp_v4_connect(__u64 sockfd, const struct sockaddr* addr) {
     bpf_printk("enter connect: %d\n", sockfd);
 //    int fd = PT_REGS_PARM1(ctx);
 ////    struct sockaddr *addr = (void *)PT_REGS_PARM2(ctx);
-//    __u64 pid = bpf_get_current_pid_tgid();
-////    bpf_map_update_elem(&connect_socks, &pid, sk, BPF_ANY);
+    __u64 pid = bpf_get_current_pid_tgid();
+    bpf_map_update_elem(&connect_socks, &pid, &addr, BPF_ANY);
 	return 0;
 }
 

@@ -54,22 +54,21 @@ struct {
 
 SEC("kprobe/tcp_v4_connect")
 int bpf_tcp_v4_connect(struct pt_regs *ctx) {
-    struct sock *sk = (void *)PT_REGS_PARM1(ctx);
-    __u64 pid = bpf_get_current_pid_tgid();
-    bpf_map_update_elem(&connect_socks, &pid, sk, BPF_ANY);
+//    struct sock *sk = (void *)PT_REGS_PARM1(ctx);
+//    __u64 pid = bpf_get_current_pid_tgid();
+//    bpf_map_update_elem(&connect_socks, &pid, sk, BPF_ANY);
 	return 0;
 }
 
 SEC("kprobe/tcp_v4_connect_ret")
 int bpf_tcp_v4_connect_ret(struct pt_regs *ctx) {
-    __u64 pid = bpf_get_current_pid_tgid();
+//    __u64 pid = bpf_get_current_pid_tgid();
+//    struct sock *sk;
 
-    struct sock *sk;
-
-    sk = bpf_map_lookup_elem(&connect_socks, &pid);
-    if (sk == NULL) {
-        return 0;        // missed start or filtered
-    }
+    struct sock *sk = (void *)PT_REGS_PARM1(ctx);
+//    if (sk == NULL) {
+//        return 0;        // missed start or filtered
+//    }
 
     __be32 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_rcv_saddr);
 	bpf_printk("send tcp v4 connect: %d, %x\n", skc_rcv_saddr, skc_rcv_saddr);

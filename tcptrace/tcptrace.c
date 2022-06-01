@@ -60,7 +60,8 @@ struct {
 } connect_socks SEC(".maps");
 
 SEC("tracepoint/syscalls/sys_enter_connect")
-int bpf_tcp_v4_connect(int sockfd, const struct sockaddr* addr) {
+int bpf_tcp_v4_connect(struct pt_regs* ctx, int sockfd, const struct sockaddr* addr,
+                                                        __u64 addrlen) {
 //    int fd = PT_REGS_PARM1(ctx);
 ////    struct sockaddr *addr = (void *)PT_REGS_PARM2(ctx);
     __u64 pid = bpf_get_current_pid_tgid();

@@ -54,8 +54,10 @@ struct {
 
 SEC("kprobe/tcp_v4_connect")
 int bpf_tcp_v4_connect(struct pt_regs *ctx) {
-//    struct sock *sk = (void *)PT_REGS_PARM1(ctx);
-//    __u64 pid = bpf_get_current_pid_tgid();
+    int fd = PT_REGS_PARM1(ctx);
+//    struct sockaddr *addr = (void *)PT_REGS_PARM2(ctx);
+    __u64 pid = bpf_get_current_pid_tgid();
+    bpf_printk("connect before, fd: %d, pid: %d", fd, pid);
 //    bpf_map_update_elem(&connect_socks, &pid, sk, BPF_ANY);
 	return 0;
 }

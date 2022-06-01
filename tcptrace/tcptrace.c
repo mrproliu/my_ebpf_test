@@ -9,25 +9,36 @@
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
-typedef __u32 __bitwise __portpair;
-typedef __u64 __bitwise __addrpair;
+typedef __u64 __addrpair;
+typedef __u32 __portpair;
+
 
 struct sock_common {
-	unsigned short		skc_family;
 	union {
-		__addrpair	skc_addrpair;
+		__addrpair skc_addrpair;
 		struct {
-			__u32	skc_daddr;
-			__u32	skc_rcv_saddr;
+			__be32 skc_daddr;
+			__be32 skc_rcv_saddr;
 		};
 	};
 	union {
-		__portpair	skc_portpair;
+		unsigned int skc_hash;
+		__u16 skc_u16hashes[2];
+	};
+	union {
+		__portpair skc_portpair;
 		struct {
-			__u16	skc_dport;
-			__u16	skc_num;
+			__be16 skc_dport;
+			__u16 skc_num;
 		};
 	};
+	short unsigned int skc_family;
+	volatile unsigned char skc_state;
+	unsigned char skc_reuse: 4;
+	unsigned char skc_reuseport: 1;
+	unsigned char skc_ipv6only: 1;
+	unsigned char skc_net_refcnt: 1;
+	int skc_bound_dev_if;
 } __attribute__((preserve_access_index));
 
 struct sock {

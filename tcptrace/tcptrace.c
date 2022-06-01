@@ -52,12 +52,18 @@ struct {
     __uint(max_entries, 10000);
 } connect_socks SEC(".maps");
 
+struct sockaddr {
+	__u64	sa_family;	/* address family, AF_xxx	*/
+	char		sa_data[14];	/* 14 bytes of protocol address	*/
+};
+
 SEC("kprobe/tcp_v4_connect")
 int bpf_tcp_v4_connect(struct pt_regs *ctx) {
-    int fd = PT_REGS_PARM1(ctx);
+    struct sockaddr *uaddr = (void *)PT_REGS_PARM2(ctx);
 //    struct sockaddr *addr = (void *)PT_REGS_PARM2(ctx);
     __u64 pid = bpf_get_current_pid_tgid();
-    bpf_printk("connect before, fd: %d, pid: %d", fd, pid);
+    __u64 family = _(uaddr->sa_family);
+    bpf_printk("connect before, family: %d, pid: %d", family, pid);
 //    bpf_map_update_elem(&connect_socks, &pid, sk, BPF_ANY);
 	return 0;
 }

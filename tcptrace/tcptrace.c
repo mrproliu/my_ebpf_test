@@ -14,13 +14,9 @@ typedef __u32 __portpair;
 
 
 struct sock_common {
-	union {
 		__addrpair skc_addrpair;
-		struct {
 			__be32 skc_daddr;
 			__be32 skc_rcv_saddr;
-		};
-	};
 	union {
 		unsigned int skc_hash;
 		__u16 skc_u16hashes[2];
@@ -48,7 +44,7 @@ struct sock {
 SEC("kprobe/tcp_v4_connect")
 int bpf_tcp_v4_connect(struct pt_regs *ctx) {
     struct sock *sk = (void *)PT_REGS_PARM1(ctx);
-    __u16 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_rcv_saddr);
+    __be32 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_rcv_saddr);
 	bpf_printk("send tcp v4 connect: %d, %x\n", skc_rcv_saddr, skc_rcv_saddr);
 	return 0;
 }

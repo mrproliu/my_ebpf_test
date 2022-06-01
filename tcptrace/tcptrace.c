@@ -55,8 +55,9 @@ struct {
 SEC("kprobe/tcp_v4_connect")
 int bpf_tcp_v4_connect(struct pt_regs *ctx) {
     struct sock *sk = (void *)PT_REGS_PARM1(ctx);
-    __u32 v = 1;
-    bpf_map_update_elem(&connect_socks, &v, &sk, BPF_ANY);
+    __u64 pid = bpf_get_current_pid_tgid();
+    __be32 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_rcv_saddr);
+	bpf_printk("send tcp v4 connect before: %d, %d\n", skc_rcv_saddr, pid);
 	return 0;
 }
 

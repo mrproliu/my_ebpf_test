@@ -45,44 +45,35 @@ struct sock {
 	struct sock_common	__sk_common;
 } __attribute__((preserve_access_index));
 
-typedef unsigned short __kernel_sa_family_t;
-typedef __kernel_sa_family_t	sa_family_t;
-struct sockaddr {
-	sa_family_t	sa_family;	/* address family, AF_xxx	*/
-	char		sa_data[14];	/* 14 bytes of protocol address	*/
-} __attribute__((preserve_access_index));
-
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);
-	__uint(key_size, sizeof(int));
-	__uint(value_size, sizeof(struct sockaddr));
+	__uint(key_size, sizeof(__u64));
+	__uint(value_size, sizeof(struct sock));
     __uint(max_entries, 10000);
 } connect_socks SEC(".maps");
 
-SEC("tracepoint/syscalls/sys_enter_connect")
-int bpf_tcp_v4_connect(int sockfd, const struct sockaddr* addr,
-                                                        __u64 addrlen) {
-//    int fd = PT_REGS_PARM1(ctx);
-////    struct sockaddr *addr = (void *)PT_REGS_PARM2(ctx);
+SEC("kprobe/tcp_v4_connect")
+int bpf_tcp_v4_connect(struct pt_regs *ctx) {
+    int fd = PT_REGS_PARM1(ctx);
+//    struct sockaddr *addr = (void *)PT_REGS_PARM2(ctx);
     __u64 pid = bpf_get_current_pid_tgid();
-    sa_family_t s = addr->sa_family;
-    bpf_printk("enter connect: %d, %d, %d\n", sockfd, pid, s);
-//    bpf_map_update_elem(&connect_socks, &pid, addr, BPF_ANY);
+    bpf_printk("connect before, fd: %d, pid: %d", fd, pid);
+//    bpf_map_update_elem(&connect_socks, &pid, sk, BPF_ANY);
 	return 0;
 }
 
-SEC("tracepoint/syscalls/sys_exit_connect")
+SEC("kretprobe/tcp_v4_connect")
 int bpf_tcp_v4_connect_ret(struct pt_regs *ctx) {
 //    __u64 pid = bpf_get_current_pid_tgid();
 //    struct sock *sk;
 
-//    struct sock *sk = (void *)PT_REGS_PARM1(ctx);
+    struct sock *sk = (void *)PT_REGS_PARM1(ctx);
 //    if (sk == NULL) {
 //        return 0;        // missed start or filtered
 //    }
 
-//    __u16 skc_daddr = BPF_CORE_READ(sk, __sk_common.skc_num);
-//    __be16 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_dport);
-//	bpf_printk("send tcp v4 connect return: %d, %d\n", skc_daddr, skc_rcv_saddr);
+    __u16 skc_daddr = BPF_CORE_READ(sk, __sk_common.skc_num);
+    __be16 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_dport);
+	bpf_printk("send tcp v4 connect return: %d, %d\n", skc_daddr, skc_rcv_saddr);
 	return 0;
 }

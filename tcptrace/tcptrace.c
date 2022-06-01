@@ -9,15 +9,20 @@
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
+typedef __u32 __bitwise __portpair;
+typedef __u64 __bitwise __addrpair;
+
 struct sock_common {
 	unsigned short		skc_family;
 	union {
+		__addrpair	skc_addrpair;
 		struct {
 			__u32	skc_daddr;
 			__u32	skc_rcv_saddr;
 		};
 	};
 	union {
+		__portpair	skc_portpair;
 		struct {
 			__u16	skc_dport;
 			__u16	skc_num;
@@ -28,7 +33,6 @@ struct sock_common {
 struct sock {
 	struct sock_common	__sk_common;
 };
-
 
 SEC("kprobe/tcp_v4_connect")
 int bpf_tcp_v4_connect(struct pt_regs *ctx) {

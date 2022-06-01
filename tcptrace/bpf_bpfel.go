@@ -54,13 +54,15 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
-	BpfTcpV4Connect *ebpf.ProgramSpec `ebpf:"bpf_tcp_v4_connect"`
+	BpfTcpV4Connect    *ebpf.ProgramSpec `ebpf:"bpf_tcp_v4_connect"`
+	BpfTcpV4ConnectRet *ebpf.ProgramSpec `ebpf:"bpf_tcp_v4_connect_ret"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfMapSpecs struct {
+	ConnectSocks *ebpf.MapSpec `ebpf:"connect_socks"`
 }
 
 // bpfObjects contains all objects after they have been loaded into the kernel.
@@ -82,22 +84,27 @@ func (o *bpfObjects) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfMaps struct {
+	ConnectSocks *ebpf.Map `ebpf:"connect_socks"`
 }
 
 func (m *bpfMaps) Close() error {
-	return _BpfClose()
+	return _BpfClose(
+		m.ConnectSocks,
+	)
 }
 
 // bpfPrograms contains all programs after they have been loaded into the kernel.
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
-	BpfTcpV4Connect *ebpf.Program `ebpf:"bpf_tcp_v4_connect"`
+	BpfTcpV4Connect    *ebpf.Program `ebpf:"bpf_tcp_v4_connect"`
+	BpfTcpV4ConnectRet *ebpf.Program `ebpf:"bpf_tcp_v4_connect_ret"`
 }
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
 		p.BpfTcpV4Connect,
+		p.BpfTcpV4ConnectRet,
 	)
 }
 

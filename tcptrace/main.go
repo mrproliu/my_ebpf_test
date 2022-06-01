@@ -47,6 +47,11 @@ func main() {
 		log.Fatalf("opening kprobe: %s", err)
 	}
 	defer kp.Close()
+	kpre, err := link.Kretprobe("tcp_v4_connect", objs.BpfTcpV4ConnectRet)
+	if err != nil {
+		log.Fatalf("opening kprobe: %s", err)
+	}
+	defer kpre.Close()
 
 	//rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
 	//if err != nil {

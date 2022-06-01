@@ -70,8 +70,8 @@ int bpf_tcp_v4_connect_ret(struct pt_regs *ctx) {
 //        return 0;        // missed start or filtered
 //    }
 
-    __be32 skc_daddr = BPF_CORE_READ(sk, __sk_common.skc_daddr);
-    __be32 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_rcv_saddr);
+    __u16 skc_daddr = BPF_CORE_READ(sk, __sk_common.skc_num);
+    __be16 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_dport);
 	bpf_printk("send tcp v4 connect return: %d, %d\n", skc_daddr, skc_rcv_saddr);
 	return 0;
 }

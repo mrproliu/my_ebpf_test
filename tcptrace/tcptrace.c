@@ -54,13 +54,13 @@ struct sockaddr {
 
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);
-	__uint(key_size, sizeof(__u64));
+	__uint(key_size, sizeof(int));
 	__uint(value_size, sizeof(struct sockaddr));
     __uint(max_entries, 10000);
 } connect_socks SEC(".maps");
 
 SEC("tracepoint/syscalls/sys_enter_connect")
-int bpf_tcp_v4_connect(__u64 sockfd, const struct sockaddr* addr) {
+int bpf_tcp_v4_connect(int sockfd, const struct sockaddr* addr) {
     bpf_printk("enter connect: %d\n", sockfd);
 //    int fd = PT_REGS_PARM1(ctx);
 ////    struct sockaddr *addr = (void *)PT_REGS_PARM2(ctx);

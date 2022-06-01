@@ -64,7 +64,8 @@ int bpf_tcp_v4_connect(int sockfd, const struct sockaddr* addr) {
 //    int fd = PT_REGS_PARM1(ctx);
 ////    struct sockaddr *addr = (void *)PT_REGS_PARM2(ctx);
     __u64 pid = bpf_get_current_pid_tgid();
-    bpf_printk("enter connect: %d, pid\n", sockfd, pid);
+    sa_family_t s = BPF_CORE_READ(addr, sa_family);
+    bpf_printk("enter connect: %d, %d, %d\n", sockfd, pid, s);
 //    bpf_map_update_elem(&connect_socks, &pid, addr, BPF_ANY);
 	return 0;
 }

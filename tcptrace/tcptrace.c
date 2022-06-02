@@ -130,10 +130,8 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 	BPF_CORE_READ_INTO(&key.from_addr, sk, __sk_common.skc_rcv_saddr);
 	bpf_get_current_comm(&key.comm, sizeof(key.comm));
 
-    char str[16];
-    inet_ntop(AF_INET, &(key.from_addr), str, INET_ADDRSTRLEN);
     bpf_printk("hello :->dport: %d, %d\n", dport, sport);
-    bpf_printk("saddr: %d, daddr: %d\n", str, key.dist_addr);
+    bpf_printk("saddr: %d, daddr: %d\n", key.from_addr, key.dist_addr);
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
 
 	bpf_map_delete_elem(&sockets, &tid);

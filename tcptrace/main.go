@@ -45,7 +45,7 @@ type MultipleLinker struct {
 func (m *MultipleLinker) AddLink(name string, linkF LinkFunc, p *ebpf.Program) {
 	l, e := linkF(name, p)
 	if e != nil {
-		m.linkError = multierror.Append(m.linkError, e)
+		m.linkError = multierror.Append(m.linkError, fmt.Errorf("open %s error: %v", name, e))
 	} else {
 		m.links = append(m.links, l)
 	}
@@ -96,18 +96,13 @@ func main() {
 	linker := &MultipleLinker{}
 	linker.AddLink("tcp_v4_connect", link.Kprobe, objs.BpfTcpV4Connect)
 	linker.AddLink("tcp_v4_connect", link.Kretprobe, objs.BpfTcpV4ConnectRet)
-	linker.AddLink("tcp_v4_connect", link.Kprobe, objs.BpfTcpV4Connect)
-	linker.AddLink("tcp_v4_connect", link.Kprobe, objs.BpfTcpV4Connect)
-	kp, err := link.Kprobe("tcp_v4_connect", objs.BpfTcpV4Connect)
+	linker.AddLink("tcp_v6_connect", link.Kprobe, objs.BpfTcpV6Connect)
+	linker.AddLink("tcp_v6_connect", link.Kretprobe, objs.BpfTcpV6ConnectRet)
+	defer linker.Close()
+	err := linker.HasError()
 	if err != nil {
 		log.Fatalf("opening kprobe: %s", err)
 	}
-	defer kp.Close()
-	kpre, err := link.Kretprobe("tcp_v4_connect", objs.BpfTcpV4ConnectRet)
-	if err != nil {
-		log.Fatalf("opening kprobe: %s", err)
-	}
-	defer kpre.Close()
 	log.Printf("start probes success...")
 
 	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())

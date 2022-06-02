@@ -169,11 +169,12 @@ struct trace_event_raw_sys_enter {
 	long int id;
 	long unsigned int args[6];
 	char __data[0];
-};
+} __attribute__((preserve_access_index));
 
 SEC("tracepoint/syscalls/sys_enter_connect")
 int sys_enter_connect(struct trace_event_raw_sys_enter *ctx) {
     int fd = ctx->args[0];
-    bpf_printk("heelo: %d, %s\n", fd);
+    struct sockaddr *sk = (void *)ctx->args[1];
+    bpf_printk("heelo: %d, %d->%s\n", fd, sk->sa_family, sk->sa_data);
 	return 0;
 }

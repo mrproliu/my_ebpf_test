@@ -165,8 +165,15 @@ int bpf_tcp_v6_connect_ret(struct pt_regs *ctx) {
     return exit_tcp_connect(ctx, ret, 6);
 }
 
+struct trace_event_raw_sys_enter {
+	long int id;
+	long unsigned int args[6];
+	char __data[0];
+};
+
 SEC("tracepoint/syscalls/sys_enter_connect")
-int sys_enter_connect(int fd, struct sockaddr *addr, int len) {
-    bpf_printk("heelo: %d, %s\n", fd, addr->sa_family);
+int sys_enter_connect(struct trace_event_raw_sys_enter *ctx) {
+    int fd = ctx->args[0];
+    bpf_printk("heelo: %d, %s\n", fd);
 	return 0;
 }

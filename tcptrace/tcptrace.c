@@ -167,6 +167,6 @@ int bpf_tcp_v6_connect_ret(struct pt_regs *ctx) {
 
 SEC("tracepoint/syscalls/sys_enter_connect")
 int sys_enter_connect(int fd, struct sockaddr *addr, int len) {
-    bpf_printk("heelo\n");
+    bpf_printk("heelo: %d\n", fd);
 	return 0;
 }

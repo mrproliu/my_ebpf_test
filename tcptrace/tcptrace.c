@@ -155,7 +155,7 @@ int bpf_tcp_v6_connect_ret(struct pt_regs *ctx) {
 }
 
 SEC("tracepoint/syscalls/sys_enter_connect")
-int bpf_tracepoint_syscalls_sys_enter_connect(struct pt_regs *ctx) {
-    bpf_printk("sys_enter_connect: \n");
+int bpf_tracepoint_syscalls_sys_enter_connect(struct pt_regs *ctx, int fd) {
+    bpf_printk("sys_enter_connect: %d\n", fd);
     return 0;
 }

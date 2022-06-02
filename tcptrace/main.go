@@ -103,7 +103,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("opening kprobe: %s", err)
 	}
-	tracepoint, err := link.Tracepoint("syscalls", "sys_enter_connect", objs.BpfTracepointSyscallsSysEnterConnect)
+	tracepoint, err := link.Tracepoint("syscall", "sys_enter_connect", objs.BpfTracepointSyscallsSysEnterConnect)
 	if err != nil {
 		log.Fatalf("tracepoint: %v", err)
 	}

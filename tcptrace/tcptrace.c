@@ -118,8 +118,8 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 	    BPF_CORE_READ_INTO(&key.from_addr_v4, sk, __sk_common.skc_rcv_saddr);
         BPF_CORE_READ_INTO(&key.dist_addr_v4, sk, __sk_common.skc_daddr);
 	} else {
-	    BPF_CORE_READ_INTO(&key.from_addr_v6, sk, __sk_common.skc_v6_rcv_saddr.s6_addr);
-        BPF_CORE_READ_INTO(&key.dist_addr_v6, sk, __sk_common.skc_v6_daddr.s6_addr);
+//	    BPF_CORE_READ_INTO(&key.from_addr_v6, sk, __sk_common.skc_v6_rcv_saddr.s6_addr);
+//        BPF_CORE_READ_INTO(&key.dist_addr_v6, sk, __sk_common.skc_v6_daddr.s6_addr);
 	}
 
 	bpf_get_current_comm(&key.comm, sizeof(key.comm));

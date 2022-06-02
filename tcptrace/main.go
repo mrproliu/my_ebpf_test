@@ -21,8 +21,7 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpfel -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf tcptrace.c -- -I$HOME/headers/ -D__TARGET_ARCH_x86
 
 type Event struct {
-	SourceAddr uint32
-	DistAddr   uint32
+	SourceAddr uint64
 	Comm       [128]byte
 }
 
@@ -91,6 +90,6 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("source: %d, target: %d, comm: %s\n", event.SourceAddr, event.DistAddr, event.Comm)
+		fmt.Printf("source: %d, comm: %s\n", event.SourceAddr, event.Comm)
 	}
 }

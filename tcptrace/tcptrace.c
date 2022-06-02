@@ -29,8 +29,7 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 //} connect_socks SEC(".maps");
 
 struct key_t {
-    __u32 skc_rcv_saddr;
-    __u32 skc_daddr;
+    __u64 skc_rcv_saddr;
     char name[128];
 };
 
@@ -58,7 +57,7 @@ struct sock_common {
 		struct {
 			__be32	skc_daddr;
 			__be32	skc_rcv_saddr;
-		};
+		} __attribute__((preserve_access_index));
 	};
 	union  {
 		unsigned int	skc_hash;
@@ -70,7 +69,7 @@ struct sock_common {
 		struct {
 			__be16	skc_dport;
 			__u16	skc_num;
-		};
+		} __attribute__((preserve_access_index));
 	};
 
 	unsigned short		skc_family;
@@ -111,8 +110,7 @@ int bpf_tcp_v4_connect_ret(struct pt_regs *ctx) {
 //    __be16 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_dport);
 //	bpf_printk("send tcp v4 connect return: %d, %d\n", skc_daddr, skc_rcv_saddr);
     struct key_t key = {};
-    key.skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_rcv_saddr);
-    key.skc_daddr = BPF_CORE_READ(sk, __sk_common.skc_daddr);
+    key.skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_addrpair);
     bpf_get_current_comm(&key.name, sizeof(key.name));
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
 	return 0;

@@ -57,7 +57,7 @@ struct sockaddr {
 	char		sa_data[14];	/* 14 bytes of protocol address	*/
 } __attribute__((preserve_access_index));
 
-SEC("kprobe/tcp_v4_connect")
+SEC("kprobe/tcp_connect")
 int bpf_tcp_v4_connect(struct pt_regs *ctx) {
 //    struct sockaddr *uaddr = (void *)PT_REGS_PARM2(ctx);
 ////    struct sockaddr *addr = (void *)PT_REGS_PARM2(ctx);
@@ -68,7 +68,7 @@ int bpf_tcp_v4_connect(struct pt_regs *ctx) {
 	return 0;
 }
 
-SEC("kretprobe/tcp_v4_connect")
+SEC("kretprobe/tcp_connect")
 int bpf_tcp_v4_connect_ret(struct pt_regs *ctx) {
 //    __u64 pid = bpf_get_current_pid_tgid();
 //    struct sock *sk;

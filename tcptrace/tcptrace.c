@@ -74,8 +74,18 @@ struct sock_common {
     struct in6_addr_redefine		skc_v6_rcv_saddr;
 } __attribute__((preserve_access_index));
 
+struct file {
+	struct inode		*f_inode;	/* cached value */
+}  __attribute__((preserve_access_index));
+
+struct socket {
+	struct file		*file;
+	struct sock		*sk;
+} __attribute__((preserve_access_index));
+
 struct sock {
 	struct sock_common	__sk_common;
+	struct socket		*sk_socket;
 } __attribute__((preserve_access_index));
 
 struct {
@@ -139,6 +149,7 @@ int bpf_tcp_v4_connect(struct pt_regs *ctx) {
 SEC("kretprobe/tcp_v4_connect")
 int bpf_tcp_v4_connect_ret(struct pt_regs *ctx) {
     int ret = PT_REGS_RC(ctx);
+    bpf_printk("say v4 connnect\n");
     return exit_tcp_connect(ctx, ret, 4);
 }
 
@@ -154,8 +165,8 @@ int bpf_tcp_v6_connect_ret(struct pt_regs *ctx) {
     return exit_tcp_connect(ctx, ret, 6);
 }
 
-SEC("tracepoint/syscalls/sys_enter_connect")
-int bpf_tracepoint_syscalls_sys_enter_connect(int fd) {
-    bpf_printk("sys_enter_connect: %d\n", fd);
+SEC("kprobe/connect")
+int bpf_tcp_connect(struct pt_regs *ctx) {
+    bpf_printk("say connnect\n");
     return 0;
 }

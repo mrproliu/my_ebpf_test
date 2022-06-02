@@ -175,13 +175,13 @@ struct trace_event_raw_sys_enter {
 SEC("tracepoint/syscalls/sys_enter_connect")
 int sys_enter_connect(struct trace_event_raw_sys_enter *ctx) {
     int fd = ctx->args[0];
-    struct sockaddr_in *sk = ((struct sockaddr_in*)ctx->args[1]);
-    int family = 0;
-    __u16 addr = 0;
-    BPF_CORE_READ_INTO(&family, sk, sin_family);
-    BPF_CORE_READ_INTO(&addr, sk, sin_port);
+    struct sockaddr *addr = ((void *)ctx->args[1]);
+    struct sockaddr_in *addr_in = (struct sockaddr_in *)addr;
+
+    __u16 port = 0;
+    BPF_CORE_READ_INTO(&port, addr_in, sin_port);
 //    BPF_CORE_READ_INTO(&family, sk, sa_data);
-    bpf_printk("heelo: %d, %d->%d\n", fd, family, addr);
+    bpf_printk("heelo: %d, %d\n", fd, port);
 	return 0;
 }
 

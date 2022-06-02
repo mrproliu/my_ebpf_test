@@ -30,8 +30,9 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 //} connect_socks SEC(".maps");
 
 struct key_t {
-    char addr[16];
-    char name[128];
+    __u32 from_addr;
+    __u32 dist_addr;
+    char comm[128];
 };
 
 #define MAX_ENTRIES	10000
@@ -115,8 +116,6 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 	struct sock **skpp;
 	struct sock *sk;
 	__u16 dport;
-	__be32	skc_daddr;
-    __be32	skc_rcv_saddr;
 
 	skpp = bpf_map_lookup_elem(&sockets, &tid);
 	if (!skpp)
@@ -124,16 +123,14 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 
 	sk = *skpp;
 
+    struct key_t key = {};
 	BPF_CORE_READ_INTO(&dport, sk, __sk_common.skc_dport);
-	BPF_CORE_READ_INTO(&skc_daddr, sk, __sk_common.skc_daddr);
-	BPF_CORE_READ_INTO(&skc_rcv_saddr, sk, __sk_common.skc_rcv_saddr);
+	BPF_CORE_READ_INTO(&key.dist_addr, sk, __sk_common.skc_daddr);
+	BPF_CORE_READ_INTO(&key.from_addr, sk, __sk_common.skc_rcv_saddr);
+	bpf_get_current_comm(&key.comm, sizeof(key.comm));
 
-    size_t size = INET_ADDRSTRLEN;
-    char *str;
-    str = malloc(size);
-    inet_ntop(AF_INET, &skc_daddr, str, size);
-    bpf_printk("hello :->dport: %d, saddr: %s, daddr: %d\n", dport, str, skc_daddr);
-//    trace_v4(ctx, pid, sk, dport);
+    bpf_printk("hello :->dport: %d, saddr: %s, daddr: %d\n", dport, key.from_addr, key.dist_addr);
+    bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
 
 	bpf_map_delete_elem(&sockets, &tid);
 	return 0;

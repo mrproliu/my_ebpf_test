@@ -3,6 +3,7 @@
 // +build ignore
 
 #include <stddef.h>
+#include <stdlib.h>
 #include <linux/sched.h>
 #include <linux/bpf.h>
 #include <linux/ptrace.h>
@@ -28,10 +29,10 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 //    __uint(max_entries, 10000);
 //} connect_socks SEC(".maps");
 
-//struct key_t {
-//    __u64 skc_rcv_saddr;
-//    char name[128];
-//};
+struct key_t {
+    char addr[16];
+    char name[128];
+};
 
 #define MAX_ENTRIES	10000
 
@@ -106,7 +107,6 @@ enter_tcp_connect(struct pt_regs *ctx, struct sock *sk)
 	return 0;
 }
 
-
 static __always_inline int
 exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 {
@@ -122,29 +122,19 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 	if (!skpp)
 		return 0;
 
-	if (ret)
-		goto end;
-
-	sk = (void *)PT_REGS_PARM1(ctx);
+	sk = *skpp;
 
 	BPF_CORE_READ_INTO(&dport, sk, __sk_common.skc_dport);
 	BPF_CORE_READ_INTO(&skc_daddr, sk, __sk_common.skc_daddr);
 	BPF_CORE_READ_INTO(&skc_rcv_saddr, sk, __sk_common.skc_rcv_saddr);
 
-    bpf_printk("hello :->dport: %d, saddr: %d, daddr: %d\n", dport, skc_rcv_saddr, skc_daddr);
-//	if (do_count) {
-//		if (ip_ver == 4)
-//			count_v4(sk, dport);
-//		else
-//			count_v6(sk, dport);
-//	} else {
-//		if (ip_ver == 4)
-//			trace_v4(ctx, pid, sk, dport);
-//		else
-//			trace_v6(ctx, pid, sk, dport);
-//	}
+    size_t size = INET_ADDRSTRLEN;
+    char *str;
+    str = malloc(size);
+    inet_ntop(AF_INET, &skc_daddr, str, size);
+    bpf_printk("hello :->dport: %d, saddr: %s, daddr: %d\n", dport, str, skc_daddr);
+//    trace_v4(ctx, pid, sk, dport);
 
-end:
 	bpf_map_delete_elem(&sockets, &tid);
 	return 0;
 }
@@ -161,15 +151,3 @@ int bpf_tcp_v4_connect_ret(struct pt_regs *ctx) {
     int ret = PT_REGS_RC(ctx);
     return exit_tcp_connect(ctx, ret, 4);
 }
-
-//SEC("kprobe/tcp_v4_connect")
-//int BPF_KPROBE(tcp_v4_connect, struct sock *sk)
-//{
-//	return enter_tcp_connect(ctx, sk);
-//}
-//
-//SEC("kretprobe/tcp_v4_connect")
-//int BPF_KRETPROBE(tcp_v4_connect_ret, int ret)
-//{
-//	return exit_tcp_connect(ctx, ret, 4);
-//}

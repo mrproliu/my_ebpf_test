@@ -103,6 +103,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("opening kprobe: %s", err)
 	}
+	tracepoint, err := link.Tracepoint("syscalls", "sys_enter_connect", objs.BpfTracepointSyscallsSysEnterConnect)
+	if err != nil {
+		log.Fatalf("tracepoint: %v", err)
+	}
+	defer tracepoint.Close()
+
 	log.Printf("start probes success...")
 
 	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())

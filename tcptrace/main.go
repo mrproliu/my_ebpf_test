@@ -12,9 +12,11 @@ import (
 	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
 	"log"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
+	"unsafe"
 )
 
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
@@ -23,7 +25,17 @@ import (
 type Event struct {
 	SourceAddr uint32
 	DistAddr   uint32
+	SourcePort uint16
+	DistPort   uint16
 	Comm       [128]byte
+}
+
+func parsePort(val uint16) uint16 {
+	return binary.BigEndian.Uint16((*(*[2]byte)(unsafe.Pointer(&val)))[:])
+}
+
+func parseAddress(val uint32) string {
+	return net.IP((*(*[net.IPv4len]byte)(unsafe.Pointer(&val)))[:]).String()
 }
 
 func main() {
@@ -91,6 +103,7 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("%d -> %d, comm: %s\n", event.SourceAddr, event.DistAddr, event.Comm)
+		fmt.Printf("%s:%d -> %s:%d, comm: %s\n", parseAddress(event.SourceAddr), parsePort(event.SourcePort),
+			parseAddress(event.DistAddr), parsePort(event.DistPort), event.Comm)
 	}
 }

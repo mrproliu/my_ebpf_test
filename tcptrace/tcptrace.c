@@ -32,6 +32,8 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 struct key_t {
     __u32 from_addr;
     __u32 dist_addr;
+    __u16 from_port;
+    __u16 dist_port;
     char comm[128];
 };
 
@@ -115,7 +117,6 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 	__u32 tid = pid_tgid;
 	struct sock **skpp;
 	struct sock *sk;
-	__u16 dport, sport;
 
 	skpp = bpf_map_lookup_elem(&sockets, &tid);
 	if (!skpp)
@@ -124,14 +125,12 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 	sk = *skpp;
 
     struct key_t key = {};
-	BPF_CORE_READ_INTO(&dport, sk, __sk_common.skc_dport);
-	BPF_CORE_READ_INTO(&sport, sk, __sk_common.skc_num);
+	BPF_CORE_READ_INTO(&key.dist_port, sk, __sk_common.skc_dport);
+	BPF_CORE_READ_INTO(&key.from_port, sk, __sk_common.skc_num);
 	BPF_CORE_READ_INTO(&key.dist_addr, sk, __sk_common.skc_daddr);
 	BPF_CORE_READ_INTO(&key.from_addr, sk, __sk_common.skc_rcv_saddr);
 	bpf_get_current_comm(&key.comm, sizeof(key.comm));
 
-    bpf_printk("hello :->dport: %d, %d\n", dport, sport);
-    bpf_printk("saddr: %d, daddr: %d\n", key.from_addr, key.dist_addr);
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
 
 	bpf_map_delete_elem(&sockets, &tid);
@@ -139,13 +138,13 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 }
 
 
-SEC("kprobe/tcp_connect")
+SEC("kprobe/tcp_v4_connect")
 int bpf_tcp_v4_connect(struct pt_regs *ctx) {
     struct sock *sk = (void *)PT_REGS_PARM1(ctx);
 	return enter_tcp_connect(ctx, sk);
 }
 
-SEC("kretprobe/tcp_connect")
+SEC("kretprobe/tcp_v4_connect")
 int bpf_tcp_v4_connect_ret(struct pt_regs *ctx) {
     int ret = PT_REGS_RC(ctx);
     return exit_tcp_connect(ctx, ret, 4);

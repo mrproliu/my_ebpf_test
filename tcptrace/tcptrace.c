@@ -180,12 +180,12 @@ union sockaddr_t {
 SEC("tracepoint/syscalls/sys_enter_connect")
 int sys_enter_connect(struct trace_event_raw_sys_enter *ctx) {
     int fd = ctx->args[0];
-    union sockaddr_t addr = *((union sockaddr_t*)ctx->args[1]);
+    struct sockaddr_in *addr = ((struct sockaddr_in*)ctx->args[1]);
 
 //    __u16 port = 0;
 //    BPF_CORE_READ_INTO(&port, addr_in, sin_port);
-//    BPF_CORE_READ_INTO(&family, sk, sa_data);
-    bpf_printk("heelo: %d, %d\n", fd, addr.in4.sin_port);
+    __u16 p = BPF_CORE_READ(addr, sin_port);
+    bpf_printk("heelo: %d, %d\n", fd, p);
 	return 0;
 }
 

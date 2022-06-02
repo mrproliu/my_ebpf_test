@@ -98,12 +98,16 @@ func main() {
 	linker.AddLink("tcp_v4_connect", link.Kretprobe, objs.BpfTcpV4ConnectRet)
 	linker.AddLink("tcp_v6_connect", link.Kprobe, objs.BpfTcpV6Connect)
 	linker.AddLink("tcp_v6_connect", link.Kretprobe, objs.BpfTcpV6ConnectRet)
-	linker.AddLink("connect", link.Kprobe, objs.BpfTcpConnect)
 	defer linker.Close()
 	err := linker.HasError()
 	if err != nil {
 		log.Fatalf("opening kprobe: %s", err)
 	}
+	tracepoint, err := link.Tracepoint("syscalls", "sys_enter_connect", objs.SysEnterConnect)
+	if err != nil {
+		log.Fatalf("tracepoint: %v", err)
+	}
+	defer tracepoint.Close()
 
 	log.Printf("start probes success...")
 

@@ -165,8 +165,8 @@ int bpf_tcp_v6_connect_ret(struct pt_regs *ctx) {
     return exit_tcp_connect(ctx, ret, 6);
 }
 
-SEC("kprobe/connect")
-int bpf_tcp_connect(struct pt_regs *ctx) {
-    bpf_printk("say connnect\n");
-    return 0;
+SEC("tracepoint/syscalls/sys_enter_connect")
+int sys_enter_connect(int fd, struct sockaddr *addr, int len) {
+    bpf_printk("heelo\n");
+	return 0;
 }

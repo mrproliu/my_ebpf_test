@@ -54,11 +54,11 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
-	BpfTcpConnect      *ebpf.ProgramSpec `ebpf:"bpf_tcp_connect"`
 	BpfTcpV4Connect    *ebpf.ProgramSpec `ebpf:"bpf_tcp_v4_connect"`
 	BpfTcpV4ConnectRet *ebpf.ProgramSpec `ebpf:"bpf_tcp_v4_connect_ret"`
 	BpfTcpV6Connect    *ebpf.ProgramSpec `ebpf:"bpf_tcp_v6_connect"`
 	BpfTcpV6ConnectRet *ebpf.ProgramSpec `ebpf:"bpf_tcp_v6_connect_ret"`
+	SysEnterConnect    *ebpf.ProgramSpec `ebpf:"sys_enter_connect"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
@@ -103,20 +103,20 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
-	BpfTcpConnect      *ebpf.Program `ebpf:"bpf_tcp_connect"`
 	BpfTcpV4Connect    *ebpf.Program `ebpf:"bpf_tcp_v4_connect"`
 	BpfTcpV4ConnectRet *ebpf.Program `ebpf:"bpf_tcp_v4_connect_ret"`
 	BpfTcpV6Connect    *ebpf.Program `ebpf:"bpf_tcp_v6_connect"`
 	BpfTcpV6ConnectRet *ebpf.Program `ebpf:"bpf_tcp_v6_connect_ret"`
+	SysEnterConnect    *ebpf.Program `ebpf:"sys_enter_connect"`
 }
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
-		p.BpfTcpConnect,
 		p.BpfTcpV4Connect,
 		p.BpfTcpV4ConnectRet,
 		p.BpfTcpV6Connect,
 		p.BpfTcpV6ConnectRet,
+		p.SysEnterConnect,
 	)
 }
 

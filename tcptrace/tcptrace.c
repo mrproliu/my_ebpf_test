@@ -9,6 +9,14 @@
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
+#define _(P)                                                                   \
+	({                                                                     \
+		typeof(P) val;                                                 \
+		bpf_probe_read_kernel(&val, sizeof(val), &(P));                \
+		val;                                                           \
+	})
+
+
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);
 	__uint(key_size, sizeof(__u64));
@@ -40,8 +48,8 @@ int bpf_tcp_v4_connect_ret(struct pt_regs *ctx) {
 //    __u16 skc_daddr = BPF_CORE_READ(sk, __sk_common.skc_num);
 //    __be16 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_dport);
 //	bpf_printk("send tcp v4 connect return: %d, %d\n", skc_daddr, skc_rcv_saddr);
-    __u32 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_rcv_saddr);
-    __u32 skc_daddr = BPF_CORE_READ(sk, __sk_common.skc_daddr);
+    __u32 skc_rcv_saddr = _(sk->__sk_common.skc_rcv_saddr);
+    __u32 skc_daddr = _(sk->__sk_common.skc_daddr);
     bpf_printk("connect after: %d, %d", skc_rcv_saddr, skc_daddr);
 	return 0;
 }

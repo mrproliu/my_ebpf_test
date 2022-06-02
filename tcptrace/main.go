@@ -52,6 +52,7 @@ func main() {
 		log.Fatalf("opening kprobe: %s", err)
 	}
 	defer kpre.Close()
+	log.Printf("start probes success...")
 
 	//rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
 	//if err != nil {

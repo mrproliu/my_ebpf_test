@@ -17,7 +17,7 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 #define _(P)                                                                   \
 	({                                                                     \
 		typeof(P) val;                                                 \
-		bpf_probe_read_kernel(&val, sizeof(val), &(P));                \
+		bpf_probe_read(&val, sizeof(val), &(P));                \
 		val;                                                           \
 	})
 

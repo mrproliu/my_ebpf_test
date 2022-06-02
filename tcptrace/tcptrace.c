@@ -125,7 +125,7 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 	if (ret)
 		goto end;
 
-	sk = *skpp;
+	sk = (void *)PT_REGS_PARM1(ctx);
 
 	BPF_CORE_READ_INTO(&dport, sk, __sk_common.skc_dport);
 	BPF_CORE_READ_INTO(&skc_daddr, sk, __sk_common.skc_daddr);

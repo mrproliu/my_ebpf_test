@@ -175,6 +175,8 @@ SEC("tracepoint/syscalls/sys_enter_connect")
 int sys_enter_connect(struct trace_event_raw_sys_enter *ctx) {
     int fd = ctx->args[0];
     struct sockaddr *sk = (void *)ctx->args[1];
-    bpf_printk("heelo: %d, %d\n", fd, sk->sa_family);
+    int family = 0;
+    BPF_CORE_READ_INTO(&family, sk, sa_family);
+    bpf_printk("heelo: %d, %d\n", fd, family);
 	return 0;
 }

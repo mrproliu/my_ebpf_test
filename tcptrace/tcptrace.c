@@ -39,6 +39,13 @@ struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
 } counts SEC(".maps");
 
+struct in6_addr_redefine {
+	union {
+		__u8		u6_addr8[16];
+		__be16		u6_addr16[8];
+		__be32		u6_addr32[4];
+	} in6_u;
+} __attribute__((preserve_access_index));
 
 typedef __u32 __portpair;
 typedef __u64 __addrpair;
@@ -63,8 +70,8 @@ struct sock_common {
 			__u16	skc_num;
 		} __attribute__((preserve_access_index));
 	};
-	struct in6_addr		skc_v6_daddr;
-    struct in6_addr		skc_v6_rcv_saddr;
+	struct in6_addr_redefine		skc_v6_daddr;
+    struct in6_addr_redefine		skc_v6_rcv_saddr;
 } __attribute__((preserve_access_index));
 
 struct sock {
@@ -111,8 +118,8 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 	    BPF_CORE_READ_INTO(&key.from_addr_v4, sk, __sk_common.skc_rcv_saddr);
         BPF_CORE_READ_INTO(&key.dist_addr_v4, sk, __sk_common.skc_daddr);
 	} else {
-	    BPF_CORE_READ_INTO(&key.from_addr_v6, sk, __sk_common.skc_v6_rcv_saddr.s6_addr);
-//        BPF_CORE_READ_INTO(&key.dist_addr_v6, sk, __sk_common.skc_v6_daddr.s6_addr);
+	    BPF_CORE_READ_INTO(&key.from_addr_v6, sk, __sk_common.skc_v6_rcv_saddr.in6_u.u6_addr8);
+        BPF_CORE_READ_INTO(&key.dist_addr_v6, sk, __sk_common.skc_v6_daddr.in6_u.u6_addr8);
 	}
 
 	bpf_get_current_comm(&key.comm, sizeof(key.comm));

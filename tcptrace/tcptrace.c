@@ -115,7 +115,7 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 	__u32 tid = pid_tgid;
 	struct sock **skpp;
 	struct sock *sk;
-	__u16 dport;
+	__u16 dport, sport;
 
 	skpp = bpf_map_lookup_elem(&sockets, &tid);
 	if (!skpp)
@@ -125,13 +125,15 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 
     struct key_t key = {};
 	BPF_CORE_READ_INTO(&dport, sk, __sk_common.skc_dport);
+	BPF_CORE_READ_INTO(&sport, sk, __sk_common.skc_num);
 	BPF_CORE_READ_INTO(&key.dist_addr, sk, __sk_common.skc_daddr);
 	BPF_CORE_READ_INTO(&key.from_addr, sk, __sk_common.skc_rcv_saddr);
 	bpf_get_current_comm(&key.comm, sizeof(key.comm));
 
     char str[16];
     inet_ntop(AF_INET, &(key.from_addr), str, INET_ADDRSTRLEN);
-    bpf_printk("hello :->dport: %d, saddr: %d, daddr: %d\n", dport, str, key.dist_addr);
+    bpf_printk("hello :->dport: %d, %d\n", dport, sport);
+    bpf_printk("saddr: %d, daddr: %d\n", str, key.dist_addr);
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
 
 	bpf_map_delete_elem(&sockets, &tid);

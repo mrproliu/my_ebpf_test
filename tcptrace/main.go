@@ -108,6 +108,11 @@ func main() {
 		log.Fatalf("tracepoint: %v", err)
 	}
 	defer tracepoint.Close()
+	tracepoint1, err := link.Tracepoint("syscalls", "sys_enter_write", objs.SyscallProbeEntryWrite)
+	if err != nil {
+		log.Fatalf("tracepoint: %v", err)
+	}
+	defer tracepoint1.Close()
 
 	log.Printf("start probes success...")
 

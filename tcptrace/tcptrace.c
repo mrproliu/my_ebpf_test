@@ -182,3 +182,11 @@ int sys_enter_connect(struct trace_event_raw_sys_enter *ctx) {
     bpf_printk("heelo: %d, %d->%s\n", fd, family, d);
 	return 0;
 }
+
+SEC("tracepoint/syscalls/sys_enter_write")
+int syscall__probe_entry_write(struct trace_event_raw_sys_enter *ctx) {
+    int fd = ctx->args[0];
+    bpf_printk("heelo write: %d\n", fd);
+    return 0;
+}
+

@@ -8,9 +8,11 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
+	"github.com/hashicorp/go-multierror"
 	"log"
 	"net"
 	"os"
@@ -23,19 +25,56 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpfel -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf tcptrace.c -- -I$HOME/headers/ -D__TARGET_ARCH_x86
 
 type Event struct {
-	SourceAddr uint32
-	DistAddr   uint32
-	SourcePort uint16
-	DistPort   uint16
-	Comm       [128]byte
+	SourceAddrV4 uint32
+	DistAddrV4   uint32
+	SourceAddrV6 [16]uint8
+	DistAddrV6   [16]uint8
+	SourcePort   uint16
+	DistPort     uint16
+	IpVersion    uint16
+	Comm         [128]byte
+}
+
+type LinkFunc func(symbol string, prog *ebpf.Program) (link.Link, error)
+
+type MultipleLinker struct {
+	links     []link.Link
+	linkError error
+}
+
+func (m *MultipleLinker) AddLink(name string, linkF LinkFunc, p *ebpf.Program) {
+	l, e := linkF(name, p)
+	if e != nil {
+		m.linkError = multierror.Append(m.linkError, e)
+	} else {
+		m.links = append(m.links, l)
+	}
+}
+
+func (m *MultipleLinker) HasError() error {
+	return m.linkError
+}
+
+func (m *MultipleLinker) Close() error {
+	var err error
+	for _, l := range m.links {
+		if e := l.Close(); e != nil {
+			err = multierror.Append(err, e)
+		}
+	}
+	return err
 }
 
 func parsePort(val uint16) uint16 {
 	return binary.BigEndian.Uint16((*(*[2]byte)(unsafe.Pointer(&val)))[:])
 }
 
-func parseAddress(val uint32) string {
+func parseAddressV4(val uint32) string {
 	return net.IP((*(*[net.IPv4len]byte)(unsafe.Pointer(&val)))[:]).String()
+}
+
+func parseAddressV6(val [16]uint8) string {
+	return net.IP((*(*[net.IPv6len]byte)(unsafe.Pointer(&val)))[:]).String()
 }
 
 func main() {
@@ -54,16 +93,17 @@ func main() {
 	}
 	defer objs.Close()
 
-	// Open a Kprobe at the entry point of the kernel function and attach the
-	// pre-compiled program. Each time the kernel function enters, the program
-	// will increment the execution counter by 1. The read loop below polls this
-	// map value once per second.
-	kp, err := link.Kprobe("tcp_connect", objs.BpfTcpV4Connect)
+	linker := &MultipleLinker{}
+	linker.AddLink("tcp_v4_connect", link.Kprobe, objs.BpfTcpV4Connect)
+	linker.AddLink("tcp_v4_connect", link.Kretprobe, objs.BpfTcpV4ConnectRet)
+	linker.AddLink("tcp_v4_connect", link.Kprobe, objs.BpfTcpV4Connect)
+	linker.AddLink("tcp_v4_connect", link.Kprobe, objs.BpfTcpV4Connect)
+	kp, err := link.Kprobe("tcp_v4_connect", objs.BpfTcpV4Connect)
 	if err != nil {
 		log.Fatalf("opening kprobe: %s", err)
 	}
 	defer kp.Close()
-	kpre, err := link.Kretprobe("tcp_connect", objs.BpfTcpV4ConnectRet)
+	kpre, err := link.Kretprobe("tcp_v4_connect", objs.BpfTcpV4ConnectRet)
 	if err != nil {
 		log.Fatalf("opening kprobe: %s", err)
 	}
@@ -103,7 +143,15 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("%s:%d -> %s:%d, comm: %s\n", parseAddress(event.SourceAddr), parsePort(event.SourcePort),
-			parseAddress(event.DistAddr), parsePort(event.DistPort), event.Comm)
+		var fromAddr, distAddr string
+		if event.IpVersion == 4 {
+			fromAddr = parseAddressV4(event.SourceAddrV4)
+			distAddr = parseAddressV4(event.DistAddrV4)
+		} else {
+			fromAddr = parseAddressV6(event.SourceAddrV6)
+			distAddr = parseAddressV6(event.DistAddrV6)
+		}
+		fmt.Printf("%s:%d -> %s:%d, comm: %s\n", fromAddr, parsePort(event.SourcePort),
+			distAddr, parsePort(event.DistPort), event.Comm)
 	}
 }

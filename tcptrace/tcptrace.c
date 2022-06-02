@@ -30,10 +30,13 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 //} connect_socks SEC(".maps");
 
 struct key_t {
-    __u32 from_addr;
-    __u32 dist_addr;
+    __u32 from_addr_v4;
+    __u32 dist_addr_v4;
+    __u8  from_addr_v6[16];
+    __u8  dist_addr_v6[16];
     __u16 from_port;
     __u16 dist_port;
+    __u16 ip_ver;
     char comm[128];
 };
 
@@ -53,9 +56,6 @@ typedef __u64 __be64;
 typedef __u32 __wsum;
 
 struct sock_common {
-	/* skc_daddr and skc_rcv_saddr must be grouped on a 8 bytes aligned
-	 * address on 64bit arches : cf INET_MATCH()
-	 */
 	union {
 		__addrpair	skc_addrpair;
 		struct {
@@ -63,11 +63,6 @@ struct sock_common {
 			__be32	skc_rcv_saddr;
 		} __attribute__((preserve_access_index));
 	};
-	union  {
-		unsigned int	skc_hash;
-		__u16		skc_u16hashes[2];
-	};
-	/* skc_dport && skc_num must be grouped as well */
 	union {
 		__portpair	skc_portpair;
 		struct {
@@ -75,22 +70,13 @@ struct sock_common {
 			__u16	skc_num;
 		} __attribute__((preserve_access_index));
 	};
-
-	unsigned short		skc_family;
-	volatile unsigned char	skc_state;
-	unsigned char		skc_reuse:4;
-	unsigned char		skc_reuseport:1;
-	unsigned char		skc_ipv6only:1;
-	unsigned char		skc_net_refcnt:1;
-	int			skc_bound_dev_if;
+	struct in6_addr		skc_v6_daddr;
+    struct in6_addr		skc_v6_rcv_saddr;
 } __attribute__((preserve_access_index));
 
 struct sock {
 	struct sock_common	__sk_common;
 } __attribute__((preserve_access_index));
-
-
-
 
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);
@@ -121,14 +107,22 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 	skpp = bpf_map_lookup_elem(&sockets, &tid);
 	if (!skpp)
 		return 0;
+	bpf_map_delete_elem(&sockets, &tid);
 
 	sk = *skpp;
 
     struct key_t key = {};
-	BPF_CORE_READ_INTO(&key.dist_port, sk, __sk_common.skc_dport);
+    key.ip_ver = ip_ver;
 	BPF_CORE_READ_INTO(&key.from_port, sk, __sk_common.skc_num);
-	BPF_CORE_READ_INTO(&key.dist_addr, sk, __sk_common.skc_daddr);
-	BPF_CORE_READ_INTO(&key.from_addr, sk, __sk_common.skc_rcv_saddr);
+	BPF_CORE_READ_INTO(&key.dist_port, sk, __sk_common.skc_dport);
+	if (ip_ver == 4) {
+	    BPF_CORE_READ_INTO(&key.from_addr_v4, sk, __sk_common.skc_rcv_saddr);
+        BPF_CORE_READ_INTO(&key.dist_addr_v4, sk, __sk_common.skc_daddr);
+	} else {
+	    BPF_CORE_READ_INTO(&key.from_addr_v6, sk, __sk_common.skc_v6_rcv_saddr.s6_addr);
+        BPF_CORE_READ_INTO(&key.dist_addr_v6, sk, __sk_common.skc_v6_daddr.s6_addr);
+	}
+
 	bpf_get_current_comm(&key.comm, sizeof(key.comm));
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
@@ -136,7 +130,6 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 	bpf_map_delete_elem(&sockets, &tid);
 	return 0;
 }
-
 
 SEC("kprobe/tcp_v4_connect")
 int bpf_tcp_v4_connect(struct pt_regs *ctx) {
@@ -148,4 +141,16 @@ SEC("kretprobe/tcp_v4_connect")
 int bpf_tcp_v4_connect_ret(struct pt_regs *ctx) {
     int ret = PT_REGS_RC(ctx);
     return exit_tcp_connect(ctx, ret, 4);
+}
+
+SEC("kprobe/tcp_v6_connect")
+int bpf_tcp_v6_connect(struct pt_regs *ctx) {
+    struct sock *sk = (void *)PT_REGS_PARM1(ctx);
+	return enter_tcp_connect(ctx, sk);
+}
+
+SEC("kretprobe/tcp_v6_connect")
+int bpf_tcp_v6_connect_ret(struct pt_regs *ctx) {
+    int ret = PT_REGS_RC(ctx);
+    return exit_tcp_connect(ctx, ret, 6);
 }

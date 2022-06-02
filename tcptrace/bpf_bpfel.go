@@ -56,6 +56,8 @@ type bpfSpecs struct {
 type bpfProgramSpecs struct {
 	BpfTcpV4Connect    *ebpf.ProgramSpec `ebpf:"bpf_tcp_v4_connect"`
 	BpfTcpV4ConnectRet *ebpf.ProgramSpec `ebpf:"bpf_tcp_v4_connect_ret"`
+	BpfTcpV6Connect    *ebpf.ProgramSpec `ebpf:"bpf_tcp_v6_connect"`
+	BpfTcpV6ConnectRet *ebpf.ProgramSpec `ebpf:"bpf_tcp_v6_connect_ret"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
@@ -102,12 +104,16 @@ func (m *bpfMaps) Close() error {
 type bpfPrograms struct {
 	BpfTcpV4Connect    *ebpf.Program `ebpf:"bpf_tcp_v4_connect"`
 	BpfTcpV4ConnectRet *ebpf.Program `ebpf:"bpf_tcp_v4_connect_ret"`
+	BpfTcpV6Connect    *ebpf.Program `ebpf:"bpf_tcp_v6_connect"`
+	BpfTcpV6ConnectRet *ebpf.Program `ebpf:"bpf_tcp_v6_connect_ret"`
 }
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
 		p.BpfTcpV4Connect,
 		p.BpfTcpV4ConnectRet,
+		p.BpfTcpV6Connect,
+		p.BpfTcpV6ConnectRet,
 	)
 }
 

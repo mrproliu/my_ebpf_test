@@ -86,37 +86,6 @@ struct sock {
 } __attribute__((preserve_access_index));
 
 
-//
-//SEC("kprobe/tcp_connect")
-//int bpf_tcp_v4_connect(struct pt_regs *ctx) {
-////    struct sockaddr *uaddr = (void *)PT_REGS_PARM2(ctx);
-//////    struct sockaddr *addr = (void *)PT_REGS_PARM2(ctx);
-////    __u64 pid = bpf_get_current_pid_tgid();
-////    __u64 family = _(uaddr->sa_family);
-////    bpf_printk("connect before, family: %d, pid: %d", family, pid);
-////    bpf_map_update_elem(&connect_socks, &pid, sk, BPF_ANY);
-//	return 0;
-//}
-//
-//SEC("kretprobe/tcp_connect")
-//int bpf_tcp_v4_connect_ret(struct pt_regs *ctx) {
-////    __u64 pid = bpf_get_current_pid_tgid();
-////    struct sock *sk;
-//
-//    struct sock *sk = (void *)PT_REGS_PARM1(ctx);
-////    if (sk == NULL) {
-////        return 0;        // missed start or filtered
-////    }
-//
-////    __u16 skc_daddr = BPF_CORE_READ(sk, __sk_common.skc_num);
-////    __be16 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_dport);
-////	bpf_printk("send tcp v4 connect return: %d, %d\n", skc_daddr, skc_rcv_saddr);
-//    struct key_t key = {};
-//    key.skc_rcv_saddr = _(sk->__sk_common.skc_addrpair);
-//    bpf_get_current_comm(&key.name, sizeof(key.name));
-//    bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
-//	return 0;
-//}
 
 
 struct {
@@ -180,14 +149,27 @@ end:
 	return 0;
 }
 
-SEC("kprobe/tcp_v4_connect")
-int BPF_KPROBE(tcp_v4_connect, struct sock *sk)
-{
+
+SEC("kprobe/tcp_connect")
+int bpf_tcp_v4_connect(struct pt_regs *ctx) {
+    struct sock *sk = (void *)PT_REGS_PARM1(ctx);
 	return enter_tcp_connect(ctx, sk);
 }
 
-SEC("kretprobe/tcp_v4_connect")
-int BPF_KRETPROBE(tcp_v4_connect_ret, int ret)
-{
-	return exit_tcp_connect(ctx, ret, 4);
+SEC("kretprobe/tcp_connect")
+int bpf_tcp_v4_connect_ret(struct pt_regs *ctx) {
+    int ret = PT_REGS_RC(ctx);
+    return exit_tcp_connect(ctx, ret, 4);
 }
+
+//SEC("kprobe/tcp_v4_connect")
+//int BPF_KPROBE(tcp_v4_connect, struct sock *sk)
+//{
+//	return enter_tcp_connect(ctx, sk);
+//}
+//
+//SEC("kretprobe/tcp_v4_connect")
+//int BPF_KRETPROBE(tcp_v4_connect_ret, int ret)
+//{
+//	return exit_tcp_connect(ctx, ret, 4);
+//}

@@ -83,7 +83,6 @@ struct {
 	__uint(max_entries, MAX_ENTRIES);
 	__type(key, __u32);
 	__type(value, struct sock *);
-	__uint(map_flags, BPF_F_NO_PREALLOC);
 } sockets SEC(".maps");
 
 static __always_inline int

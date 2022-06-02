@@ -45,12 +45,12 @@ func main() {
 	// pre-compiled program. Each time the kernel function enters, the program
 	// will increment the execution counter by 1. The read loop below polls this
 	// map value once per second.
-	kp, err := link.Kprobe("tcp_connect", objs.TcpV4Connect)
+	kp, err := link.Kprobe("tcp_v4_connect", objs.TcpV4Connect)
 	if err != nil {
 		log.Fatalf("opening kprobe: %s", err)
 	}
 	defer kp.Close()
-	kpre, err := link.Kretprobe("tcp_connect", objs.TcpV4ConnectRet)
+	kpre, err := link.Kretprobe("tcp_v4_connect", objs.TcpV4ConnectRet)
 	if err != nil {
 		log.Fatalf("opening kprobe: %s", err)
 	}

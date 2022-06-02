@@ -21,8 +21,8 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpfel -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf tcptrace.c -- -I$HOME/headers/ -D__TARGET_ARCH_x86
 
 type Event struct {
-	SourceAddr uint64
-	DistAddr   uint64
+	SourceAddr uint32
+	DistAddr   uint32
 	Comm       [128]byte
 }
 

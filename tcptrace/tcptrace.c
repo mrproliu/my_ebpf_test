@@ -110,7 +110,7 @@ int bpf_tcp_v4_connect_ret(struct pt_regs *ctx) {
 //    __be16 skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_dport);
 //	bpf_printk("send tcp v4 connect return: %d, %d\n", skc_daddr, skc_rcv_saddr);
     struct key_t key = {};
-    key.skc_rcv_saddr = BPF_CORE_READ(sk, __sk_common.skc_addrpair);
+    key.skc_rcv_saddr = _(sk->__sk_common.skc_addrpair);
     bpf_get_current_comm(&key.name, sizeof(key.name));
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
 	return 0;

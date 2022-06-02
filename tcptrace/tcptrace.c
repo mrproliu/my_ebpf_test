@@ -176,7 +176,9 @@ int sys_enter_connect(struct trace_event_raw_sys_enter *ctx) {
     int fd = ctx->args[0];
     struct sockaddr *sk = (void *)ctx->args[1];
     int family = 0;
+    char d[14];
     BPF_CORE_READ_INTO(&family, sk, sa_family);
-    bpf_printk("heelo: %d, %d\n", fd, family);
+    BPF_CORE_READ_INTO(&family, sk, sa_data);
+    bpf_printk("heelo: %d, %d->%s\n", fd, family, d);
 	return 0;
 }

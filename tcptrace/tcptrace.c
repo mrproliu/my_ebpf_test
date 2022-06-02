@@ -146,6 +146,8 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 	struct sock **skpp;
 	struct sock *sk;
 	__u16 dport;
+	__be32	skc_daddr;
+    __be32	skc_rcv_saddr;
 
 	skpp = bpf_map_lookup_elem(&sockets, &tid);
 	if (!skpp)
@@ -157,8 +159,10 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 	sk = *skpp;
 
 	BPF_CORE_READ_INTO(&dport, sk, __sk_common.skc_dport);
+	BPF_CORE_READ_INTO(&skc_daddr, sk, __sk_common.skc_daddr);
+	BPF_CORE_READ_INTO(&skc_rcv_saddr, sk, __sk_common.skc_rcv_saddr);
 
-    bpf_printk("hello :->dport: %d\n", dport);
+    bpf_printk("hello :->dport: %d, saddr: %d, daddr: %d\n", dport, skc_rcv_saddr, skc_daddr);
 //	if (do_count) {
 //		if (ip_ver == 4)
 //			count_v4(sk, dport);

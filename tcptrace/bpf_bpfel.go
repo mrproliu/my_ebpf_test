@@ -62,7 +62,7 @@ type bpfProgramSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfMapSpecs struct {
-	ConnectSocks *ebpf.MapSpec `ebpf:"connect_socks"`
+	Counts *ebpf.MapSpec `ebpf:"counts"`
 }
 
 // bpfObjects contains all objects after they have been loaded into the kernel.
@@ -84,12 +84,12 @@ func (o *bpfObjects) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfMaps struct {
-	ConnectSocks *ebpf.Map `ebpf:"connect_socks"`
+	Counts *ebpf.Map `ebpf:"counts"`
 }
 
 func (m *bpfMaps) Close() error {
 	return _BpfClose(
-		m.ConnectSocks,
+		m.Counts,
 	)
 }
 

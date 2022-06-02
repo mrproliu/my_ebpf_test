@@ -186,7 +186,8 @@ int sys_enter_connect(struct trace_event_raw_sys_enter *ctx) {
 SEC("tracepoint/syscalls/sys_enter_write")
 int syscall__probe_entry_write(struct trace_event_raw_sys_enter *ctx) {
     int fd = ctx->args[0];
-    bpf_printk("heelo write: %d\n", fd);
+    int len = ctx->args[2];
+    bpf_printk("heelo write: %d->%d\n", fd, len);
     return 0;
 }
 

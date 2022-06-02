@@ -22,13 +22,6 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 		val;                                                           \
 	})
 
-//struct {
-//	__uint(type, BPF_MAP_TYPE_HASH);
-//	__uint(key_size, sizeof(__u64));
-//	__uint(value_size, sizeof(struct sock));
-//    __uint(max_entries, 10000);
-//} connect_socks SEC(".maps");
-
 struct key_t {
     __u32 from_addr_v4;
     __u32 dist_addr_v4;
@@ -118,7 +111,7 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 	    BPF_CORE_READ_INTO(&key.from_addr_v4, sk, __sk_common.skc_rcv_saddr);
         BPF_CORE_READ_INTO(&key.dist_addr_v4, sk, __sk_common.skc_daddr);
 	} else {
-//	    BPF_CORE_READ_INTO(&key.from_addr_v6, sk, __sk_common.skc_v6_rcv_saddr.s6_addr);
+	    BPF_CORE_READ_INTO(&key.from_addr_v6, sk, __sk_common.skc_v6_rcv_saddr.s6_addr);
 //        BPF_CORE_READ_INTO(&key.dist_addr_v6, sk, __sk_common.skc_v6_daddr.s6_addr);
 	}
 

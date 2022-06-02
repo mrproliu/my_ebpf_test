@@ -36,6 +36,7 @@ type Event struct {
 }
 
 type LinkFunc func(symbol string, prog *ebpf.Program) (link.Link, error)
+type TreacepointFunc func(symbol string, prog *ebpf.Program) (link.Link, error)
 
 type MultipleLinker struct {
 	links     []link.Link
@@ -44,6 +45,15 @@ type MultipleLinker struct {
 
 func (m *MultipleLinker) AddLink(name string, linkF LinkFunc, p *ebpf.Program) {
 	l, e := linkF(name, p)
+	if e != nil {
+		m.linkError = multierror.Append(m.linkError, fmt.Errorf("open %s error: %v", name, e))
+	} else {
+		m.links = append(m.links, l)
+	}
+}
+
+func (m *MultipleLinker) AddTracepoint(sys, name string, p *ebpf.Program) {
+	l, e := link.Tracepoint(sys, name, p)
 	if e != nil {
 		m.linkError = multierror.Append(m.linkError, fmt.Errorf("open %s error: %v", name, e))
 	} else {
@@ -98,22 +108,14 @@ func main() {
 	linker.AddLink("tcp_v4_connect", link.Kretprobe, objs.BpfTcpV4ConnectRet)
 	linker.AddLink("tcp_v6_connect", link.Kprobe, objs.BpfTcpV6Connect)
 	linker.AddLink("tcp_v6_connect", link.Kretprobe, objs.BpfTcpV6ConnectRet)
+	linker.AddTracepoint("syscalls", "sys_enter_connect", objs.SysEnterConnect)
+	linker.AddTracepoint("syscalls", "sys_enter_write", objs.SyscallProbeEntryWrite)
+	linker.AddTracepoint("syscalls", "sys_enter_writev", objs.SyscallProbeEntryWritev)
 	defer linker.Close()
 	err := linker.HasError()
 	if err != nil {
 		log.Fatalf("opening kprobe: %s", err)
 	}
-	tracepoint, err := link.Tracepoint("syscalls", "sys_enter_connect", objs.SysEnterConnect)
-	if err != nil {
-		log.Fatalf("tracepoint: %v", err)
-	}
-	defer tracepoint.Close()
-	tracepoint1, err := link.Tracepoint("syscalls", "sys_enter_write", objs.SyscallProbeEntryWrite)
-	if err != nil {
-		log.Fatalf("tracepoint: %v", err)
-	}
-	defer tracepoint1.Close()
-
 	log.Printf("start probes success...")
 
 	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())

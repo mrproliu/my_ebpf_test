@@ -5,12 +5,12 @@
       <target name="liuhan@localhost:2222" type="ssh/sftp">
         <config>
           <option name="projectRootOnTarget" value="/home/liuhan/ebpf_test" />
-          <option name="serverName" value="liuhan@localhost:2222 password" />
+          <option name="serverName" value="root@localhost:2222 password" />
           <option name="useRsync" value="true" />
         </config>
         <ContributedStateBase type="GoLanguageRuntime">
           <config>
-            <option name="goRoot" value="/snap/bin/go" />
+            <option name="goRoot" value="/usr/local/bin/go" />
             <option name="goVersion" value="go1.18 linux/amd64" />
           </config>
         </ContributedStateBase>

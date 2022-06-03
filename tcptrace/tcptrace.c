@@ -100,7 +100,7 @@ struct {
 	__uint(type, BPF_MAP_TYPE_HASH);
 	__uint(max_entries, MAX_ENTRIES);
 	__type(key, __u64);
-	__type(value, struct connect_args_t *);
+	__type(value, struct connect_args_t);
 } socketaddrs SEC(".maps");
 
 static __always_inline int
@@ -181,8 +181,9 @@ struct trace_event_raw_sys_enter {
 
 SEC("kprobe/__sys_connect")
 int BPF_KPROBE(__sys_connect, __u32 fd, struct sockaddr *addr) {
-    __u64 id = bpf_get_current_pid_tgid();
+    uint64_t id = bpf_get_current_pid_tgid();
 
+    // Stash arguments.
     struct connect_args_t connect_args = {};
     connect_args.fd = fd;
     connect_args.addr = addr;

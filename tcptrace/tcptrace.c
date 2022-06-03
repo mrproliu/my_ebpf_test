@@ -223,7 +223,7 @@ int sys_connect_ret(struct trace_event_raw_sys_exit *ctx) {
         bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
         __u16 dport = 0;
         bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
-        bpf_printk("con after1: %d, family: %d, addr: %d:%d\n", fd, family);
+        bpf_printk("con after1: %d, family: %d\n", fd, family);
         bpf_printk("con after2: addr: %d:%d\n", daddrv, dport);
     }
 

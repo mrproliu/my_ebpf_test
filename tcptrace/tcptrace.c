@@ -228,7 +228,7 @@ int syscall__probe_entry_write(struct trace_event_raw_sys_enter *ctx) {
     int fd = ctx->args[0];
     struct sockaddr_in *addr_in = (struct sockaddr_in *)ctx->args[4];
     __be16 sin_port;
-    bpf_probe_read(&sin_port, sizeof(sin_port), &(addr_in->sin_port));
+    bpf_probe_read_user(&sin_port, sizeof(sin_port), &(addr_in->sin_port));
     bpf_printk("heelo write: %d->%d\n", fd, sin_port);
     return 0;
 }

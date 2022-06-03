@@ -210,8 +210,7 @@ int sys_enter_connect_ret(struct pt_regs *ctx) {
          return 0;
 //    bpf_map_delete_elem(&socketaddrs, &id);
 
-//    int fd = connect_args->fd;
-    bpf_printk("syscon ret: \n");
+    bpf_printk("syscon ret: %d\n", connect_args->fd);
 	return 0;
 }
 

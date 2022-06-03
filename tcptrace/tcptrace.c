@@ -204,19 +204,10 @@ int sys_connect(struct trace_event_raw_sys_enter *ctx) {
     struct sockaddr *addr = (struct sockaddr *)connect_args.addr;
     __u16 family;
     bpf_probe_read(&family, sizeof(family), &(addr->sa_family));
-    switch (family) {
-        case AF_UNIX:
-            bpf_printk("af_unix\n");
-            break;
-        case AF_INET:
-            bpf_printk("af_inet\n");
-            break;
-        case AF_INET6:
-            bpf_printk("af_inet6\n");
-            break;
-        default:
-            bpf_printk("unknown : %d\n", family);
-    }
+    __u32 daddrv;
+    struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
+    bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
+    bpf_printk("af_inet: %d, family: %d\n", daddrv, family);
 
     bpf_map_update_elem(&socketaddrs, &id, &connect_args, 0);
     bpf_printk("con before: %d\n", connect_args.fd);

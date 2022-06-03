@@ -203,15 +203,16 @@ int sys_enter_connect(struct pt_regs *ctx) {
 SEC("kretprobe/__sys_connect")
 int sys_enter_connect_ret(struct pt_regs *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
-    struct connect_args_t *connect_args;
+    struct connect_args_t **connect_args;
+    struct connect_args_t *con;
 
     connect_args = (void *)bpf_map_lookup_elem(&socketaddrs, &id);
     if (!connect_args)
          return 0;
 //    bpf_map_delete_elem(&socketaddrs, &id);
-
+    con = *connect_args;
     __u32 fd;
-    BPF_CORE_READ_INTO(&fd, connect_args, fd);
+    BPF_CORE_READ_INTO(&fd, con, fd);
     bpf_printk("syscon ret: %d\n", fd);
 	return 0;
 }

@@ -202,7 +202,6 @@ int sys_connect(struct trace_event_raw_sys_enter *ctx) {
     connect_args.fd = (__u32)ctx->args[0];
     connect_args.addr = (void *)ctx->args[1];
     bpf_map_update_elem(&socketaddrs, &id, &connect_args, 0);
-    bpf_printk("con before: %d\n", connect_args.fd);
 	return 0;
 }
 
@@ -223,8 +222,8 @@ int sys_connect_ret(struct trace_event_raw_sys_exit *ctx) {
         bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
         __u16 dport = 0;
         bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
-        bpf_printk("con after1: %d, family: %d\n", fd, family);
-        bpf_printk("con after2: addr: %d:%d\n", daddrv, dport);
+        bpf_printk("con: %d, family: %d\n", fd, family);
+        bpf_printk("con: addr: %d:%d\n", daddrv, dport);
     }
 
 	return 0;
@@ -234,9 +233,15 @@ SEC("tracepoint/syscalls/sys_enter_write")
 int syscall__probe_entry_write(struct trace_event_raw_sys_enter *ctx) {
     int fd = ctx->args[0];
     struct sockaddr_in *addr_in = (struct sockaddr_in *)ctx->args[4];
-    __be16 sin_port;
-    bpf_probe_read_user(&sin_port, sizeof(sin_port), &(addr_in->sin_port));
-    bpf_printk("heelo write: %d->%d\n", fd, sin_port);
+    __u16 family;
+    bpf_probe_read(&family, sizeof(family), &(addr_in->sin_family));
+    __u32 daddrv;
+    struct sockaddr_in *daddr = (struct sockaddr_in *)addr_in;
+    bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
+    __u16 dport = 0;
+    bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
+    bpf_printk("write: %d, family: %d\n", fd, family);
+    bpf_printk("write: addr: %d:%d\n", daddrv, dport);
     return 0;
 }
 

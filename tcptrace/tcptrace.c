@@ -96,8 +96,8 @@ struct {
 } sockets SEC(".maps");
 
 struct connect_args_t {
-  __u32 fd;
   const struct sockaddr* addr;
+  __u32 fd;
 };
 
 struct {

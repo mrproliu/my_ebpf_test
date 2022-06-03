@@ -201,14 +201,6 @@ int sys_connect(struct trace_event_raw_sys_enter *ctx) {
     struct connect_args_t connect_args = {};
     connect_args.fd = (__u32)ctx->args[0];
     connect_args.addr = (void *)ctx->args[1];
-    struct sockaddr *addr = (struct sockaddr *)connect_args.addr;
-    __u16 family;
-    bpf_probe_read(&family, sizeof(family), &(addr->sa_family));
-    __u32 daddrv;
-    struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
-    bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
-    bpf_printk("af_inet: %d, family: %d\n", daddrv, family);
-
     bpf_map_update_elem(&socketaddrs, &id, &connect_args, 0);
     bpf_printk("con before: %d\n", connect_args.fd);
 	return 0;
@@ -223,9 +215,16 @@ int sys_connect_ret(struct trace_event_raw_sys_exit *ctx) {
     if (connect_args) {
         __u32 fd = connect_args->fd;
         struct sockaddr_in *addr_in = (struct sockaddr_in *)connect_args->addr;
-        __be16 sin_port;
-        BPF_CORE_READ_INTO(&sin_port, addr_in, sin_port);
-        bpf_printk("con after: %d->%d\n", fd, sin_port);
+
+        __u16 family;
+        bpf_probe_read(&family, sizeof(family), &(addr_in->sin_family));
+        __u32 daddrv;
+        struct sockaddr_in *daddr = (struct sockaddr_in *)addr_in;
+        bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
+        __u16 dport = 0;
+        bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
+        bpf_printk("con after1: %d, family: %d, addr: %d:%d\n", fd, family);
+        bpf_printk("con after2: addr: %d:%d\n", daddrv, dport);
     }
 
 	return 0;

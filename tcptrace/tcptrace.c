@@ -12,6 +12,7 @@
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
 #include <bpf/bpf_core_read.h>
+#include "tcptrace.h"
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
@@ -94,11 +95,6 @@ struct {
 	__type(key, __u32);
 	__type(value, struct sock *);
 } sockets SEC(".maps");
-
-struct connect_args_t {
-  __u32 fd;
-  struct sockaddr* addr;
-};
 
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);
@@ -183,14 +179,8 @@ struct trace_event_raw_sys_enter {
 	char __data[0];
 } __attribute__((preserve_access_index));
 
-union sockaddr_t {
-  struct sockaddr sa;
-  struct sockaddr_in in4;
-  struct sockaddr_in6 in6;
-};
-
 SEC("kprobe/__sys_connect")
-int sys_enter_connect(struct pt_regs *ctx, int fd, struct sockaddr *addr) {
+int BPF_KPROBE(__sys_connect, __u32 fd, struct sockaddr *addr) {
     __u64 id = bpf_get_current_pid_tgid();
 
     struct connect_args_t connect_args = {};
@@ -202,7 +192,7 @@ int sys_enter_connect(struct pt_regs *ctx, int fd, struct sockaddr *addr) {
 }
 
 SEC("kretprobe/__sys_connect")
-int sys_enter_connect_ret(struct pt_regs *ctx) {
+int sys_connect_ret(struct pt_regs *ctx, int ret) {
     __u64 id = bpf_get_current_pid_tgid();
     struct connect_args_t *connect_args;
 

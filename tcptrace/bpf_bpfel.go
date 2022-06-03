@@ -54,11 +54,11 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
-	SysConnect              *ebpf.ProgramSpec `ebpf:"__sys_connect"`
 	BpfTcpV4Connect         *ebpf.ProgramSpec `ebpf:"bpf_tcp_v4_connect"`
 	BpfTcpV4ConnectRet      *ebpf.ProgramSpec `ebpf:"bpf_tcp_v4_connect_ret"`
 	BpfTcpV6Connect         *ebpf.ProgramSpec `ebpf:"bpf_tcp_v6_connect"`
 	BpfTcpV6ConnectRet      *ebpf.ProgramSpec `ebpf:"bpf_tcp_v6_connect_ret"`
+	SysConnect              *ebpf.ProgramSpec `ebpf:"sys_connect"`
 	SysConnectRet           *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
 	SyscallProbeEntryWrite  *ebpf.ProgramSpec `ebpf:"syscall__probe_entry_write"`
 	SyscallProbeEntryWritev *ebpf.ProgramSpec `ebpf:"syscall__probe_entry_writev"`
@@ -109,11 +109,11 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
-	SysConnect              *ebpf.Program `ebpf:"__sys_connect"`
 	BpfTcpV4Connect         *ebpf.Program `ebpf:"bpf_tcp_v4_connect"`
 	BpfTcpV4ConnectRet      *ebpf.Program `ebpf:"bpf_tcp_v4_connect_ret"`
 	BpfTcpV6Connect         *ebpf.Program `ebpf:"bpf_tcp_v6_connect"`
 	BpfTcpV6ConnectRet      *ebpf.Program `ebpf:"bpf_tcp_v6_connect_ret"`
+	SysConnect              *ebpf.Program `ebpf:"sys_connect"`
 	SysConnectRet           *ebpf.Program `ebpf:"sys_connect_ret"`
 	SyscallProbeEntryWrite  *ebpf.Program `ebpf:"syscall__probe_entry_write"`
 	SyscallProbeEntryWritev *ebpf.Program `ebpf:"syscall__probe_entry_writev"`
@@ -121,11 +121,11 @@ type bpfPrograms struct {
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
-		p.SysConnect,
 		p.BpfTcpV4Connect,
 		p.BpfTcpV4ConnectRet,
 		p.BpfTcpV6Connect,
 		p.BpfTcpV6ConnectRet,
+		p.SysConnect,
 		p.SysConnectRet,
 		p.SyscallProbeEntryWrite,
 		p.SyscallProbeEntryWritev,

@@ -179,21 +179,35 @@ struct trace_event_raw_sys_enter {
 	char __data[0];
 } __attribute__((preserve_access_index));
 
-SEC("kprobe/__sys_connect")
-int BPF_KPROBE(__sys_connect, __u32 fd, struct sockaddr *addr) {
+struct trace_entry {
+	short unsigned int type;
+	unsigned char flags;
+	unsigned char preempt_count;
+	int pid;
+};
+
+struct trace_event_raw_sys_exit {
+	struct trace_entry ent;
+	long int id;
+	long int ret;
+	char __data[0];
+};
+
+SEC("tracepoint/syscalls/sys_enter_connect")
+int sys_connect(struct trace_event_raw_sys_enter *ctx) {
     uint64_t id = bpf_get_current_pid_tgid();
 
     // Stash arguments.
     struct connect_args_t connect_args = {};
-    connect_args.fd = fd;
-    connect_args.addr = addr;
+    connect_args.fd = (__u32)ctx->args[0];
+    connect_args.addr = (void *)ctx->args[1];
     bpf_map_update_elem(&socketaddrs, &id, &connect_args, 0);
     bpf_printk("con before: %d\n", connect_args.fd);
 	return 0;
 }
 
-SEC("kretprobe/__sys_connect")
-int sys_connect_ret(struct pt_regs *ctx, int ret) {
+SEC("tracepoint/syscalls/sys_exit_connect")
+int sys_connect_ret(struct trace_event_raw_sys_exit *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
     struct connect_args_t *connect_args;
 
@@ -209,10 +223,11 @@ int sys_connect_ret(struct pt_regs *ctx, int ret) {
 	return 0;
 }
 
-SEC("kprobe/__x64_sys_write")
-int syscall__probe_entry_write(struct pt_regs *ctx) {
-    int fd = PT_REGS_PARM1(ctx);
-    bpf_printk("heelo write: %d\n", fd);
+SEC("tracepoint/syscalls/sys_enter_write")
+int syscall__probe_entry_write(struct trace_event_raw_sys_enter *ctx) {
+    int fd = ctx->args[0];
+    int len = ctx->args[2];
+    bpf_printk("heelo write: %d->%d\n", fd, len);
     return 0;
 }
 

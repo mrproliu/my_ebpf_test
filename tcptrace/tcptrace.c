@@ -178,9 +178,9 @@ union sockaddr_t {
 };
 
 SEC("kprobe/__sys_connect")
-int sys_enter_connect(struct pt_regs *ctx, int fd, struct sockaddr* sock, int addrlen) {
-    struct sockaddr_in *addr = (struct sockaddr_in*)sock;
-
+int sys_enter_connect(struct pt_regs *ctx) {
+    int fd = PT_REGS_PARM1(ctx);
+    struct sockaddr_in *addr = (void *)PT_REGS_PARM2(ctx);
     __u16 p = BPF_CORE_READ(addr, sin_port);
     bpf_printk("heelo: %d, %d\n", fd, p);
 	return 0;

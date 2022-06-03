@@ -210,8 +210,9 @@ int sys_connect_ret(struct pt_regs *ctx, int ret) {
 }
 
 SEC("kprobe/__x64_sys_write")
-int syscall__probe_entry_write(struct pt_regs *ctx, int fd, const char *buf, size_t count) {
-    bpf_printk("heelo write: %d->%d\n", fd, count);
+int syscall__probe_entry_write(struct pt_regs *ctx) {
+    int fd = PT_REGS_PARM1(ctx);
+    bpf_printk("heelo write: %d\n", fd);
     return 0;
 }
 

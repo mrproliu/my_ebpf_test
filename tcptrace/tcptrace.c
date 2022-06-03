@@ -226,8 +226,10 @@ int sys_connect_ret(struct trace_event_raw_sys_exit *ctx) {
 SEC("tracepoint/syscalls/sys_enter_write")
 int syscall__probe_entry_write(struct trace_event_raw_sys_enter *ctx) {
     int fd = ctx->args[0];
-    int len = ctx->args[5];
-    bpf_printk("heelo write: %d->%d\n", fd, len);
+    struct sockaddr_in *addr_in = (struct sockaddr_in *)ctx->args[4];
+    __be16 sin_port;
+    BPF_CORE_READ_INTO(&sin_port, addr_in, sin_port);
+    bpf_printk("heelo write: %d->%d\n", fd, sin_port);
     return 0;
 }
 

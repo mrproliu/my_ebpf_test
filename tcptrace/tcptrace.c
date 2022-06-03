@@ -177,13 +177,10 @@ union sockaddr_t {
   struct sockaddr_in6 in6;
 };
 
-SEC("tracepoint/syscalls/sys_enter_connect")
-int sys_enter_connect(struct trace_event_raw_sys_enter *ctx) {
-    int fd = ctx->args[0];
-    struct sockaddr_in *addr = ((struct sockaddr_in*)ctx->args[1]);
+SEC("kprobe/__sys_connect")
+int sys_enter_connect(struct pt_regs *ctx, int fd, struct sockaddr* sock, int addrlen) {
+    struct sockaddr_in *addr = (struct sockaddr_in*)sock;
 
-//    __u16 port = 0;
-//    BPF_CORE_READ_INTO(&port, addr_in, sin_port);
     __u16 p = BPF_CORE_READ(addr, sin_port);
     bpf_printk("heelo: %d, %d\n", fd, p);
 	return 0;

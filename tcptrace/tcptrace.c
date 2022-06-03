@@ -201,11 +201,25 @@ int sys_connect(struct trace_event_raw_sys_enter *ctx) {
     struct connect_args_t connect_args = {};
     connect_args.fd = (__u32)ctx->args[0];
     connect_args.addr = (void *)ctx->args[1];
-    struct sockaddr_in *addr_in = (struct sockaddr_in *)connect_args.addr;
-    __be16 sin_port;
-    bpf_probe_read_user(&sin_port, sizeof(sin_port), &(addr_in->sin_port));
+    struct sockaddr *addr = (struct sockaddr *)connect_args.addr;
+    __u16 family;
+    bpf_probe_read(&family, sizeof(family), &(addr->sa_family));
+    switch (family) {
+        case AF_UNIX:
+            bpf_printk("af_unix\n");
+            break;
+        case AF_INET:
+            bpf_printk("af_inet\n");
+            break;
+        case AF_INET6:
+            bpf_printk("af_inet6\n");
+            break;
+        default:
+            bpf_printk("unknown : %d\n", family);
+    }
+
     bpf_map_update_elem(&socketaddrs, &id, &connect_args, 0);
-    bpf_printk("con before: %d, port: %d\n", connect_args.fd, sin_port);
+    bpf_printk("con before: %d\n", connect_args.fd);
 	return 0;
 }
 

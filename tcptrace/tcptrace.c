@@ -197,6 +197,7 @@ int sys_enter_connect(struct pt_regs *ctx) {
     connect_args.fd = PT_REGS_PARM1(ctx);
     connect_args.addr = (void *)PT_REGS_PARM2(ctx);
     bpf_map_update_elem(&socketaddrs, &id, &connect_args, 0);
+    bpf_printk("con before: %d\n", connect_args.fd);
 	return 0;
 }
 

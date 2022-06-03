@@ -96,8 +96,8 @@ struct {
 } sockets SEC(".maps");
 
 struct connect_args_t {
-  const struct sockaddr* addr;
   __u32 fd;
+  const struct sockaddr* addr;
 };
 
 struct {
@@ -208,7 +208,7 @@ int sys_enter_connect_ret(struct pt_regs *ctx) {
 
     connect_args = bpf_map_lookup_elem(&socketaddrs, &id);
     if (connect_args) {
-        bpf_printk("con after: \n");
+        bpf_printk("con after: %d\n", connect_args->fd);
     }
 
 	return 0;

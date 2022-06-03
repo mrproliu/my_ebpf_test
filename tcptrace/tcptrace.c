@@ -213,7 +213,7 @@ int sys_enter_connect_ret(struct pt_regs *ctx) {
     con = *connect_args;
 
     struct connect_args_t a = {};
-    BPF_CORE_READ_INTO(&a.fd, con, fd);
+    a.fd = _(con->fd);
     bpf_printk("syscon ret: %d\n", a.fd);
 	return 0;
 }

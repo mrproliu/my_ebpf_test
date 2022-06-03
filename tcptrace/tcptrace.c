@@ -206,13 +206,12 @@ int sys_enter_connect_ret(struct pt_regs *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
     struct connect_args_t *connect_args;
 
-    connect_args = (void *)bpf_map_lookup_elem(&socketaddrs, &id);
-    if (!connect_args)
-         return 0;
-//    bpf_map_delete_elem(&socketaddrs, &id);
+    connect_args = bpf_map_lookup_elem(&socketaddrs, &id);
+    if (connect_args) {
+        __u32 fd = connect_args->fd;
+        bpf_printk("con after: %d\n", fd);
+    }
 
-    __u32 fd = connect_args->fd;
-    bpf_printk("con after: %d\n", fd);
 	return 0;
 }
 

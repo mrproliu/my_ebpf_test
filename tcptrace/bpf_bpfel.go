@@ -59,6 +59,7 @@ type bpfProgramSpecs struct {
 	BpfTcpV6Connect         *ebpf.ProgramSpec `ebpf:"bpf_tcp_v6_connect"`
 	BpfTcpV6ConnectRet      *ebpf.ProgramSpec `ebpf:"bpf_tcp_v6_connect_ret"`
 	SysEnterConnect         *ebpf.ProgramSpec `ebpf:"sys_enter_connect"`
+	SysEnterConnectRet      *ebpf.ProgramSpec `ebpf:"sys_enter_connect_ret"`
 	SyscallProbeEntryWrite  *ebpf.ProgramSpec `ebpf:"syscall__probe_entry_write"`
 	SyscallProbeEntryWritev *ebpf.ProgramSpec `ebpf:"syscall__probe_entry_writev"`
 }
@@ -67,8 +68,9 @@ type bpfProgramSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfMapSpecs struct {
-	Counts  *ebpf.MapSpec `ebpf:"counts"`
-	Sockets *ebpf.MapSpec `ebpf:"sockets"`
+	Counts      *ebpf.MapSpec `ebpf:"counts"`
+	Socketaddrs *ebpf.MapSpec `ebpf:"socketaddrs"`
+	Sockets     *ebpf.MapSpec `ebpf:"sockets"`
 }
 
 // bpfObjects contains all objects after they have been loaded into the kernel.
@@ -90,13 +92,15 @@ func (o *bpfObjects) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfMaps struct {
-	Counts  *ebpf.Map `ebpf:"counts"`
-	Sockets *ebpf.Map `ebpf:"sockets"`
+	Counts      *ebpf.Map `ebpf:"counts"`
+	Socketaddrs *ebpf.Map `ebpf:"socketaddrs"`
+	Sockets     *ebpf.Map `ebpf:"sockets"`
 }
 
 func (m *bpfMaps) Close() error {
 	return _BpfClose(
 		m.Counts,
+		m.Socketaddrs,
 		m.Sockets,
 	)
 }
@@ -110,6 +114,7 @@ type bpfPrograms struct {
 	BpfTcpV6Connect         *ebpf.Program `ebpf:"bpf_tcp_v6_connect"`
 	BpfTcpV6ConnectRet      *ebpf.Program `ebpf:"bpf_tcp_v6_connect_ret"`
 	SysEnterConnect         *ebpf.Program `ebpf:"sys_enter_connect"`
+	SysEnterConnectRet      *ebpf.Program `ebpf:"sys_enter_connect_ret"`
 	SyscallProbeEntryWrite  *ebpf.Program `ebpf:"syscall__probe_entry_write"`
 	SyscallProbeEntryWritev *ebpf.Program `ebpf:"syscall__probe_entry_writev"`
 }
@@ -121,6 +126,7 @@ func (p *bpfPrograms) Close() error {
 		p.BpfTcpV6Connect,
 		p.BpfTcpV6ConnectRet,
 		p.SysEnterConnect,
+		p.SysEnterConnectRet,
 		p.SyscallProbeEntryWrite,
 		p.SyscallProbeEntryWritev,
 	)

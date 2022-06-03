@@ -95,6 +95,18 @@ struct {
 	__type(value, struct sock *);
 } sockets SEC(".maps");
 
+struct connect_args_t {
+  const struct sockaddr* addr;
+  __u32 fd;
+};
+
+struct {
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries, MAX_ENTRIES);
+	__type(key, __u64);
+	__type(value, struct connect_args_t *);
+} socketaddrs SEC(".maps");
+
 static __always_inline int
 enter_tcp_connect(struct pt_regs *ctx, struct sock *sk)
 {
@@ -179,10 +191,29 @@ union sockaddr_t {
 
 SEC("kprobe/__sys_connect")
 int sys_enter_connect(struct pt_regs *ctx) {
-    int fd = PT_REGS_PARM1(ctx);
-    struct sockaddr_in *addr = (void *)PT_REGS_PARM2(ctx);
-    __u16 p = BPF_CORE_READ(addr, sin_port);
-    bpf_printk("heelo: %d, %d\n", fd, p);
+    __u64 id = bpf_get_current_pid_tgid();
+
+    struct connect_args_t connect_args = {};
+    connect_args.fd = PT_REGS_PARM1(ctx);
+    connect_args.addr = (void *)PT_REGS_PARM2(ctx);
+    bpf_map_update_elem(&socketaddrs, &id, &connect_args, 0);
+	return 0;
+}
+
+SEC("kretprobe/__sys_connect")
+int sys_enter_connect_ret(struct pt_regs *ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+    struct connect_args_t **connect_args;
+    struct connect_args_t *con;
+
+    connect_args = bpf_map_lookup_elem(&socketaddrs, &id);
+    if (!connect_args)
+         return 0;
+    bpf_map_delete_elem(&socketaddrs, &id);
+
+    con = *connect_args;
+    int fd = con->fd;
+    bpf_printk("syscon ret: %d\n", fd);
 	return 0;
 }
 

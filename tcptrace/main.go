@@ -109,6 +109,7 @@ func main() {
 	linker.AddLink("tcp_v6_connect", link.Kprobe, objs.BpfTcpV6Connect)
 	linker.AddLink("tcp_v6_connect", link.Kretprobe, objs.BpfTcpV6ConnectRet)
 	linker.AddLink("__sys_connect", link.Kprobe, objs.SysEnterConnect)
+	linker.AddLink("__sys_connect", link.Kretprobe, objs.SysEnterConnectRet)
 	linker.AddTracepoint("syscalls", "sys_enter_write", objs.SyscallProbeEntryWrite)
 	linker.AddTracepoint("syscalls", "sys_enter_writev", objs.SyscallProbeEntryWritev)
 	defer linker.Close()

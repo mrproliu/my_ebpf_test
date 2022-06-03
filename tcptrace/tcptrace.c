@@ -209,9 +209,9 @@ int sys_enter_connect_ret(struct pt_regs *ctx) {
     connect_args = bpf_map_lookup_elem(&socketaddrs, &id);
     if (connect_args) {
         __u32 fd = connect_args->fd;
-        struct sockaddr_in *in = (struct sockaddr_in *)connect_args->addr;
+        struct sockaddr *in = (struct sockaddr *)connect_args->addr;
         __be16 sin_port;
-        BPF_CORE_READ_INTO(&sin_port, in, sin_port);
+        BPF_CORE_READ_INTO(&sin_port, in, sa_family);
         bpf_printk("con after: %d->%d\n", fd, sin_port);
     }
 

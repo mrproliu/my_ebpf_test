@@ -208,8 +208,7 @@ int sys_enter_connect_ret(struct pt_regs *ctx) {
 
     connect_args = bpf_map_lookup_elem(&socketaddrs, &id);
     if (connect_args) {
-        __u32 fd = connect_args->fd;
-        bpf_printk("con after: %d\n", fd);
+        bpf_printk("con after: \n");
     }
 
 	return 0;

@@ -209,11 +209,9 @@ int sys_connect_ret(struct pt_regs *ctx, int ret) {
 	return 0;
 }
 
-SEC("tracepoint/syscalls/sys_enter_write")
-int syscall__probe_entry_write(struct trace_event_raw_sys_enter *ctx) {
-    int fd = ctx->args[0];
-    int len = ctx->args[2];
-    bpf_printk("heelo write: %d->%d\n", fd, len);
+SEC("kprobe/__x64_sys_write")
+int syscall__probe_entry_write(struct pt_regs *ctx, int fd, const char *buf, size_t count) {
+    bpf_printk("heelo write: %d->%d\n", fd, count);
     return 0;
 }
 

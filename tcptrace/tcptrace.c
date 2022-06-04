@@ -35,10 +35,9 @@ static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type,
     if (addr != NULL) {
         // TODO support ipv4 for now
         struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
-        __u16 sin_port;
         bpf_probe_read(&opts_event.upstream_addr_v4, sizeof(opts_event.upstream_addr_v4), &daddr->sin_addr.s_addr);
-        bpf_probe_read(&sin_port, sizeof(sin_port), &daddr->sin_port);
-        opts_event.upstream_port = (__u16)bpf_ntohs(sin_port);
+        bpf_probe_read(&opts_event.upstream_port, sizeof(opts_event.upstream_port), &daddr->sin_port);
+        opts_event.upstream_port = bpf_ntohs(opts_event.upstream_port);
         // for test
 //        opts_event.downstream_addr_v4 = opts_event.upstream_addr_v4;
 //        opts_event.downstream_port = opts_event.upstream_port;

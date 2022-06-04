@@ -57,15 +57,17 @@ type bpfProgramSpecs struct {
 	SysConnect    *ebpf.ProgramSpec `ebpf:"sys_connect"`
 	SysConnectRet *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
 	SysSendto     *ebpf.ProgramSpec `ebpf:"sys_sendto"`
+	SysSendtoRet  *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfMapSpecs struct {
-	AcceptSocks           *ebpf.MapSpec `ebpf:"accept_socks"`
+	AcceptingArgs         *ebpf.MapSpec `ebpf:"accepting_args"`
 	ConectingArgs         *ebpf.MapSpec `ebpf:"conecting_args"`
 	SocketOptsEventsQueue *ebpf.MapSpec `ebpf:"socket_opts_events_queue"`
+	WritingArgs           *ebpf.MapSpec `ebpf:"writing_args"`
 }
 
 // bpfObjects contains all objects after they have been loaded into the kernel.
@@ -87,16 +89,18 @@ func (o *bpfObjects) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfMaps struct {
-	AcceptSocks           *ebpf.Map `ebpf:"accept_socks"`
+	AcceptingArgs         *ebpf.Map `ebpf:"accepting_args"`
 	ConectingArgs         *ebpf.Map `ebpf:"conecting_args"`
 	SocketOptsEventsQueue *ebpf.Map `ebpf:"socket_opts_events_queue"`
+	WritingArgs           *ebpf.Map `ebpf:"writing_args"`
 }
 
 func (m *bpfMaps) Close() error {
 	return _BpfClose(
-		m.AcceptSocks,
+		m.AcceptingArgs,
 		m.ConectingArgs,
 		m.SocketOptsEventsQueue,
+		m.WritingArgs,
 	)
 }
 
@@ -107,6 +111,7 @@ type bpfPrograms struct {
 	SysConnect    *ebpf.Program `ebpf:"sys_connect"`
 	SysConnectRet *ebpf.Program `ebpf:"sys_connect_ret"`
 	SysSendto     *ebpf.Program `ebpf:"sys_sendto"`
+	SysSendtoRet  *ebpf.Program `ebpf:"sys_sendto_ret"`
 }
 
 func (p *bpfPrograms) Close() error {
@@ -114,6 +119,7 @@ func (p *bpfPrograms) Close() error {
 		p.SysConnect,
 		p.SysConnectRet,
 		p.SysSendto,
+		p.SysSendtoRet,
 	)
 }
 

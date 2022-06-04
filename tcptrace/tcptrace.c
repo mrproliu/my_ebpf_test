@@ -56,7 +56,6 @@ static __inline void process_connect(struct pt_regs* ctx, __u64 id, struct conne
     }
     __u32 pid = id >> 32;
 
-
     submit_new_connection(ctx, SOCKET_OPTS_TYPE_CONNECT, pid, connect_args->fd, connect_args->addr, NULL);
 }
 
@@ -64,7 +63,6 @@ SEC("kprobe/__sys_connect")
 int sys_connect(struct pt_regs *ctx) {
     uint64_t id = bpf_get_current_pid_tgid();
 
-    // Stash arguments.
     struct connect_args_t connect_args = {};
     connect_args.fd = PT_REGS_PARM1(ctx);
     connect_args.addr = (void *)PT_REGS_PARM2(ctx);
@@ -86,37 +84,55 @@ int sys_connect_ret(struct pt_regs *ctx) {
 	return 0;
 }
 
-struct sockinfo {
-    __u16 family;
-    __u32 addr;
-    __u16 port;
-};
-
-//static __always_inline struct sockinfo
-//get_sock_info(struct sockaddr *addr)
-//{
-//    struct sockinfo s = {};
-//    bpf_probe_read(&s.family, sizeof(s.family), &(addr->sa_family));
-//    struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
-//    bpf_probe_read(&s.addr, sizeof(s.addr), &daddr->sin_addr.s_addr);
-//    bpf_probe_read(&s.port, sizeof(s.port), &daddr->sin_port);
-//    return s;
-//}
-
 SEC("kprobe/__sys_sendto")
 int sys_sendto(struct pt_regs* ctx) {
-    int fd = PT_REGS_PARM1(ctx);
-    const struct sockaddr *addr = (void *)PT_REGS_PARM5(ctx);
-    if (addr != NULL) {
-        bpf_printk("addr exists\n");
+    __u64 id = bpf_get_current_pid_tgid();
+
+    struct sock_data_args_t data_args = {};
+    data_args.func = SOCK_DATA_FUNC_SENDTO;
+    data_args.fd = PT_REGS_PARM1(ctx);
+    data_args.buf = (void *)PT_REGS_PARM2(ctx);
+    bpf_map_update_elem(&writing_args, &id, &data_args, 0);
+    return 0;
+}
+
+static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count) {
+//    __u32 tgid = id >> 32;
+    if (args->buf == NULL) {
+        return;
     }
-    struct sockinfo s = {};
-    BPF_CORE_READ_INTO(&s.family, addr, sa_family);
-    struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
-    BPF_CORE_READ_INTO(&s.addr, daddr, sin_addr.s_addr);
-    BPF_CORE_READ_INTO(&s.port, daddr, sin_port);
-    bpf_printk("sendto: %d\n", fd);
-    bpf_printk("sendto: %d->%d:%d\n", s.family, s.addr, s.port);
+    if (args->fd < 0) {
+        return;
+    }
+    if (bytes_count <= 0) {
+        return;
+    }
+
+    if (bytes_count < 16) {
+        bpf_printk("bytes cound not enough: %d\n", bytes_count);
+        return;
+    }
+
+    const char* buf = args->buf;
+    if (buf[0] == 'G' && buf[1] == 'E' && buf[2] == 'T') {
+        bpf_printk("get request \n");
+    } else {
+        bpf_printk("unknown\n");
+    }
+}
+
+SEC("kretprobe/__sys_sendto")
+int sys_sendto_ret(struct pt_regs* ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+    struct sock_data_args_t *data_args;
+    ssize_t bytes_count = PT_REGS_RC(ctx);
+
+    data_args = bpf_map_lookup_elem(&writing_args, &id);
+    if (data_args) {
+        process_write_data(ctx, id, data_args, bytes_count);
+    }
+
+    bpf_map_delete_elem(&writing_args, &id);
     return 0;
 }
 

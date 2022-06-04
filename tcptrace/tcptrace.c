@@ -10,6 +10,7 @@
 #include <linux/socket.h>
 #include <asm/errno.h>
 #include <arpa/inet.h>
+#include <bpf/bpf_endian.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
 #include <bpf/bpf_core_read.h>

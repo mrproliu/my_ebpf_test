@@ -299,17 +299,17 @@ int sys_accept_ret(struct pt_regs *ctx) {
     if (accept_sock) {
         int fd = PT_REGS_RC(ctx);
         __u32 fromfd = accept_sock->fd;
-        struct socket* sot = accept_sock->socket;
-        struct sock* s;
-        BPF_CORE_READ_INTO(&s, sot, sk);
-        struct key_t key = {};
-        BPF_CORE_READ_INTO(&key.from_port, s, __sk_common.skc_num);
-        BPF_CORE_READ_INTO(&key.dist_port, s, __sk_common.skc_dport);
-        BPF_CORE_READ_INTO(&key.from_addr_v4, s, __sk_common.skc_rcv_saddr);
-        BPF_CORE_READ_INTO(&key.dist_addr_v4, s, __sk_common.skc_daddr);
+//        struct socket* sot = accept_sock->socket;
+//        struct sock* s;
+//        BPF_CORE_READ_INTO(&s, sot, sk);
+//        struct key_t key = {};
+//        BPF_CORE_READ_INTO(&key.from_port, s, __sk_common.skc_num);
+//        BPF_CORE_READ_INTO(&key.dist_port, s, __sk_common.skc_dport);
+//        BPF_CORE_READ_INTO(&key.from_addr_v4, s, __sk_common.skc_rcv_saddr);
+//        BPF_CORE_READ_INTO(&key.dist_addr_v4, s, __sk_common.skc_daddr);
 
         bpf_printk("socket accept ret: %d, from fd: %d\n", fd, fromfd);
-        bpf_printk("socket accept ret: dist sock: %d:%d\n", key.dist_addr_v4, key.dist_port);
+//        bpf_printk("socket accept ret: dist sock: %d:%d\n", key.dist_addr_v4, key.dist_port);
     }
     return 0;
 }
@@ -320,10 +320,10 @@ int sock_alloc_ret(struct pt_regs *ctx) {
     struct accept_sock_t *accept_sock;
     accept_sock = bpf_map_lookup_elem(&accept_socks, &pid_tgid);
     if (accept_sock) {
-        struct socket *sock = (struct socket*)PT_REGS_RC(ctx);
-        accept_sock->socket = sock;
-        bpf_printk("detect sock alloc from fd: %d\n", accept_sock->fd);
-        bpf_map_update_elem(&accept_socks, &pid_tgid, &accept_sock, 0);
+//        struct socket *sock = (struct socket*)PT_REGS_RC(ctx);
+//        accept_sock->socket = sock;
+//        bpf_printk("detect sock alloc from fd: %d\n", accept_sock->fd);
+//        bpf_map_update_elem(&accept_socks, &pid_tgid, &accept_sock, 0);
     }
     return 0;
 }

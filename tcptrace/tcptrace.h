@@ -19,7 +19,7 @@ struct sock_opts_event {
     // process id
     __u32 pid;
     // process command line
-    char comm[128];
+//    char comm[128];
     // socket file descriptor
     __u32 sockfd;
     // opts timestamp

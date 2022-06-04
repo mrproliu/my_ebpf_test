@@ -155,7 +155,7 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("CONNECT from: %d(%s) -> %s:%d, socket fd: %d\n", event.Pid,
+		fmt.Printf("CONNECT from: %d(%s) -> %s:%d, socket fd: %d\n", event.Pid, event.Comm,
 			parseAddressV4(event.UpstreamAddrV4), parsePort(event.UpstreamPort), event.SocketFd)
 		fmt.Printf("total: %v\n", event)
 	}

@@ -37,21 +37,15 @@ static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type,
         struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
         bpf_probe_read(&opts_event.upstream_addr_v4, sizeof(opts_event.upstream_addr_v4), &daddr->sin_addr.s_addr);
         bpf_probe_read(&opts_event.upstream_port, sizeof(opts_event.upstream_port), &daddr->sin_port);
+
+        __u32 daddrv;
+        bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
+        __u16 dport = 0;
+        bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
+        bpf_printk("con333: addr: %d:%d\n", daddrv, dport);
     }
 
-    struct sockaddr_in *addr_in = (struct sockaddr_in *)addr;
-
-    __u16 family;
-    bpf_probe_read(&family, sizeof(family), &(addr_in->sin_family));
-    __u32 daddrv;
-    struct sockaddr_in *daddr = (struct sockaddr_in *)addr_in;
-    bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
-    __u16 dport = 0;
-    bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
-    bpf_printk("con222: %d, family: %d\n", fd, family);
-    bpf_printk("con222: addr: %d:%d\n", daddrv, dport);
     bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));
-    bpf_printk("new connect: %d\n", fd);
 }
 
 static __inline void process_connect(struct pt_regs* ctx, __u64 id, struct connect_args_t *connect_args) {

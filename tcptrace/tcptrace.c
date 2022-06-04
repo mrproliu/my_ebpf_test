@@ -103,17 +103,21 @@ struct {
 	__type(value, struct connect_args_t);
 } socketaddrs SEC(".maps");
 
-static __always_inline void
-print_sockaddr(struct sockaddr *addr)
-{
+struct sockinfo {
     __u16 family;
-    bpf_probe_read(&family, sizeof(family), &(addr->sa_family));
-    __u32 daddrv;
+    __u32 addr;
+    __u16 port;
+};
+
+static __always_inline struct sockinfo
+get_sock_info(struct sockaddr *addr)
+{
+    struct sockinfo s = {};
+    bpf_probe_read(&s.family, sizeof(s.family), &(addr->sa_family));
     struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
-    bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
-    __u16 dport = 0;
-    bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
-    bpf_printk("socket family: %d, addr: %d:%d\n", family, daddrv, dport);
+    bpf_probe_read(&s.addr, sizeof(s.addr), &daddr->sin_addr.s_addr);
+    bpf_probe_read(&s.port, sizeof(s.port), &daddr->sin_port);
+    return s;
 }
 
 static __always_inline int
@@ -270,8 +274,9 @@ SEC("kprobe/__sys_accpet")
 int sys_accept(struct pt_regs *ctx) {
     int fd = PT_REGS_PARM1(ctx);
     struct sockaddr *addr = (void *)PT_REGS_PARM2(ctx);
-    bpf_printk("socket accept: fd: %d", fd);
-    print_sockaddr(addr);
+    struct sockinfo s = get_sock_info(addr);
+    bpf_printk("socket accept: fd: %d\n", fd);
+    bpf_printk("socket accept: socket: %d->%d:%d\n", s.family, s.addr, s.port);
     return 0;
 }
 

@@ -37,7 +37,8 @@ static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type,
         struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
         bpf_probe_read(&opts_event.upstream_addr_v4, sizeof(opts_event.upstream_addr_v4), &daddr->sin_addr.s_addr);
         bpf_probe_read(&opts_event.upstream_port, sizeof(opts_event.upstream_port), &daddr->sin_port);
-        bpf_printk("con444: addr: %d:%d\n", opts_event.upstream_addr_v4, opts_event.upstream_port);
+        bpf_probe_read(&opts_event.downstream_addr_v4, sizeof(opts_event.downstream_addr_v4), &daddr->sin_addr.s_addr);
+        bpf_probe_read(&opts_event.downstream_port, sizeof(opts_event.downstream_port), &daddr->sin_port);
     }
 
     bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));

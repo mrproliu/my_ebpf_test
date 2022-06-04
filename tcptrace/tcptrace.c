@@ -320,10 +320,10 @@ int sock_alloc_ret(struct pt_regs *ctx) {
     struct accept_sock_t *accept_sock;
     accept_sock = bpf_map_lookup_elem(&accept_socks, &pid_tgid);
     if (accept_sock) {
-//        struct socket *sock = (struct socket*)PT_REGS_RC(ctx);
-//        accept_sock->socket = sock;
-//        bpf_printk("detect sock alloc from fd: %d\n", accept_sock->fd);
-//        bpf_map_update_elem(&accept_socks, &pid_tgid, &accept_sock, 0);
+        struct socket *sock = (struct socket*)PT_REGS_RC(ctx);
+        accept_sock->socket = sock;
+        bpf_printk("detect sock alloc from fd: %d\n", accept_sock->fd);
+//        bpf_map_update_elem(&accept_socks, &pid_tgid, accept_sock, 0);
     }
     return 0;
 }

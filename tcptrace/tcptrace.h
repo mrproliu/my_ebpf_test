@@ -22,9 +22,9 @@ struct sock_opts_event {
     char comm[128];
     // socket file descriptor
     __u32 sockfd;
-    __u16 upstream_port;
     // upstream(works on server and client side)
     __u32 upstream_addr_v4;
+    __u16 upstream_port;
 //    __u8 upstream_addr_v6[16];
     // downstream(only works on server side)
     __u32 downstream_addr_v4;

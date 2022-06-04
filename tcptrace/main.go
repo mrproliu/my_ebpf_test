@@ -29,8 +29,8 @@ type SocketOptsEvent struct {
 	Pid            uint32
 	Comm           [128]byte
 	SocketFd       uint32
-	UpstreamPort   uint16
 	UpstreamAddrV4 uint32
+	UpstreamPort   uint16
 	//UpstreamAddrV6   [16]uint8
 	DownStreamAddrV4 uint32
 	//DownStreamAddrV6 [16]uint8
@@ -155,7 +155,7 @@ func main() {
 		}
 
 		fmt.Printf("CONNECT from: %d(%s) -> %s:%d, socket fd: %d\n", event.Pid, event.Comm,
-			parseAddressV4(event.UpstreamAddrV4), parsePort(event.UpstreamPort), event.SocketFd)
+			parseAddressV4(event.UpstreamAddrV4), event.UpstreamPort, event.SocketFd)
 		fmt.Printf("total: %v\n", event)
 	}
 }

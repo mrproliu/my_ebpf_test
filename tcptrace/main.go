@@ -25,17 +25,17 @@ import (
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpfel -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf tcptrace.c -- -I$HOME/headers/ -D__TARGET_ARCH_x86
 
 type SocketOptsEvent struct {
-	Type             uint32
-	Pid              uint32
-	Comm             [128]byte
-	SocketFd         uint32
-	UpstreamAddrV4   uint32
-	UpstreamAddrV6   [16]uint8
+	Type           uint32
+	Pid            uint32
+	Comm           [128]byte
+	SocketFd       uint32
+	UpstreamAddrV4 uint32
+	//UpstreamAddrV6   [16]uint8
 	UpstreamPort     uint16
 	DownStreamAddrV4 uint32
-	DownStreamAddrV6 [16]uint8
-	DownStreamPort   uint16
-	Timestamp        uint64
+	//DownStreamAddrV6 [16]uint8
+	DownStreamPort uint16
+	Timestamp      uint64
 }
 
 type LinkFunc func(symbol string, prog *ebpf.Program) (link.Link, error)

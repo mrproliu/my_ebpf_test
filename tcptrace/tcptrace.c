@@ -269,7 +269,7 @@ int syscall__probe_entry_writev(struct trace_event_raw_sys_enter *ctx) {
 SEC("kprobe/__sys_accpet")
 int sys_accept(struct pt_regs *ctx) {
     int fd = PT_REGS_PARM1(ctx);
-    struct sockaddr *addr = (void *)PT_REGS_PARM1(ctx);
+    struct sockaddr *addr = (void *)PT_REGS_PARM2(ctx);
     bpf_printk("socket accept: fd: %d", fd);
     print_sockaddr(addr);
     return 0;
@@ -278,6 +278,6 @@ int sys_accept(struct pt_regs *ctx) {
 SEC("kretprobe/__sys_accpet")
 int sys_accept_ret(struct pt_regs *ctx) {
     int fd = PT_REGS_RC(ctx);
-    bpf_printk("socket accept ret: %d", fd);
+    bpf_printk("socket accept ret: %d\n", fd);
     return 0;
 }

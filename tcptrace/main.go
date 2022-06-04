@@ -4,10 +4,13 @@
 package main
 
 import (
+	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/link"
+	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
 	"github.com/hashicorp/go-multierror"
 	"log"
@@ -21,15 +24,18 @@ import (
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target bpfel -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf tcptrace.c -- -I$HOME/headers/ -D__TARGET_ARCH_x86
 
-type Event struct {
-	SourceAddrV4 uint32
-	DistAddrV4   uint32
-	SourceAddrV6 [16]uint8
-	DistAddrV6   [16]uint8
-	SourcePort   uint16
-	DistPort     uint16
-	IpVersion    uint16
-	Comm         [128]byte
+type SocketOptsEvent struct {
+	Type             uint32
+	Pid              uint32
+	Comm             [128]byte
+	SocketFd         uint32
+	Timestamp        uint64
+	DownStreamAddrV4 uint32
+	DownStreamAddrV6 [16]uint8
+	DownStreamPort   uint16
+	UpstreamAddrV4   uint32
+	UpstreamAddrV6   [16]uint8
+	UpstreamPort     uint16
 }
 
 type LinkFunc func(symbol string, prog *ebpf.Program) (link.Link, error)
@@ -116,48 +122,40 @@ func main() {
 	}
 	log.Printf("start probes success...")
 
-	//rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
-	//if err != nil {
-	//	log.Fatalf("creating perf event reader: %s", err)
-	//}
+	rd, err := perf.NewReader(objs.SocketOptsEventsQueue, os.Getpagesize())
+	if err != nil {
+		log.Fatalf("creating perf event reader: %s", err)
+	}
 
-	//go func() {
-	<-stopper
-	log.Println("Received signal, exiting program..")
-	//rd.Close()
-	//}()
+	go func() {
+		<-stopper
+		log.Println("Received signal, exiting program..")
+		rd.Close()
+	}()
 
-	//var event Event
-	//for {
-	//	record, err := rd.Read()
-	//	if err != nil {
-	//		if errors.Is(err, perf.ErrClosed) {
-	//			return
-	//		}
-	//		log.Printf("reading from perf event reader: %s", err)
-	//		continue
-	//	}
-	//
-	//	if record.LostSamples != 0 {
-	//		log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
-	//		continue
-	//	}
-	//
-	//	// Parse the perf event entry into an Event structure.
-	//	if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
-	//		log.Printf("parsing perf event: %s", err)
-	//		continue
-	//	}
-	//
-	//	var fromAddr, distAddr string
-	//	if event.IpVersion == 4 {
-	//		fromAddr = parseAddressV4(event.SourceAddrV4)
-	//		distAddr = parseAddressV4(event.DistAddrV4)
-	//	} else {
-	//		fromAddr = parseAddressV6(event.SourceAddrV6)
-	//		distAddr = parseAddressV6(event.DistAddrV6)
-	//	}
-	//	fmt.Printf("%s:%d -> %s:%d, comm: %s\n", fromAddr, parsePort(event.SourcePort),
-	//		distAddr, parsePort(event.DistPort), event.Comm)
-	//}
+	var event SocketOptsEvent
+	for {
+		record, err := rd.Read()
+		if err != nil {
+			if errors.Is(err, perf.ErrClosed) {
+				return
+			}
+			log.Printf("reading from perf event reader: %s", err)
+			continue
+		}
+
+		if record.LostSamples != 0 {
+			log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
+			continue
+		}
+
+		// Parse the perf event entry into an Event structure.
+		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
+			log.Printf("parsing perf event: %s", err)
+			continue
+		}
+
+		fmt.Printf("CONNECT from: %d(%s) -> %s:%d, socket fd: %d\n", event.Pid, event.Comm,
+			parseAddressV4(event.UpstreamAddrV4), parsePort(event.UpstreamPort), event.SocketFd)
+	}
 }

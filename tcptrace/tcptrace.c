@@ -8,6 +8,7 @@
 #include <linux/bpf.h>
 #include <linux/ptrace.h>
 #include <linux/socket.h>
+#include <asm/errno.h>
 #include <arpa/inet.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
@@ -23,11 +24,35 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 		val;                                                           \
 	})
 
-struct trace_event_raw_sys_enter {
-	long int id;
-	long unsigned int args[6];
-	char __data[0];
-} __attribute__((preserve_access_index));
+static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type, __u32 tgid, __u32 fd,
+                                     const struct sockaddr* addr, const struct socket* socket) {
+    struct sock_opts_event opts_event = {};
+    opts_event.type = from_type;
+    opts_event.pid = tgid;
+    bpf_get_current_comm(&opts_event.comm, sizeof(opts_event.comm));
+    opts_event.sockfd = fd;
+    opts_event.timestamp = bpf_ktime_get_ns();
+    if (addr != NULL) {
+        // TODO support ipv4 for now
+       struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
+       bpf_probe_read(&opts_event.upstream_addr_v4, sizeof(opts_event.upstream_addr_v4), &daddr->sin_addr.s_addr);
+       bpf_probe_read(&opts_event.upstream_port, sizeof(opts_event.upstream_port), &daddr->sin_port);
+    }
+    bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));
+}
+
+static __inline void process_connect(struct pt_regs* ctx, __u64 id, struct connect_args_t *connect_args) {
+    int ret = PT_REGS_RC(ctx);
+    if (ret < 0 && ret != -EINPROGRESS) {
+        return;
+    }
+    if (connect_args->fd < 0) {
+        return;
+    }
+    __u32 pid = id >> 32;
+
+    submit_new_connection(ctx, SOCKET_OPTS_TYPE_CONNECT, pid, connect_args->fd, connect_args->addr, NULL);
+}
 
 SEC("kprobe/__sys_connect")
 int sys_connect(struct pt_regs *ctx) {
@@ -48,39 +73,41 @@ int sys_connect_ret(struct pt_regs *ctx) {
 
     connect_args = bpf_map_lookup_elem(&conecting_args, &id);
     if (connect_args) {
-        __u32 fd = connect_args->fd;
-        struct sockaddr_in *addr_in = (struct sockaddr_in *)connect_args->addr;
-
-        __u16 family;
-        bpf_probe_read(&family, sizeof(family), &(addr_in->sin_family));
-        __u32 daddrv;
-        struct sockaddr_in *daddr = (struct sockaddr_in *)addr_in;
-        bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
-        __u16 dport = 0;
-        bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
-        bpf_printk("con: %d, family: %d\n", fd, family);
-        bpf_printk("con: addr: %d:%d\n", daddrv, dport);
+        process_connect(ctx, id, connect_args);
+//        __u32 fd = connect_args->fd;
+//        struct sockaddr_in *addr_in = (struct sockaddr_in *)connect_args->addr;
+//
+//        __u16 family;
+//        bpf_probe_read(&family, sizeof(family), &(addr_in->sin_family));
+//        __u32 daddrv;
+//        struct sockaddr_in *daddr = (struct sockaddr_in *)addr_in;
+//        bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
+//        __u16 dport = 0;
+//        bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
+//        bpf_printk("con: %d, family: %d\n", fd, family);
+//        bpf_printk("con: addr: %d:%d\n", daddrv, dport);
     }
 
+    bpf_map_delete_elem(&conecting_args, &id);
 	return 0;
 }
 
-SEC("tracepoint/syscalls/sys_enter_write")
-int syscall__probe_entry_write(struct trace_event_raw_sys_enter *ctx) {
-    int fd = ctx->args[0];
-    struct sockaddr_in *addr_in = (struct sockaddr_in *)ctx->args[4];
-    __u16 family;
-    bpf_probe_read(&family, sizeof(family), &(addr_in->sin_family));
-    __u32 daddrv;
-    struct sockaddr_in *daddr = (struct sockaddr_in *)addr_in;
-    bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
-    __u16 dport = 0;
-    bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
-    bpf_printk("write: %d, family: %d\n", fd, family);
-    bpf_printk("write: addr: %d:%d\n", daddrv, dport);
-    return 0;
-}
-
+//SEC("tracepoint/syscalls/sys_enter_write")
+//int syscall__probe_entry_write(struct trace_event_raw_sys_enter *ctx) {
+//    int fd = ctx->args[0];
+//    struct sockaddr_in *addr_in = (struct sockaddr_in *)ctx->args[4];
+//    __u16 family;
+//    bpf_probe_read(&family, sizeof(family), &(addr_in->sin_family));
+//    __u32 daddrv;
+//    struct sockaddr_in *daddr = (struct sockaddr_in *)addr_in;
+//    bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
+//    __u16 dport = 0;
+//    bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
+//    bpf_printk("write: %d, family: %d\n", fd, family);
+//    bpf_printk("write: addr: %d:%d\n", daddrv, dport);
+//    return 0;
+//}
+//
 //SEC("tracepoint/syscalls/sys_enter_writev")
 //int syscall__probe_entry_writev(struct trace_event_raw_sys_enter *ctx) {
 //    int fd = ctx->args[0];

@@ -54,17 +54,17 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
-	SysConnect             *ebpf.ProgramSpec `ebpf:"sys_connect"`
-	SysConnectRet          *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
-	SyscallProbeEntryWrite *ebpf.ProgramSpec `ebpf:"syscall__probe_entry_write"`
+	SysConnect    *ebpf.ProgramSpec `ebpf:"sys_connect"`
+	SysConnectRet *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfMapSpecs struct {
-	AcceptSocks   *ebpf.MapSpec `ebpf:"accept_socks"`
-	ConectingArgs *ebpf.MapSpec `ebpf:"conecting_args"`
+	AcceptSocks           *ebpf.MapSpec `ebpf:"accept_socks"`
+	ConectingArgs         *ebpf.MapSpec `ebpf:"conecting_args"`
+	SocketOptsEventsQueue *ebpf.MapSpec `ebpf:"socket_opts_events_queue"`
 }
 
 // bpfObjects contains all objects after they have been loaded into the kernel.
@@ -86,14 +86,16 @@ func (o *bpfObjects) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfMaps struct {
-	AcceptSocks   *ebpf.Map `ebpf:"accept_socks"`
-	ConectingArgs *ebpf.Map `ebpf:"conecting_args"`
+	AcceptSocks           *ebpf.Map `ebpf:"accept_socks"`
+	ConectingArgs         *ebpf.Map `ebpf:"conecting_args"`
+	SocketOptsEventsQueue *ebpf.Map `ebpf:"socket_opts_events_queue"`
 }
 
 func (m *bpfMaps) Close() error {
 	return _BpfClose(
 		m.AcceptSocks,
 		m.ConectingArgs,
+		m.SocketOptsEventsQueue,
 	)
 }
 
@@ -101,16 +103,14 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
-	SysConnect             *ebpf.Program `ebpf:"sys_connect"`
-	SysConnectRet          *ebpf.Program `ebpf:"sys_connect_ret"`
-	SyscallProbeEntryWrite *ebpf.Program `ebpf:"syscall__probe_entry_write"`
+	SysConnect    *ebpf.Program `ebpf:"sys_connect"`
+	SysConnectRet *ebpf.Program `ebpf:"sys_connect_ret"`
 }
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
 		p.SysConnect,
 		p.SysConnectRet,
-		p.SyscallProbeEntryWrite,
 	)
 }
 

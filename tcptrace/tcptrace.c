@@ -39,8 +39,6 @@ static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type,
         bpf_probe_read(&opts_event.upstream_addr_v4, sizeof(opts_event.upstream_addr_v4), &daddr->sin_addr.s_addr);
         bpf_probe_read(&sin_port, sizeof(sin_port), &daddr->sin_port);
         opts_event.upstream_port = bpf_ntohs(sin_port);
-
-        opts_event.downstream_addr_v4 = opts_event.upstream_addr_v4;
     }
 
     bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));

@@ -30,9 +30,9 @@ type SocketOptsEvent struct {
 	Comm           [128]byte
 	SocketFd       uint32
 	UpstreamAddrV4 uint32
+	UpstreamAddrV6 [16]uint8
 	UpstreamPort   uint16
-	////UpstreamAddrV6   [16]uint8
-	DownStreamAddrV4 uint32
+	//DownStreamAddrV4 uint32
 	////DownStreamAddrV6 [16]uint8
 	//DownStreamPort uint16
 }

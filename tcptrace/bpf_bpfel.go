@@ -54,9 +54,9 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
-	SysConnect    *ebpf.ProgramSpec `ebpf:"sys_connect"`
-	SysConnectRet *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
-	SysSendto     *ebpf.ProgramSpec `ebpf:"sys_sendto"`
+	SysConnect              *ebpf.ProgramSpec `ebpf:"sys_connect"`
+	SysConnectRet           *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
+	SyscallProbeEntrySendto *ebpf.ProgramSpec `ebpf:"syscall__probe_entry_sendto"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
@@ -104,16 +104,16 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
-	SysConnect    *ebpf.Program `ebpf:"sys_connect"`
-	SysConnectRet *ebpf.Program `ebpf:"sys_connect_ret"`
-	SysSendto     *ebpf.Program `ebpf:"sys_sendto"`
+	SysConnect              *ebpf.Program `ebpf:"sys_connect"`
+	SysConnectRet           *ebpf.Program `ebpf:"sys_connect_ret"`
+	SyscallProbeEntrySendto *ebpf.Program `ebpf:"syscall__probe_entry_sendto"`
 }
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
 		p.SysConnect,
 		p.SysConnectRet,
-		p.SysSendto,
+		p.SyscallProbeEntrySendto,
 	)
 }
 

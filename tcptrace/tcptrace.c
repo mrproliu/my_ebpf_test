@@ -104,7 +104,7 @@ struct sockinfo {
 //}
 
 SEC("kprobe/__sys_sendto")
-int syscall__probe_entry_sendto(struct pt_regs* ctx) {
+int sys_sendto(struct pt_regs* ctx) {
     int fd = PT_REGS_PARM1(ctx);
     const struct sockaddr *addr = (void *)PT_REGS_PARM5(ctx);
     if (addr != NULL) {

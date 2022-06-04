@@ -301,7 +301,7 @@ int sys_accept_ret(struct pt_regs *ctx) {
         __u32 fromfd = accept_sock->fd;
         struct socket* sot = accept_sock->socket;
         struct sock* s;
-        bpf_probe_read(&s, sizeof(s), sot->sk);
+        BPF_CORE_READ_INTO(&s, sot, sk);
         struct key_t key = {};
         BPF_CORE_READ_INTO(&key.from_port, s, __sk_common.skc_num);
         BPF_CORE_READ_INTO(&key.dist_port, s, __sk_common.skc_dport);

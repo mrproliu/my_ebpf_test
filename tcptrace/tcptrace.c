@@ -94,7 +94,7 @@ struct {
 	__uint(max_entries, MAX_ENTRIES);
 	__type(key, __u32);
 	__type(value, struct sock *);
-} sockets SEC(".maps");
+} connect_sockets SEC(".maps");
 
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);
@@ -102,6 +102,18 @@ struct {
 	__type(key, __u64);
 	__type(value, struct connect_args_t);
 } socketaddrs SEC(".maps");
+
+struct accept_sock_t {
+    __u32 fd;
+	struct socket		*sock;
+};
+
+struct {
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries, MAX_ENTRIES);
+	__type(key, __u64);
+	__type(value, struct accept_sock_t);
+} accept_socks SEC(".maps");
 
 struct sockinfo {
     __u16 family;
@@ -126,7 +138,7 @@ enter_tcp_connect(struct pt_regs *ctx, struct sock *sk)
 	__u64 pid_tgid = bpf_get_current_pid_tgid();
 	__u32 tid = pid_tgid;
 
-	bpf_map_update_elem(&sockets, &tid, &sk, 0);
+	bpf_map_update_elem(&connect_sockets, &tid, &sk, 0);
 	return 0;
 }
 
@@ -138,10 +150,10 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 	struct sock **skpp;
 	struct sock *sk;
 
-	skpp = bpf_map_lookup_elem(&sockets, &tid);
+	skpp = bpf_map_lookup_elem(&connect_sockets, &tid);
 	if (!skpp)
 		return 0;
-	bpf_map_delete_elem(&sockets, &tid);
+	bpf_map_delete_elem(&connect_sockets, &tid);
 
 	sk = *skpp;
 
@@ -161,7 +173,7 @@ exit_tcp_connect(struct pt_regs *ctx, int ret, int ip_ver)
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &key, sizeof(key));
 
-	bpf_map_delete_elem(&sockets, &tid);
+	bpf_map_delete_elem(&connect_sockets, &tid);
 	return 0;
 }
 
@@ -277,12 +289,21 @@ int sys_accept(struct pt_regs *ctx) {
     struct sockinfo s = get_sock_info(addr);
     bpf_printk("socket accept: fd: %d\n", fd);
     bpf_printk("socket accept: socket: %d->%d:%d\n", s.family, s.addr, s.port);
+    __u64 pid_tgid = bpf_get_current_pid_tgid();
+    struct accept_sock_t sock = {};
+    sock.fd = fd;
+    bpf_map_update_elem(&accept_socks, &pid_tgid, &sock, 0);
     return 0;
 }
 
 SEC("kretprobe/__sys_accpet")
 int sys_accept_ret(struct pt_regs *ctx) {
-    int fd = PT_REGS_RC(ctx);
-    bpf_printk("socket accept ret: %d\n", fd);
+    __u64 pid_tgid = bpf_get_current_pid_tgid();
+    struct accept_sock_t *accept_sock;
+    accept_sock = bpf_map_lookup_elem(&accept_socks, &pid_tgid);
+    if (accept_sock) {
+        int fd = PT_REGS_RC(ctx);
+        bpf_printk("socket accept ret: %d, from fd: %d\n", fd, accept_sock->fd);
+    }
     return 0;
 }

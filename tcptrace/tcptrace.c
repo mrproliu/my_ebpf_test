@@ -108,17 +108,17 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
         return;
     }
 
+    const char* buf = args->buf;
     bpf_printk("bytes count: %d\n", bytes_count);
 //    if (bytes_count < 16) {
 //        return;
 //    }
 
-//    const char* buf = args->buf;
-//    if (buf[0] == 'G' && buf[1] == 'E' && buf[2] == 'T') {
-//        bpf_printk("get request \n");
-//    } else {
-//        bpf_printk("unknown\n");
-//    }
+    if (buf[0] == 'G' && buf[1] == 'E' && buf[2] == 'T') {
+        bpf_printk("get request \n");
+    } else {
+        bpf_printk("unknown\n");
+    }
 }
 
 SEC("kretprobe/__sys_sendto")

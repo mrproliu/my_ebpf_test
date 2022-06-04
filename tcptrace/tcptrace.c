@@ -31,7 +31,6 @@ static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type,
     opts_event.pid = tgid;
     bpf_get_current_comm(&opts_event.comm, sizeof(opts_event.comm));
     opts_event.sockfd = fd;
-    opts_event.timestamp = bpf_ktime_get_ns();
     if (addr != NULL) {
         // TODO support ipv4 for now
         struct sockaddr_in *daddr = (struct sockaddr_in *)addr;

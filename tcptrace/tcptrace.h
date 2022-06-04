@@ -22,8 +22,6 @@ struct sock_opts_event {
     char comm[128];
     // socket file descriptor
     __u32 sockfd;
-    // opts timestamp
-    __u64 timestamp;
     // downstream(only works on server side)
 //    __u32 downstream_addr_v4;
 //    __u8 downstream_addr_v6[16];

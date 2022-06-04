@@ -25,7 +25,7 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 	})
 
 static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type, __u32 tgid, __u32 fd,
-                                     const struct sockaddr* addr, const struct socket* socket) {
+                                            struct sockaddr* addr, const struct socket* socket) {
     struct sock_opts_event opts_event = {};
     opts_event.type = from_type;
     opts_event.pid = tgid;
@@ -34,9 +34,9 @@ static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type,
     opts_event.timestamp = bpf_ktime_get_ns();
     if (addr != NULL) {
         // TODO support ipv4 for now
-       struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
-       bpf_probe_read(&opts_event.upstream_addr_v4, sizeof(opts_event.upstream_addr_v4), &daddr->sin_addr.s_addr);
-       bpf_probe_read(&opts_event.upstream_port, sizeof(opts_event.upstream_port), &daddr->sin_port);
+        struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
+        bpf_probe_read(&opts_event.upstream_addr_v4, sizeof(opts_event.upstream_addr_v4), &daddr->sin_addr.s_addr);
+        bpf_probe_read(&opts_event.upstream_port, sizeof(opts_event.upstream_port), &daddr->sin_port);
     }
     bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));
     bpf_printk("new connect: %d\n", fd);
@@ -75,18 +75,18 @@ int sys_connect_ret(struct pt_regs *ctx) {
     connect_args = bpf_map_lookup_elem(&conecting_args, &id);
     if (connect_args) {
         process_connect(ctx, id, connect_args);
-//        __u32 fd = connect_args->fd;
-//        struct sockaddr_in *addr_in = (struct sockaddr_in *)connect_args->addr;
-//
-//        __u16 family;
-//        bpf_probe_read(&family, sizeof(family), &(addr_in->sin_family));
-//        __u32 daddrv;
-//        struct sockaddr_in *daddr = (struct sockaddr_in *)addr_in;
-//        bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
-//        __u16 dport = 0;
-//        bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
-//        bpf_printk("con: %d, family: %d\n", fd, family);
-//        bpf_printk("con: addr: %d:%d\n", daddrv, dport);
+        __u32 fd = connect_args->fd;
+        struct sockaddr_in *addr_in = (struct sockaddr_in *)connect_args->addr;
+
+        __u16 family;
+        bpf_probe_read(&family, sizeof(family), &(addr_in->sin_family));
+        __u32 daddrv;
+        struct sockaddr_in *daddr = (struct sockaddr_in *)addr_in;
+        bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
+        __u16 dport = 0;
+        bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
+        bpf_printk("con: %d, family: %d\n", fd, family);
+        bpf_printk("con: addr: %d:%d\n", daddrv, dport);
     }
 
     bpf_map_delete_elem(&conecting_args, &id);

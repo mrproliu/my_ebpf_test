@@ -39,7 +39,8 @@ static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type,
         opts_event.upstream_port = ntohs(opts_event.upstream_port);
         bpf_probe_read(&opts_event.downstream_addr_v4, sizeof(opts_event.downstream_addr_v4), &daddr->sin_addr.s_addr);
         bpf_probe_read(&opts_event.downstream_port, sizeof(opts_event.downstream_port), &daddr->sin_port);
-        opts_event.downstream_port = ntohs(opts_event.downstream_port);
+        opts_event.downstream_port = ntohs(opts_event.upstream_port);
+        bpf_printk("the port is: %d\n", opts_event.upstream_port);
     }
 
     bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));

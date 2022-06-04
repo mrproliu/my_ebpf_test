@@ -52,6 +52,19 @@ static __inline void process_connect(struct pt_regs* ctx, __u64 id, struct conne
     }
     __u32 pid = id >> 32;
 
+    __u32 fd = connect_args->fd;
+    struct sockaddr_in *addr_in = (struct sockaddr_in *)connect_args->addr;
+
+    __u16 family;
+    bpf_probe_read(&family, sizeof(family), &(addr_in->sin_family));
+    __u32 daddrv;
+    struct sockaddr_in *daddr = (struct sockaddr_in *)addr_in;
+    bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
+    __u16 dport = 0;
+    bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
+    bpf_printk("con111: %d, family: %d\n", fd, family);
+    bpf_printk("con111: addr: %d:%d\n", daddrv, dport);
+
     submit_new_connection(ctx, SOCKET_OPTS_TYPE_CONNECT, pid, connect_args->fd, connect_args->addr, NULL);
 }
 
@@ -75,18 +88,6 @@ int sys_connect_ret(struct pt_regs *ctx) {
     connect_args = bpf_map_lookup_elem(&conecting_args, &id);
     if (connect_args) {
         process_connect(ctx, id, connect_args);
-        __u32 fd = connect_args->fd;
-        struct sockaddr_in *addr_in = (struct sockaddr_in *)connect_args->addr;
-
-        __u16 family;
-        bpf_probe_read(&family, sizeof(family), &(addr_in->sin_family));
-        __u32 daddrv;
-        struct sockaddr_in *daddr = (struct sockaddr_in *)addr_in;
-        bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
-        __u16 dport = 0;
-        bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
-        bpf_printk("con: %d, family: %d\n", fd, family);
-        bpf_printk("con: addr: %d:%d\n", daddrv, dport);
     }
 
     bpf_map_delete_elem(&conecting_args, &id);

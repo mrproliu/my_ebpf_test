@@ -17,9 +17,8 @@
 FROM golang:1.17
 
 RUN apt update && \
-    apt install -y libbpf-dev lsb-release wget software-properties-common && \
-    cp -r /usr/include/$(uname -m)*/* /usr/include/ && \
-    cp -r /usr/include/asm-generic/* /usr/include/asm && \
+    apt install -y libbpf-dev lsb-release wget software-properties-common libc6-dev-i386
+RUN cp -rf /usr/include/asm-generic/* /usr/include/asm && \
     wget https://apt.llvm.org/llvm.sh && \
     chmod +x llvm.sh && \
     ./llvm.sh 13

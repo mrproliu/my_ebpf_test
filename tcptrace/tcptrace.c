@@ -103,11 +103,6 @@ struct {
 	__type(value, struct connect_args_t);
 } socketaddrs SEC(".maps");
 
-struct accept_sock_t {
-    __u32 fd;
-	struct socket		*sock;
-};
-
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);
 	__uint(max_entries, MAX_ENTRIES);
@@ -303,7 +298,18 @@ int sys_accept_ret(struct pt_regs *ctx) {
     accept_sock = bpf_map_lookup_elem(&accept_socks, &pid_tgid);
     if (accept_sock) {
         int fd = PT_REGS_RC(ctx);
-        bpf_printk("socket accept ret: %d, from fd: %d\n", fd, accept_sock->fd);
+        __u32 fromfd = accept_sock->fd;
+        struct socket* sot = accept_sock->socket;
+        struct sock* s;
+        bpf_probe_read(&s, sizeof(s), sot->sk);
+        struct key_t key = {};
+        BPF_CORE_READ_INTO(&key.from_port, s, __sk_common.skc_num);
+        BPF_CORE_READ_INTO(&key.dist_port, s, __sk_common.skc_dport);
+        BPF_CORE_READ_INTO(&key.from_addr_v4, s, __sk_common.skc_rcv_saddr);
+        BPF_CORE_READ_INTO(&key.dist_addr_v4, s, __sk_common.skc_daddr);
+
+        bpf_printk("socket accept ret: %d, from fd: %d\n", fd, fromfd);
+        bpf_printk("socket accept ret: dist sock: %d:%d\n", key.dist_addr_v4, key.dist_port);
     }
     return 0;
 }
@@ -315,7 +321,7 @@ int sock_alloc_ret(struct pt_regs *ctx) {
     accept_sock = bpf_map_lookup_elem(&accept_socks, &pid_tgid);
     if (accept_sock) {
         struct socket *sock = (struct socket*)PT_REGS_RC(ctx);
-        accept_sock->sock = sock;
+        accept_sock->socket = sock;
         bpf_printk("detect sock alloc from fd: %d\n", accept_sock->fd);
         bpf_map_update_elem(&accept_socks, &pid_tgid, &accept_sock, 0);
     }

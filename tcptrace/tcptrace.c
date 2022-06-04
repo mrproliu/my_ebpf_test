@@ -86,19 +86,30 @@ int sys_connect_ret(struct pt_regs *ctx) {
 	return 0;
 }
 
+struct sockinfo {
+    __u16 family;
+    __u32 addr;
+    __u16 port;
+};
+
+static __always_inline struct sockinfo
+get_sock_info(struct sockaddr *addr)
+{
+    struct sockinfo s = {};
+    bpf_probe_read(&s.family, sizeof(s.family), &(addr->sa_family));
+    struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
+    bpf_probe_read(&s.addr, sizeof(s.addr), &daddr->sin_addr.s_addr);
+    bpf_probe_read(&s.port, sizeof(s.port), &daddr->sin_port);
+    return s;
+}
+
 SEC("kprobe/__sys_sendto")
 int sys_sendto(struct pt_regs *ctx) {
     int fd = PT_REGS_PARM1(ctx);
-    struct sockaddr_in *addr_in = (struct sockaddr_in *)PT_REGS_PARM5(ctx);;
-    __u16 family;
-    bpf_probe_read(&family, sizeof(family), &(addr_in->sin_family));
-    __u32 daddrv;
-    struct sockaddr_in *daddr = (struct sockaddr_in *)addr_in;
-    bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
-    __u16 dport = 0;
-    bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
-    bpf_printk("sendto: %d, family: %d\n", fd, family);
-    bpf_printk("sendto: addr: %d:%d\n", daddrv, dport);
+    struct sockaddr *addr = (void *)PT_REGS_PARM5(ctx);
+    struct sockinfo s = get_sock_info(addr);
+    bpf_printk("sendto: %d\n", fd);
+    bpf_printk("sendto: %d->%d:%d\n", s.family, s.addr, s.port);
     return 0;
 }
 //

@@ -114,6 +114,7 @@ func main() {
 	linker.AddLink("__sys_accept4", link.Kprobe, objs.SysAccept)
 	linker.AddLink("__sys_accept4", link.Kretprobe, objs.SysAcceptRet)
 	linker.AddLink("sock_alloc", link.Kretprobe, objs.SockAllocRet)
+	linker.AddLink("inet_stream_connect", link.Kprobe, objs.InetStreamConnect)
 	//linker.AddTracepoint("syscalls", "sys_enter_writev", objs.SyscallProbeEntryWritev)
 	defer linker.Close()
 	err := linker.HasError()

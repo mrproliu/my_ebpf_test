@@ -58,6 +58,7 @@ type bpfProgramSpecs struct {
 	BpfTcpV4ConnectRet      *ebpf.ProgramSpec `ebpf:"bpf_tcp_v4_connect_ret"`
 	BpfTcpV6Connect         *ebpf.ProgramSpec `ebpf:"bpf_tcp_v6_connect"`
 	BpfTcpV6ConnectRet      *ebpf.ProgramSpec `ebpf:"bpf_tcp_v6_connect_ret"`
+	InetStreamConnect       *ebpf.ProgramSpec `ebpf:"inet_stream_connect"`
 	SockAllocRet            *ebpf.ProgramSpec `ebpf:"sock_alloc_ret"`
 	SysAccept               *ebpf.ProgramSpec `ebpf:"sys_accept"`
 	SysAcceptRet            *ebpf.ProgramSpec `ebpf:"sys_accept_ret"`
@@ -119,6 +120,7 @@ type bpfPrograms struct {
 	BpfTcpV4ConnectRet      *ebpf.Program `ebpf:"bpf_tcp_v4_connect_ret"`
 	BpfTcpV6Connect         *ebpf.Program `ebpf:"bpf_tcp_v6_connect"`
 	BpfTcpV6ConnectRet      *ebpf.Program `ebpf:"bpf_tcp_v6_connect_ret"`
+	InetStreamConnect       *ebpf.Program `ebpf:"inet_stream_connect"`
 	SockAllocRet            *ebpf.Program `ebpf:"sock_alloc_ret"`
 	SysAccept               *ebpf.Program `ebpf:"sys_accept"`
 	SysAcceptRet            *ebpf.Program `ebpf:"sys_accept_ret"`
@@ -134,6 +136,7 @@ func (p *bpfPrograms) Close() error {
 		p.BpfTcpV4ConnectRet,
 		p.BpfTcpV6Connect,
 		p.BpfTcpV6ConnectRet,
+		p.InetStreamConnect,
 		p.SockAllocRet,
 		p.SysAccept,
 		p.SysAcceptRet,

@@ -325,7 +325,22 @@ int sock_alloc_ret(struct pt_regs *ctx) {
         struct socket *sock = (struct socket*)PT_REGS_RC(ctx);
         accept_sock->socket = sock;
         bpf_printk("detect sock alloc from fd: %d\n", accept_sock->fd);
-//        bpf_map_update_elem(&accept_socks, &pid_tgid, accept_sock, 0);
     }
+    return 0;
+}
+
+SEC("kprobe/inet_stream_connect")
+int inet_stream_connect(struct pt_regs *ctx) {
+    struct socket *socket = (void *)PT_REGS_PARM1(ctx);
+//    struct sockaddr *sockaddr = (void *)PT_REGS_PARM2(ctx);
+    struct sock* s;
+    BPF_CORE_READ_INTO(&s, socket, sk);
+    struct key_t key = {};
+    BPF_CORE_READ_INTO(&key.from_port, s, __sk_common.skc_num);
+    BPF_CORE_READ_INTO(&key.dist_port, s, __sk_common.skc_dport);
+    BPF_CORE_READ_INTO(&key.from_addr_v4, s, __sk_common.skc_rcv_saddr);
+    BPF_CORE_READ_INTO(&key.dist_addr_v4, s, __sk_common.skc_daddr);
+    bpf_printk("socket connect11: from sock: %d:%d\n", key.from_addr_v4, key.from_port);
+    bpf_printk("socket connect11: dist sock: %d:%d\n", key.dist_addr_v4, key.dist_port);
     return 0;
 }

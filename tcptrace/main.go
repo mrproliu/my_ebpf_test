@@ -35,6 +35,7 @@ type SocketOptsEvent struct {
 	UpstreamAddrV4 uint32
 	UpstreamAddrV6 [16]uint8
 	UpstreamPort   uint16
+	Timestamp      uint64
 }
 
 type LinkFunc func(symbol string, prog *ebpf.Program) (link.Link, error)

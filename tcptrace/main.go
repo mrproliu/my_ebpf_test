@@ -4,13 +4,10 @@
 package main
 
 import (
-	"bytes"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/link"
-	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
 	"github.com/hashicorp/go-multierror"
 	"log"
@@ -104,18 +101,14 @@ func main() {
 	defer objs.Close()
 
 	linker := &MultipleLinker{}
-	linker.AddLink("tcp_v4_connect", link.Kprobe, objs.BpfTcpV4Connect)
-	linker.AddLink("tcp_v4_connect", link.Kretprobe, objs.BpfTcpV4ConnectRet)
-	linker.AddLink("tcp_v6_connect", link.Kprobe, objs.BpfTcpV6Connect)
-	linker.AddLink("tcp_v6_connect", link.Kretprobe, objs.BpfTcpV6ConnectRet)
-	linker.AddTracepoint("syscalls", "sys_enter_connect", objs.SysConnect)
-	linker.AddTracepoint("syscalls", "sys_exit_connect", objs.SysConnectRet)
-	linker.AddTracepoint("syscalls", "sys_enter_sendto", objs.SyscallProbeEntryWrite)
-	linker.AddLink("__sys_accept4", link.Kprobe, objs.SysAccept)
-	linker.AddLink("__sys_accept4", link.Kretprobe, objs.SysAcceptRet)
-	linker.AddLink("sock_alloc", link.Kretprobe, objs.SockAllocRet)
-	linker.AddLink("inet_stream_connect", link.Kprobe, objs.InetStreamConnect)
-	//linker.AddTracepoint("syscalls", "sys_enter_writev", objs.SyscallProbeEntryWritev)
+	linker.AddLink("__sys_connect", link.Kprobe, objs.SysConnect)
+	linker.AddLink("__sys_connect", link.Kretprobe, objs.SysConnectRet)
+	//linker.AddTracepoint("syscalls", "sys_exit_connect", objs.SysConnectRet)
+	//linker.AddTracepoint("syscalls", "sys_enter_sendto", objs.SyscallProbeEntryWrite)
+	//linker.AddLink("__sys_accept4", link.Kprobe, objs.SysAccept)
+	//linker.AddLink("__sys_accept4", link.Kretprobe, objs.SysAcceptRet)
+	//linker.AddLink("sock_alloc", link.Kretprobe, objs.SockAllocRet)
+	////linker.AddTracepoint("syscalls", "sys_enter_writev", objs.SyscallProbeEntryWritev)
 	defer linker.Close()
 	err := linker.HasError()
 	if err != nil {
@@ -123,48 +116,48 @@ func main() {
 	}
 	log.Printf("start probes success...")
 
-	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
-	if err != nil {
-		log.Fatalf("creating perf event reader: %s", err)
-	}
+	//rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
+	//if err != nil {
+	//	log.Fatalf("creating perf event reader: %s", err)
+	//}
 
-	go func() {
-		<-stopper
-		log.Println("Received signal, exiting program..")
-		rd.Close()
-	}()
+	//go func() {
+	<-stopper
+	log.Println("Received signal, exiting program..")
+	//rd.Close()
+	//}()
 
-	var event Event
-	for {
-		record, err := rd.Read()
-		if err != nil {
-			if errors.Is(err, perf.ErrClosed) {
-				return
-			}
-			log.Printf("reading from perf event reader: %s", err)
-			continue
-		}
-
-		if record.LostSamples != 0 {
-			log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
-			continue
-		}
-
-		// Parse the perf event entry into an Event structure.
-		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
-			log.Printf("parsing perf event: %s", err)
-			continue
-		}
-
-		var fromAddr, distAddr string
-		if event.IpVersion == 4 {
-			fromAddr = parseAddressV4(event.SourceAddrV4)
-			distAddr = parseAddressV4(event.DistAddrV4)
-		} else {
-			fromAddr = parseAddressV6(event.SourceAddrV6)
-			distAddr = parseAddressV6(event.DistAddrV6)
-		}
-		fmt.Printf("%s:%d -> %s:%d, comm: %s\n", fromAddr, parsePort(event.SourcePort),
-			distAddr, parsePort(event.DistPort), event.Comm)
-	}
+	//var event Event
+	//for {
+	//	record, err := rd.Read()
+	//	if err != nil {
+	//		if errors.Is(err, perf.ErrClosed) {
+	//			return
+	//		}
+	//		log.Printf("reading from perf event reader: %s", err)
+	//		continue
+	//	}
+	//
+	//	if record.LostSamples != 0 {
+	//		log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
+	//		continue
+	//	}
+	//
+	//	// Parse the perf event entry into an Event structure.
+	//	if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
+	//		log.Printf("parsing perf event: %s", err)
+	//		continue
+	//	}
+	//
+	//	var fromAddr, distAddr string
+	//	if event.IpVersion == 4 {
+	//		fromAddr = parseAddressV4(event.SourceAddrV4)
+	//		distAddr = parseAddressV4(event.DistAddrV4)
+	//	} else {
+	//		fromAddr = parseAddressV6(event.SourceAddrV6)
+	//		distAddr = parseAddressV6(event.DistAddrV6)
+	//	}
+	//	fmt.Printf("%s:%d -> %s:%d, comm: %s\n", fromAddr, parsePort(event.SourcePort),
+	//		distAddr, parsePort(event.DistPort), event.Comm)
+	//}
 }

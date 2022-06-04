@@ -54,28 +54,17 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
-	BpfTcpV4Connect         *ebpf.ProgramSpec `ebpf:"bpf_tcp_v4_connect"`
-	BpfTcpV4ConnectRet      *ebpf.ProgramSpec `ebpf:"bpf_tcp_v4_connect_ret"`
-	BpfTcpV6Connect         *ebpf.ProgramSpec `ebpf:"bpf_tcp_v6_connect"`
-	BpfTcpV6ConnectRet      *ebpf.ProgramSpec `ebpf:"bpf_tcp_v6_connect_ret"`
-	InetStreamConnect       *ebpf.ProgramSpec `ebpf:"inet_stream_connect"`
-	SockAllocRet            *ebpf.ProgramSpec `ebpf:"sock_alloc_ret"`
-	SysAccept               *ebpf.ProgramSpec `ebpf:"sys_accept"`
-	SysAcceptRet            *ebpf.ProgramSpec `ebpf:"sys_accept_ret"`
-	SysConnect              *ebpf.ProgramSpec `ebpf:"sys_connect"`
-	SysConnectRet           *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
-	SyscallProbeEntryWrite  *ebpf.ProgramSpec `ebpf:"syscall__probe_entry_write"`
-	SyscallProbeEntryWritev *ebpf.ProgramSpec `ebpf:"syscall__probe_entry_writev"`
+	SysConnect             *ebpf.ProgramSpec `ebpf:"sys_connect"`
+	SysConnectRet          *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
+	SyscallProbeEntryWrite *ebpf.ProgramSpec `ebpf:"syscall__probe_entry_write"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfMapSpecs struct {
-	AcceptSocks    *ebpf.MapSpec `ebpf:"accept_socks"`
-	ConnectSockets *ebpf.MapSpec `ebpf:"connect_sockets"`
-	Counts         *ebpf.MapSpec `ebpf:"counts"`
-	Socketaddrs    *ebpf.MapSpec `ebpf:"socketaddrs"`
+	AcceptSocks   *ebpf.MapSpec `ebpf:"accept_socks"`
+	ConectingArgs *ebpf.MapSpec `ebpf:"conecting_args"`
 }
 
 // bpfObjects contains all objects after they have been loaded into the kernel.
@@ -97,18 +86,14 @@ func (o *bpfObjects) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfMaps struct {
-	AcceptSocks    *ebpf.Map `ebpf:"accept_socks"`
-	ConnectSockets *ebpf.Map `ebpf:"connect_sockets"`
-	Counts         *ebpf.Map `ebpf:"counts"`
-	Socketaddrs    *ebpf.Map `ebpf:"socketaddrs"`
+	AcceptSocks   *ebpf.Map `ebpf:"accept_socks"`
+	ConectingArgs *ebpf.Map `ebpf:"conecting_args"`
 }
 
 func (m *bpfMaps) Close() error {
 	return _BpfClose(
 		m.AcceptSocks,
-		m.ConnectSockets,
-		m.Counts,
-		m.Socketaddrs,
+		m.ConectingArgs,
 	)
 }
 
@@ -116,34 +101,16 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
-	BpfTcpV4Connect         *ebpf.Program `ebpf:"bpf_tcp_v4_connect"`
-	BpfTcpV4ConnectRet      *ebpf.Program `ebpf:"bpf_tcp_v4_connect_ret"`
-	BpfTcpV6Connect         *ebpf.Program `ebpf:"bpf_tcp_v6_connect"`
-	BpfTcpV6ConnectRet      *ebpf.Program `ebpf:"bpf_tcp_v6_connect_ret"`
-	InetStreamConnect       *ebpf.Program `ebpf:"inet_stream_connect"`
-	SockAllocRet            *ebpf.Program `ebpf:"sock_alloc_ret"`
-	SysAccept               *ebpf.Program `ebpf:"sys_accept"`
-	SysAcceptRet            *ebpf.Program `ebpf:"sys_accept_ret"`
-	SysConnect              *ebpf.Program `ebpf:"sys_connect"`
-	SysConnectRet           *ebpf.Program `ebpf:"sys_connect_ret"`
-	SyscallProbeEntryWrite  *ebpf.Program `ebpf:"syscall__probe_entry_write"`
-	SyscallProbeEntryWritev *ebpf.Program `ebpf:"syscall__probe_entry_writev"`
+	SysConnect             *ebpf.Program `ebpf:"sys_connect"`
+	SysConnectRet          *ebpf.Program `ebpf:"sys_connect_ret"`
+	SyscallProbeEntryWrite *ebpf.Program `ebpf:"syscall__probe_entry_write"`
 }
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
-		p.BpfTcpV4Connect,
-		p.BpfTcpV4ConnectRet,
-		p.BpfTcpV6Connect,
-		p.BpfTcpV6ConnectRet,
-		p.InetStreamConnect,
-		p.SockAllocRet,
-		p.SysAccept,
-		p.SysAcceptRet,
 		p.SysConnect,
 		p.SysConnectRet,
 		p.SyscallProbeEntryWrite,
-		p.SyscallProbeEntryWritev,
 	)
 }
 

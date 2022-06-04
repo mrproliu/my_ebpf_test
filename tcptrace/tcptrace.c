@@ -106,7 +106,7 @@ struct sockinfo {
 SEC("kprobe/__sys_sendto")
 int BPF_KPROBE(sys_sendto, int sockfd, const void *buf, size_t len, int flags)
 {
-    int fd = sockfd;
+    int fd = PT_REGS_PARM1(ctx);
     const struct sockaddr *addr = (void *)PT_REGS_PARM5(ctx);
     struct sockinfo s = {};
     BPF_CORE_READ_INTO(&s.family, addr, sa_family);

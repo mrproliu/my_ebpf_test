@@ -25,10 +25,10 @@ struct sock_opts_event {
     // upstream(works on server and client side)
     __u32 upstream_addr_v4;
     __u8 upstream_addr_v6[16];
-    __u16 upstream_port;
+    __u32 upstream_port;
 //    __u16 upstream_port;
     // downstream(only works on server side)
-//    __u32 downstream_addr_v4;
+    __u32 downstream_addr_v4;
 //    __u8 downstream_addr_v6[16];
 //    __u16 downstream_port;
 };

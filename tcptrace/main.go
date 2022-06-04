@@ -111,7 +111,7 @@ func main() {
 	linker.AddTracepoint("syscalls", "sys_enter_connect", objs.SysConnect)
 	linker.AddTracepoint("syscalls", "sys_exit_connect", objs.SysConnectRet)
 	linker.AddTracepoint("syscalls", "sys_enter_sendto", objs.SyscallProbeEntryWrite)
-	linker.AddLink("__sys_accpet", link.Kprobe, objs.SysAccept)
+	linker.AddLink("__sys_accept", link.Kprobe, objs.SysAccept)
 	linker.AddLink("__sys_accept", link.Kretprobe, objs.SysAcceptRet)
 	//linker.AddTracepoint("syscalls", "sys_enter_writev", objs.SyscallProbeEntryWritev)
 	defer linker.Close()

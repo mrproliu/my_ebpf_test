@@ -103,6 +103,19 @@ struct {
 	__type(value, struct connect_args_t);
 } socketaddrs SEC(".maps");
 
+static __always_inline void
+print_sockaddr(struct sockaddr *addr)
+{
+    __u16 family;
+    bpf_probe_read(&family, sizeof(family), &(addr->sa_family));
+    __u32 daddrv;
+    struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
+    bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
+    __u16 dport = 0;
+    bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
+    bpf_printk("socket family: %d, addr: %d:%d\n", family, daddrv, dport);
+}
+
 static __always_inline int
 enter_tcp_connect(struct pt_regs *ctx, struct sock *sk)
 {
@@ -250,5 +263,21 @@ int syscall__probe_entry_writev(struct trace_event_raw_sys_enter *ctx) {
     int fd = ctx->args[0];
     int len = ctx->args[2];
     bpf_printk("heelo writev: %d->%d\n", fd, len);
+    return 0;
+}
+
+SEC("kprobe/__sys_accpet")
+int sys_accept(struct pt_regs *ctx) {
+    int fd = PT_REGS_PARM1(ctx);
+    struct sockaddr *addr = (void *)PT_REGS_PARM1(ctx);
+    bpf_printk("socket accept: fd: %d", fd);
+    print_sockaddr(addr);
+    return 0;
+}
+
+SEC("kretprobe/__sys_accpet")
+int sys_accept_ret(struct pt_regs *ctx) {
+    int fd = PT_REGS_RC(ctx);
+    bpf_printk("socket accept ret: %d", fd);
     return 0;
 }

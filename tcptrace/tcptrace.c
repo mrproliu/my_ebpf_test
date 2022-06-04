@@ -309,7 +309,7 @@ int sys_accept_ret(struct pt_regs *ctx) {
         BPF_CORE_READ_INTO(&key.dist_addr_v4, s, __sk_common.skc_daddr);
 
         bpf_printk("socket accept ret: %d, from fd: %d\n", fd, fromfd);
-        bpf_printk("socket accept ret: dist sock: %d:%d\n", key.dist_addr_v4, key.dist_port);
+        bpf_printk("socket accept ret: dist sock: %d:%d\n", key.from_addr_v4, key.from_port);
     }
     return 0;
 }

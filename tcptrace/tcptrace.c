@@ -86,21 +86,21 @@ int sys_connect_ret(struct pt_regs *ctx) {
 	return 0;
 }
 
-//SEC("tracepoint/syscalls/sys_enter_write")
-//int syscall__probe_entry_write(struct trace_event_raw_sys_enter *ctx) {
-//    int fd = ctx->args[0];
-//    struct sockaddr_in *addr_in = (struct sockaddr_in *)ctx->args[4];
-//    __u16 family;
-//    bpf_probe_read(&family, sizeof(family), &(addr_in->sin_family));
-//    __u32 daddrv;
-//    struct sockaddr_in *daddr = (struct sockaddr_in *)addr_in;
-//    bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
-//    __u16 dport = 0;
-//    bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
-//    bpf_printk("write: %d, family: %d\n", fd, family);
-//    bpf_printk("write: addr: %d:%d\n", daddrv, dport);
-//    return 0;
-//}
+SEC("kprobe/__sys_sendto")
+int sys_sendto(struct pt_regs *ctx) {
+    int fd = PT_REGS_PARM1(ctx);
+    struct sockaddr_in *addr_in = (struct sockaddr_in *)PT_REGS_PARM5(ctx);;
+    __u16 family;
+    bpf_probe_read(&family, sizeof(family), &(addr_in->sin_family));
+    __u32 daddrv;
+    struct sockaddr_in *daddr = (struct sockaddr_in *)addr_in;
+    bpf_probe_read(&daddrv, sizeof(daddrv), &daddr->sin_addr.s_addr);
+    __u16 dport = 0;
+    bpf_probe_read(&dport, sizeof(dport), &daddr->sin_port);
+    bpf_printk("sendto: %d, family: %d\n", fd, family);
+    bpf_printk("sendto: addr: %d:%d\n", daddrv, dport);
+    return 0;
+}
 //
 //SEC("tracepoint/syscalls/sys_enter_writev")
 //int syscall__probe_entry_writev(struct trace_event_raw_sys_enter *ctx) {

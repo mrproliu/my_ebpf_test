@@ -108,6 +108,7 @@ func main() {
 	linker := &MultipleLinker{}
 	linker.AddLink("__sys_connect", link.Kprobe, objs.SysConnect)
 	linker.AddLink("__sys_connect", link.Kretprobe, objs.SysConnectRet)
+	linker.AddLink("__sys_sendto", link.Kprobe, objs.SysSendto)
 	//linker.AddTracepoint("syscalls", "sys_exit_connect", objs.SysConnectRet)
 	//linker.AddTracepoint("syscalls", "sys_enter_sendto", objs.SyscallProbeEntryWrite)
 	//linker.AddLink("__sys_accept4", link.Kprobe, objs.SysAccept)

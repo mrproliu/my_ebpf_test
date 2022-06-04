@@ -31,10 +31,10 @@ type SocketOptsEvent struct {
 	SocketFd       uint32
 	UpstreamPort   uint16
 	UpstreamAddrV4 uint32
-	//UpstreamAddrV6   [16]uint8
-	DownStreamAddrV4 uint32
-	//DownStreamAddrV6 [16]uint8
-	DownStreamPort uint16
+	////UpstreamAddrV6   [16]uint8
+	//DownStreamAddrV4 uint32
+	////DownStreamAddrV6 [16]uint8
+	//DownStreamPort uint16
 }
 
 type LinkFunc func(symbol string, prog *ebpf.Program) (link.Link, error)

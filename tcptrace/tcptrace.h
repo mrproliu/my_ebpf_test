@@ -74,11 +74,14 @@ struct sock_data_event_t {
     __u32 protocol_type;
     __u32 message_type;
 };
+struct cock_data_t {
+    char *buf;
+};
 
 struct {
     __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
     __type(key, __u32);
-    __type(value, struct sock_data_event_t);
+    __type(value, struct cock_data_t);
     __uint(max_entries, 1);
 } sock_data_event_creator_map SEC(".maps");
 //static __inline struct cock_data_t* create_sock_data() {

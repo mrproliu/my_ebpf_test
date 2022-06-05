@@ -122,16 +122,13 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
 //    }
 
     const char* buf;
-    char *p;
     bpf_probe_read(&buf, sizeof(const char*), &args->buf);
-    bpf_probe_read(&p, data_len, buf);
+    struct cock_data_t t = {};
+    bpf_probe_read(t.buf, data_len, buf);
 
-    if (data_len < 5) {
-        return;
-    }
 //    char *p = data->buf;
-//    sock_data_analyze_protocol(p, data_len);
-    if (p[0] == 'G' && p[1] == 'E' && p[2] == 'T') {
+//    sock_data_analyze_protocol(&data->buf, data_len);
+    if (t.buf[0] == 'G' && t.buf[1] == 'E' && t.buf[2] == 'T') {
         bpf_printk("get request \n");
     } else {
         bpf_printk("unknown\n");

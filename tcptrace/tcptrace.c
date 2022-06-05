@@ -126,7 +126,7 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
 //    struct data_event_t e = {};
 //    bpf_probe_read(&e.data, data_len, buf);
     char data[MAX_DATA_SIZE_BUF];
-    bpf_probe_read(&data, data_len, buf);
+    bpf_probe_read(data, data_len, buf);
 //
     if (data[0] == 'G' && data[1] == 'E' && data[2] == 'T') {
         bpf_printk("get request \n");

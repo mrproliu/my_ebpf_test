@@ -71,8 +71,7 @@ struct {
 struct sock_data_event_t {
     char buf[MAX_DATA_SIZE_BUF];
 };
-struct
-{
+struct {
     __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
     __type(key, __u32);
     __type(value, struct sock_data_event_t);

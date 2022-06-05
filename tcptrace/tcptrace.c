@@ -196,6 +196,8 @@ int sys_close(struct pt_regs* ctx) {
     struct sock_close_args_t close_args = {};
     close_args.fd = PT_REGS_PARM1(ctx);
     bpf_map_update_elem(&closing_args, &id, &close_args, 0);
+    __u32 tgid = id >> 32;
+    bpf_printk("close to: pid: %d, fd: %d\n", tgid, close_args.fd);
     return 0;
 }
 
@@ -203,6 +205,7 @@ int sys_close(struct pt_regs* ctx) {
 static __inline void process_close_sock(struct pt_regs* ctx, __u64 id, struct sock_close_args_t *args) {
     __u32 tgid = (__u32)(id >> 32);
     int ret = PT_REGS_RC(ctx);
+    bpf_printk("close ret: pid: %d, fd: %d, ret: %d", tgid, args->fd, ret);
     if (ret < 0) {
         return;
     }

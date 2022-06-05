@@ -129,7 +129,7 @@ struct {
 
 // syscall:close
 struct sock_close_args_t {
-    __u32 fd;
+    int fd;
 };
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);

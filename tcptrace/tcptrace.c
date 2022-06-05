@@ -201,7 +201,6 @@ int sys_close(struct pt_regs* ctx) {
     return 0;
 }
 
-
 static __inline void process_close_sock(struct pt_regs* ctx, __u64 id, struct sock_close_args_t *args) {
     __u32 tgid = (__u32)(id >> 32);
     int ret = PT_REGS_RC(ctx);

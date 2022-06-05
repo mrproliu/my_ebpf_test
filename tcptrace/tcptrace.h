@@ -1,3 +1,5 @@
+#define MAX_DATA_SIZE_BUF 128
+
 // syscall:connect
 struct connect_args_t {
     __u32 fd;

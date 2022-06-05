@@ -115,7 +115,10 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     const char* buf;
     bpf_probe_read(&buf, sizeof(const char*), &args->buf);
 
-    if (buf[0] == 'G' && buf[1] == 'E' && buf[2] == 'T') {
+    char data[MAX_DATA_SIZE_BUF];
+    bpf_probe_read(&data, bytes_count, buf);
+
+    if (data[0] == 'G' && data[1] == 'E' && data[2] == 'T') {
         bpf_printk("get request \n");
     } else {
         bpf_printk("unknown\n");

@@ -104,7 +104,7 @@ struct sock_data_event_t {
     char comm[128];
     __u32 sockfd;
     char buf[MAX_DATA_SIZE_BUF];
-//    __u32 buf_size;
+    __u32 buf_size;
 //    __u32 protocol_type;
 //    __u32 message_type;
 };

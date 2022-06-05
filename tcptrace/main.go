@@ -38,11 +38,11 @@ type SocketOptsEvent struct {
 }
 
 type SocketDataEvent struct {
-	Pid      uint32
-	Comm     [128]byte
-	SocketFd uint32
-	Buffer   [1024 * 3]byte
-	//BufferSize   uint32
+	Pid        uint32
+	Comm       [128]byte
+	SocketFd   uint32
+	Buffer     [1024 * 3]byte
+	BufferSize uint32
 	//ProtocolType uint32
 	//MessageType  uint32
 }

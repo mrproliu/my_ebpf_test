@@ -142,7 +142,7 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     const char* buf;
     bpf_probe_read(&buf, sizeof(const char*), &args->buf);
     bpf_probe_read(data->buf, data_len, buf);
-//    data->buf_size = data_len;
+    data->buf_size = data_len;
 //
 //    char *p = data->buf;
 //    sock_data_analyze_protocol(p, data_len, data);

@@ -121,12 +121,17 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
     bpf_printk("data_len: %d\n", data_len);
 
+    struct sock_data_event_t* data_event;
+    __u32 inx = 0;
+    data_event = bpf_map_lookup_elem(&sock_data_event_creator_map, &inx);
+
     const char* buf;
     bpf_probe_read(&buf, sizeof(const char*), &args->buf);
-    struct data_event_t e = {};
-    bpf_probe_read(&e.data, data_len, buf);
+//    struct data_event_t e = {};
+//    bpf_probe_read(&e.data, data_len, buf);
+    bpf_probe_read(data_event->buf, bytes_count, buf);
 
-    if (e.data[0] == 'G' && e.data[1] == 'E' && e.data[2] == 'T') {
+    if (data_event->buf[0] == 'G' && data_event->buf[1] == 'E' && data_event->buf[2] == 'T') {
         bpf_printk("get request \n");
     } else {
         bpf_printk("unknown\n");

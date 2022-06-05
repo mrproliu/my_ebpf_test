@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/binary"
 	"errors"
@@ -15,6 +16,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -196,6 +198,13 @@ func main() {
 			}
 
 			fmt.Printf("DATA send from: %d(%s), protcol: %d, message: %d, socket fd: %d, size: %d\n", event.Pid, event.Comm, event.ProtocolType, event.MessageType, event.SocketFd, event.BufferSize)
+			if event.MessageType == 1 {
+				request, err := http.ReadRequest(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])))
+				if err != nil {
+					fmt.Errorf("read request error: %v", err)
+				}
+				fmt.Printf("request host: %s, url: %s\n", request.Host, request.URL)
+			}
 		}
 	}()
 

@@ -96,11 +96,6 @@ int sys_sendto(struct pt_regs* ctx) {
     return 0;
 }
 
-struct data_event_t {
-    char data[MAX_DATA_SIZE_BUF];
-    __u32 data_len;
-};
-
 static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count) {
 //    __u32 tgid = id >> 32;
     if (args->buf == NULL) {
@@ -113,20 +108,18 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
         return;
     }
 
-    bpf_printk("bytes count: %d\n", bytes_count);
-//    if (bytes_count < 16) {
-//        return;
-//    }
-
-    __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
-    bpf_printk("data_len: %d\n", data_len);
-
+    struct sock_data_event_t *data = create_sock_data();
+    if (data == NULL) {
+        bpf_printk("sock data not init\n");
+    }
     const char* buf;
     bpf_probe_read(&buf, sizeof(const char*), &args->buf);
-    struct data_event_t e = {};
-    bpf_probe_read(&e.data, data_len, buf);
+    __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
+    bpf_probe_read(&data->buf, data_len, buf);
 
-    if (e.data[0] == 'G' && e.data[1] == 'E' && e.data[2] == 'T') {
+    bpf_printk("data_len: %d\n", data_len);
+
+    if (data->buf[0] == 'G' && data->buf[1] == 'E' && data->buf[2] == 'T') {
         bpf_printk("get request \n");
     } else {
         bpf_printk("unknown\n");

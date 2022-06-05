@@ -1,4 +1,4 @@
-#define MAX_DATA_SIZE_BUF 128
+#define MAX_DATA_SIZE_BUF 1024 * 4
 
 // syscall:connect
 struct connect_args_t {
@@ -67,3 +67,19 @@ struct {
 	__type(key, __u64);
 	__type(value, struct sock_data_args_t);
 } writing_args SEC(".maps");
+
+struct sock_data_event_t {
+    char buf[MAX_DATA_SIZE_BUF];
+};
+struct {
+	__uint(type, BPF_MAP_TYPE_PERCPU_HASH);
+	__uint(max_entries, 1);
+	__type(key, __u32);
+	__type(value, struct accept_sock_args_t);
+} sock_data_event_creator_map SEC(".maps");
+static __inline struct sock_data_event_t *create_sock_data() {
+    struct sock_data_event_t *data_event;
+    __u32 inx = 0;
+    data_event = bpf_map_lookup_elem(&sock_data_event_creator_map, &inx);
+    return data_event;
+}

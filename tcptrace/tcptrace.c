@@ -47,7 +47,7 @@ static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type,
     // active connection save
     struct active_connection_t con = {};
     con.pid = tgid;
-    strcpy(con.comm, opts_event.comm);
+//    strcpy(con.comm, opts_event.comm);
     con.sockfd = fd;
     con.role = CONNECTION_ROLE_TYPE_CLIENT;
     con.upstream_addr_v4 = opts_event.upstream_addr_v4;

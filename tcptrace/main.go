@@ -195,8 +195,9 @@ func main() {
 				continue
 			}
 
-			fmt.Printf("DATA send from: %d(%s), protcol: %d, message: %d, socket fd: %d\n", event.Pid, event.Comm
-			/*event.ProtocolType, event.MessageType, event.SocketFd*/)
+			fmt.Printf("DATA send from: %d(%s), protcol: %d, message: %d, socket fd: %d\n", event.Pid,
+				event.Comm,
+				/*event.ProtocolType, event.MessageType, event.SocketFd*/)
 		}
 	}()
 

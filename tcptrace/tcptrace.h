@@ -1,3 +1,5 @@
+#pragma once
+
 #define MAX_DATA_SIZE_BUF 1024 * 3
 
 // syscall:connect
@@ -70,12 +72,9 @@ struct {
 
 // socket write or receive data event, communicate with user space
 struct sock_data_event_t {
-    char *buf;
+    char buf[MAX_DATA_SIZE_BUF];
     __u32 protocol_type;
     __u32 message_type;
-};
-struct cock_data_t {
-    char *buf;
 };
 
 struct {

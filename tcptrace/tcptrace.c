@@ -125,15 +125,15 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     bpf_probe_read(&buf, sizeof(const char*), &args->buf);
     bpf_probe_read(data->buf, data_len, buf);
 
+    char *p = data->buf;
+    sock_data_analyze_protocol(p, data_len, data);
 //    char *p = data->buf;
 //    sock_data_analyze_protocol(&data->buf, data_len);
-//    char *p = data->buf;
-//    sock_data_analyze_protocol(&data->buf, data_len);
-    if (data->buf[0] == 'G' && data->buf[1] == 'E' && data->buf[2] == 'T') {
-        bpf_printk("get request \n");
-    } else {
-        bpf_printk("unknown\n");
-    }
+//    if (data->buf[0] == 'G' && data->buf[1] == 'E' && data->buf[2] == 'T') {
+//        bpf_printk("get request \n");
+//    } else {
+//        bpf_printk("unknown\n");
+//    }
 }
 
 SEC("kretprobe/__sys_sendto")

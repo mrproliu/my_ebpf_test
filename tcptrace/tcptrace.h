@@ -68,8 +68,10 @@ struct {
 	__type(value, struct sock_data_args_t);
 } writing_args SEC(".maps");
 
+// socket write or receive data event, communicate with user space
 struct sock_data_event_t {
     char buf[MAX_DATA_SIZE_BUF];
+    __u32 protocol_type;
 };
 struct {
     __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
@@ -83,6 +85,5 @@ static __inline struct sock_data_event_t* create_sock_data() {
     if (event == NULL) {
         return NULL;
     }
-    bpf_printk("data exists\n");
     return event;
 }

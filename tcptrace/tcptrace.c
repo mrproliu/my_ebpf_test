@@ -15,6 +15,7 @@
 #include <bpf/bpf_tracing.h>
 #include <bpf/bpf_core_read.h>
 #include "tcptrace.h"
+#include "protocol_analyze.h"
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
@@ -113,13 +114,7 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
         return;
     }
 
-    bpf_printk("bytes count: %d\n", bytes_count);
-//    if (bytes_count < 16) {
-//        return;
-//    }
-
     __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
-    bpf_printk("data_len: %d\n", data_len);
 
     struct sock_data_event_t* data = create_sock_data();
     if (data == NULL) {
@@ -130,11 +125,13 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     bpf_probe_read(&buf, sizeof(const char*), &args->buf);
     bpf_probe_read(data->buf, data_len, buf);
 
-    if (data->buf[0] == 'G' && data->buf[1] == 'E' && data->buf[2] == 'T') {
-        bpf_printk("get request \n");
-    } else {
-        bpf_printk("unknown\n");
-    }
+    char *p = data->buf;
+    sock_data_analyze_protocol(p, data_len);
+//    if (data->buf[0] == 'G' && data->buf[1] == 'E' && data->buf[2] == 'T') {
+//        bpf_printk("get request \n");
+//    } else {
+//        bpf_printk("unknown\n");
+//    }
 }
 
 SEC("kretprobe/__sys_sendto")

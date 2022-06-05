@@ -116,22 +116,26 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
 
     __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
 
-    struct sock_data_event_t* data = create_sock_data();
-    if (data == NULL) {
-        return;
-    }
+//    struct sock_data_event_t* data = create_sock_data();
+//    if (data == NULL) {
+//        return;
+//    }
 
     const char* buf;
+    char *p;
     bpf_probe_read(&buf, sizeof(const char*), &args->buf);
-    bpf_probe_read(data->buf, data_len, buf);
+    bpf_probe_read(&p, data_len, buf);
 
-    char *p = data->buf;
-    sock_data_analyze_protocol(p, data_len);
-//    if (data->buf[0] == 'G' && data->buf[1] == 'E' && data->buf[2] == 'T') {
-//        bpf_printk("get request \n");
-//    } else {
-//        bpf_printk("unknown\n");
-//    }
+    if (data_len < 5) {
+        return;
+    }
+//    char *p = data->buf;
+//    sock_data_analyze_protocol(p, data_len);
+    if (p[0] == 'G' && p[1] == 'E' && p[2] == 'T') {
+        bpf_printk("get request \n");
+    } else {
+        bpf_printk("unknown\n");
+    }
 }
 
 SEC("kretprobe/__sys_sendto")

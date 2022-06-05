@@ -1,4 +1,4 @@
-#define MAX_DATA_SIZE_BUF 1024 * 4
+#define MAX_DATA_SIZE_BUF 100
 
 // syscall:connect
 struct connect_args_t {

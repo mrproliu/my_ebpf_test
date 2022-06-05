@@ -116,14 +116,6 @@ struct data_event_t {
     __u32 data_len;
 };
 
-static __inline void send_data(struct pt_regs* ctx, __u32 tgid) {
-    struct sock_data_event_t* data = create_sock_data();
-    if (data == NULL) {
-        return;
-    }
-    data->pid = tgid;
-    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
-}
 static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count) {
     __u32 tgid = (__u32)(id >> 32);
     if (args->buf == NULL) {
@@ -136,33 +128,31 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
         return;
     }
 
-    send_data(ctx, tgid);
-//    __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
-//
-//    struct sock_data_event_t* data = create_sock_data();
-//    if (data == NULL) {
-//        return;
-//    }
-//
-////    data->sockfd = args->fd;
-//    data->pid = (__u32) tgid;
-//    bpf_printk("----pid: %d\n", tgid);
-//    bpf_get_current_comm(&data->comm, sizeof(data->comm));
+    __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
+    struct sock_data_event_t* data = create_sock_data();
+    if (data == NULL) {
+        return;
+    }
 
-//    const char* buf;
-//    bpf_probe_read(&buf, sizeof(const char*), &args->buf);
-//    bpf_probe_read(data->buf, data_len, buf);
-//    data->buf_size = data_len;
-//
-//    char *p = data->buf;
-//    sock_data_analyze_protocol(p, data_len, data);
-//    __u64 conid = gen_tgid_fd(tgid, args->fd);
-//    struct active_connection_t* con = bpf_map_lookup_elem(&active_connection_map, &conid);
-//    if (con == NULL) {
-//        bpf_printk("could not found active connection, pid: %d, sockfd: %d\n", tgid, args->fd);
-//        return;
-//    }
-//    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, &data, sizeof(struct sock_data_event_t));
+    data->sockfd = args->fd;
+    data->pid = (__u32) tgid;
+    bpf_printk("----pid: %d\n", tgid);
+    bpf_get_current_comm(&data->comm, sizeof(data->comm));
+
+    const char* buf;
+    bpf_probe_read(&buf, sizeof(const char*), &args->buf);
+    bpf_probe_read(data->buf, data_len, buf);
+    data->buf_size = data_len;
+
+    char *p = data->buf;
+    sock_data_analyze_protocol(p, data_len, data);
+    __u64 conid = gen_tgid_fd(tgid, args->fd);
+    struct active_connection_t* con = bpf_map_lookup_elem(&active_connection_map, &conid);
+    if (con == NULL) {
+        bpf_printk("could not found active connection, pid: %d, sockfd: %d\n", tgid, args->fd);
+        return;
+    }
+    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(data));
 }
 
 SEC("kretprobe/__sys_sendto")

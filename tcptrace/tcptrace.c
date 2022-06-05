@@ -153,7 +153,7 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
 //        bpf_printk("could not found active connection, pid: %d, sockfd: %d\n", tgid, args->fd);
 //        return;
 //    }
-    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, &data, sizeof(struct sock_data_event_t));
+    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, &data, sizeof(data));
 }
 
 SEC("kretprobe/__sys_sendto")

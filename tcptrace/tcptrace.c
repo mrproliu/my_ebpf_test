@@ -123,10 +123,8 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
 
     struct sock_data_event_t* data = create_sock_data();
     if (data == NULL) {
-        bpf_printk("sock_data empty\n");
         return;
     }
-    bpf_printk("sock_data exists\n");
 
     const char* buf;
     bpf_probe_read(&buf, sizeof(const char*), &args->buf);

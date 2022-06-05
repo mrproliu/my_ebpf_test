@@ -71,19 +71,19 @@ struct {
 struct sock_data_event_t {
     char buf[MAX_DATA_SIZE_BUF];
 };
-struct {
-	__uint(type, BPF_MAP_TYPE_PERCPU_HASH);
-	__uint(max_entries, 1);
-	__type(key, __u32);
-	__type(value, struct sock_data_event_t);
+struct
+{
+    __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
+    __type(key, __u32);
+    __type(value, struct sock_data_event_t);
+    __uint(max_entries, 1);
 } sock_data_event_creator_map SEC(".maps");
 static __inline struct sock_data_event_t* create_sock_data() {
-    __u32 inx = 0;
-    struct sock_data_event_t* data_event = bpf_map_lookup_elem(&sock_data_event_creator_map, &inx);
-    if (data_event == NULL) {
-        bpf_printk("data empty\n");
+    __u32 kZero = 0;
+    struct sock_data_event_t* event = bpf_map_lookup_elem(&sock_data_event_creator_map, &kZero);
+    if (event == NULL) {
         return NULL;
     }
     bpf_printk("data exists\n");
-    return data_event;
+    return event;
 }

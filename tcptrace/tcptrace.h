@@ -81,14 +81,14 @@ struct cock_data_t {
 struct {
     __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
     __type(key, __u32);
-    __type(value, struct cock_data_t);
+    __type(value, struct sock_data_event_t);
     __uint(max_entries, 1);
 } sock_data_event_creator_map SEC(".maps");
-//static __inline struct cock_data_t* create_sock_data() {
-//    __u32 kZero = 0;
-//    struct cock_data_t* event = bpf_map_lookup_elem(&sock_data_event_creator_map, &kZero);
-//    if (event == NULL) {
-//        return NULL;
-//    }
-//    return event;
-//}
+static __inline struct sock_data_event_t* create_sock_data() {
+    __u32 kZero = 0;
+    struct sock_data_event_t* event = bpf_map_lookup_elem(&sock_data_event_creator_map, &kZero);
+    if (event == NULL) {
+        return NULL;
+    }
+    return event;
+}

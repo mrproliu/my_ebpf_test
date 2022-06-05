@@ -116,19 +116,20 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
 
     __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
 
-//    struct sock_data_event_t* data = create_sock_data();
-//    if (data == NULL) {
-//        return;
-//    }
+    struct sock_data_event_t* data = create_sock_data();
+    if (data == NULL) {
+        return;
+    }
 
     const char* buf;
     bpf_probe_read(&buf, sizeof(const char*), &args->buf);
-    struct cock_data_t t = {};
-    bpf_probe_read(t.buf, data_len, buf);
+    bpf_probe_read(data->buf, data_len, buf);
 
 //    char *p = data->buf;
 //    sock_data_analyze_protocol(&data->buf, data_len);
-    if (t.buf[0] == 'G' && t.buf[1] == 'E' && t.buf[2] == 'T') {
+//    char *p = data->buf;
+//    sock_data_analyze_protocol(&data->buf, data_len);
+    if (data->buf[0] == 'G' && data->buf[1] == 'E' && data->buf[2] == 'T') {
         bpf_printk("get request \n");
     } else {
         bpf_printk("unknown\n");

@@ -14,6 +14,7 @@ import (
 	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
 	"github.com/hashicorp/go-multierror"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -231,6 +232,18 @@ func main() {
 					continue
 				}
 				fmt.Printf("request host: %s, url: %s\n", request.Host, request.URL)
+			} else if event.MessageType == 2 {
+				response, err := http.ReadResponse(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])), nil)
+				if err != nil {
+					fmt.Errorf("read response error: %v\n", err)
+					continue
+				}
+				body, err := ioutil.ReadAll(response.Body)
+				if err != nil {
+					fmt.Errorf("read response body error: %v\n", err)
+					continue
+				}
+				fmt.Printf("response data: %s\n", response.Body, string(body))
 			}
 		}
 	}()

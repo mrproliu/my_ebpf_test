@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 #include <linux/sched.h>
 #include <linux/bpf.h>
 #include <linux/ptrace.h>
@@ -28,6 +29,7 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 
 static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type, __u32 tgid, __u32 fd,
                                             struct sockaddr* addr, const struct socket* socket) {
+    // event send
     struct sock_opts_event opts_event = {};
     opts_event.type = from_type;
     opts_event.pid = tgid;
@@ -39,12 +41,23 @@ static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type,
         bpf_probe_read(&opts_event.upstream_addr_v4, sizeof(opts_event.upstream_addr_v4), &daddr->sin_addr.s_addr);
         bpf_probe_read(&opts_event.upstream_port, sizeof(opts_event.upstream_port), &daddr->sin_port);
         opts_event.upstream_port = bpf_ntohs(opts_event.upstream_port);
-        // for test
-//        opts_event.downstream_addr_v4 = opts_event.upstream_addr_v4;
-//        opts_event.downstream_port = opts_event.upstream_port;
     }
-
     bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));
+
+    // active connection save
+    struct active_connection_t con = {};
+    con.pid = tgid;
+    strcpy(con.comm, opts_event.comm);
+    con.sockfd = fd;
+    con.role = CONNECTION_ROLE_TYPE_CLIENT;
+    con.upstream_addr_v4 = opts_event.upstream_addr_v4;
+    memcpy(con.upstream_addr_v6, opts_event.upstream_addr_v6, 16*sizeof(__u8));
+    con.upstream_port = opts_event.upstream_port;
+    con.downstream_addr_v4 = opts_event.downstream_addr_v4;
+//    strcpy(con.downstream_addr_v6, opts_event.downstream_addr_v6);
+    con.downstream_port = opts_event.downstream_port;
+    __u64 conid = gen_tgid_fd(tgid, fd);
+    bpf_map_update_elem(&active_connection_map, &conid, &con, 0);
 }
 
 static __inline void process_connect(struct pt_regs* ctx, __u64 id, struct connect_args_t *connect_args) {
@@ -103,7 +116,6 @@ struct data_event_t {
 };
 
 static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count) {
-//    __u32 tgid = id >> 32;
     if (args->buf == NULL) {
         return;
     }
@@ -121,19 +133,15 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
         return;
     }
 
+    bpf_get_current_comm(&data->comm, sizeof(data->comm));
+
     const char* buf;
     bpf_probe_read(&buf, sizeof(const char*), &args->buf);
     bpf_probe_read(data->buf, data_len, buf);
+    data->buf_size = data_len;
 
     char *p = data->buf;
     sock_data_analyze_protocol(p, data_len, data);
-//    char *p = data->buf;
-//    sock_data_analyze_protocol(&data->buf, data_len);
-//    if (data->buf[0] == 'G' && data->buf[1] == 'E' && data->buf[2] == 'T') {
-//        bpf_printk("get request \n");
-//    } else {
-//        bpf_printk("unknown\n");
-//    }
 }
 
 SEC("kretprobe/__sys_sendto")

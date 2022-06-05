@@ -65,6 +65,7 @@ type bpfProgramSpecs struct {
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfMapSpecs struct {
 	AcceptingArgs           *ebpf.MapSpec `ebpf:"accepting_args"`
+	ActiveConnectionMap     *ebpf.MapSpec `ebpf:"active_connection_map"`
 	ConectingArgs           *ebpf.MapSpec `ebpf:"conecting_args"`
 	SockDataEventCreatorMap *ebpf.MapSpec `ebpf:"sock_data_event_creator_map"`
 	SocketOptsEventsQueue   *ebpf.MapSpec `ebpf:"socket_opts_events_queue"`
@@ -91,6 +92,7 @@ func (o *bpfObjects) Close() error {
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfMaps struct {
 	AcceptingArgs           *ebpf.Map `ebpf:"accepting_args"`
+	ActiveConnectionMap     *ebpf.Map `ebpf:"active_connection_map"`
 	ConectingArgs           *ebpf.Map `ebpf:"conecting_args"`
 	SockDataEventCreatorMap *ebpf.Map `ebpf:"sock_data_event_creator_map"`
 	SocketOptsEventsQueue   *ebpf.Map `ebpf:"socket_opts_events_queue"`
@@ -100,6 +102,7 @@ type bpfMaps struct {
 func (m *bpfMaps) Close() error {
 	return _BpfClose(
 		m.AcceptingArgs,
+		m.ActiveConnectionMap,
 		m.ConectingArgs,
 		m.SockDataEventCreatorMap,
 		m.SocketOptsEventsQueue,

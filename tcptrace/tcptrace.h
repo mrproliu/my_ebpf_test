@@ -40,8 +40,36 @@ struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
 } socket_opts_events_queue SEC(".maps");
 
+#define CONNECTION_ROLE_TYPE_UNKNOWN 0
+#define CONNECTION_ROLE_TYPE_CLIENT 1
+#define CONNECTION_ROLE_TYPE_SERVER 2
 struct active_connection_t {
+    // process id
+    __u32 pid;
+    // process command line
+    char comm[128];
+    // socket file descriptor
+    __u32 sockfd;
+    // the type of role in current connection
+    __u32 role;
+    // upstream(works on server and client side)
+    __u32 upstream_addr_v4;
+    __u8 upstream_addr_v6[16];
+    __u32 upstream_port;
+    // downstream(only works on server side)
+    __u32 downstream_addr_v4;
+    __u8 downstream_addr_v6[16];
+    __u16 downstream_port;
 };
+struct {
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries, 10000);
+	__type(key, __u64);
+	__type(value, struct active_connection_t);
+} active_connection_map SEC(".maps");
+static __inline __u64 gen_tgid_fd(__u32 tgid, __u32 fd) {
+  return ((__u64)tgid << 32) | fd;
+}
 
 // syscall:accept
 struct accept_sock_args_t {
@@ -72,9 +100,13 @@ struct {
 
 // socket write or receive data event, communicate with user space
 struct sock_data_event_t {
+    __u32 sockfed;
+    __u32 pid;
+    char comm[128];
     char buf[MAX_DATA_SIZE_BUF];
     __u32 protocol_type;
     __u32 message_type;
+    __u32 buf_size;
 };
 
 struct {

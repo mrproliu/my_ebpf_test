@@ -116,8 +116,16 @@ struct data_event_t {
     __u32 data_len;
 };
 
+static __inline void write_Data(struct pt_regs* ctx, __u32 id) {
+    struct sock_data_event_t* data = create_sock_data();
+    if (data == NULL) {
+        return;
+    }
+    data->pid = id;
+    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(data));
+}
 static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count) {
-    __u32 tgid = (__u32)(id >> 32);
+    __u32 tgid = id >> 32;
     if (args->buf == NULL) {
         return;
     }
@@ -128,22 +136,23 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
         return;
     }
 
+    write_Data(ctx, tgid);
 //    __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
-    struct sock_data_event_t* data = create_sock_data();
-    if (data == NULL) {
-        return;
-    }
+//
+//    struct sock_data_event_t* data = create_sock_data();
+//    if (data == NULL) {
+//        return;
+//    }
 
 //    data->sockfd = args->fd;
-    data->pid = (__u32) tgid;
-//    bpf_printk("----pid: %d\n", tgid);
+//    data->pid = tgid;
 //    bpf_get_current_comm(&data->comm, sizeof(data->comm));
 
 //    const char* buf;
 //    bpf_probe_read(&buf, sizeof(const char*), &args->buf);
 //    bpf_probe_read(data->buf, data_len, buf);
 //    data->buf_size = data_len;
-
+//
 //    char *p = data->buf;
 //    sock_data_analyze_protocol(p, data_len, data);
 //    __u64 conid = gen_tgid_fd(tgid, args->fd);
@@ -152,7 +161,7 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
 //        bpf_printk("could not found active connection, pid: %d, sockfd: %d\n", tgid, args->fd);
 //        return;
 //    }
-    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(data));
+//    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, &data, sizeof(data));
 }
 
 SEC("kretprobe/__sys_sendto")

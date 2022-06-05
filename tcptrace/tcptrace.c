@@ -82,6 +82,8 @@ int sys_connect(struct pt_regs *ctx) {
     connect_args.fd = PT_REGS_PARM1(ctx);
     connect_args.addr = (void *)PT_REGS_PARM2(ctx);
     bpf_map_update_elem(&conecting_args, &id, &connect_args, 0);
+    __u32 tgid = id >> 32;
+    bpf_printk("connect to: pid: %d, fd: %d\n", tgid, connect_args.fd);
 	return 0;
 }
 

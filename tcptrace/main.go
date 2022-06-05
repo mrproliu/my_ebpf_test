@@ -243,7 +243,7 @@ func main() {
 					fmt.Errorf("read response body error: %v\n", err)
 					continue
 				}
-				fmt.Printf("response data: %s\n", response.Body, string(body))
+				fmt.Printf("response data: %s\n", string(body))
 			}
 		}
 	}()

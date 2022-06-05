@@ -123,12 +123,12 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
 
     const char* buf;
     bpf_probe_read(&buf, sizeof(const char*), &args->buf);
-    struct data_event_t e = {};
-    bpf_probe_read(&e.data, data_len, buf);
-//    char data[MAX_DATA_SIZE_BUF];
-//    bpf_probe_read(&data, data_len, buf);
+//    struct data_event_t e = {};
+//    bpf_probe_read(&e.data, data_len, buf);
+    char data[MAX_DATA_SIZE_BUF];
+    bpf_probe_read(&data, data_len, buf);
 //
-    if (e.data[0] == 'G' && e.data[1] == 'E' && e.data[2] == 'T') {
+    if (data[0] == 'G' && data[1] == 'E' && data[2] == 'T') {
         bpf_printk("get request \n");
     } else {
         bpf_printk("unknown\n");

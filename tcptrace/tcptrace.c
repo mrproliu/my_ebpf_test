@@ -124,6 +124,10 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     struct sock_data_event_t* data_event;
     __u32 inx = 0;
     data_event = bpf_map_lookup_elem(&sock_data_event_creator_map, &inx);
+    if (data_event == NULL) {
+        bpf_printk("sock_data empty\n");
+        return;
+    }
 
     const char* buf;
     bpf_probe_read(&buf, sizeof(const char*), &args->buf);

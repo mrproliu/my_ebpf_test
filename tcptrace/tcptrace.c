@@ -115,7 +115,7 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     const char* buf;
     bpf_probe_read(&buf, sizeof(const char*), &args->buf);
     __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
-    bpf_probe_read(&data->buf, data_len, buf);
+    bpf_probe_read(&(data->buf), data_len, buf);
 
     bpf_printk("data_len: %d\n", data_len);
 

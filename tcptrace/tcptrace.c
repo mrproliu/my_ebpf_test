@@ -137,6 +137,7 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
 
 //    data->sockfd = args->fd;
     data->pid = tgid;
+    bpf_printk("----pid: %d\n", tgid);
 //    bpf_get_current_comm(&data->comm, sizeof(data->comm));
 
 //    const char* buf;

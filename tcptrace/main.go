@@ -201,7 +201,7 @@ func main() {
 			if event.MessageType == 1 {
 				request, err := http.ReadRequest(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])))
 				if err != nil {
-					fmt.Errorf("read request error: %v", err)
+					fmt.Errorf("read request error: %v\n", err)
 					continue
 				}
 				fmt.Printf("request host: %s, url: %s\n", request.Host, request.URL)

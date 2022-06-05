@@ -122,7 +122,7 @@ static __inline void send_data(struct pt_regs* ctx, __u32 tgid) {
         return;
     }
     data->pid = tgid;
-    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, &data, sizeof(struct sock_data_event_t));
+    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
 }
 static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count) {
     __u32 tgid = (__u32)(id >> 32);

@@ -116,16 +116,16 @@ struct data_event_t {
     __u32 data_len;
 };
 
-static __inline void write_Data(struct pt_regs* ctx, __u32 id) {
+static __inline void send_data(struct pt_regs* ctx, __u32 tgid) {
     struct sock_data_event_t* data = create_sock_data();
     if (data == NULL) {
         return;
     }
-    data->pid = id;
+    data->pid = tgid;
     bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
 }
 static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count) {
-    __u32 tgid = id >> 32;
+    __u32 tgid = (__u32)(id >> 32);
     if (args->buf == NULL) {
         return;
     }
@@ -136,7 +136,7 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
         return;
     }
 
-    write_Data(ctx, tgid);
+    send_data(ctx, tgid);
 //    __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
 //
 //    struct sock_data_event_t* data = create_sock_data();

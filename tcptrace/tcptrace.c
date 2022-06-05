@@ -146,12 +146,12 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
 
     char *p = data->buf;
     sock_data_analyze_protocol(p, data_len, data);
-    __u64 conid = gen_tgid_fd(tgid, args->fd);
-    struct active_connection_t* con = bpf_map_lookup_elem(&active_connection_map, &conid);
-    if (con == NULL) {
-        bpf_printk("could not found active connection, pid: %d, sockfd: %d\n", tgid, args->fd);
-        return;
-    }
+//    __u64 conid = gen_tgid_fd(tgid, args->fd);
+//    struct active_connection_t* con = bpf_map_lookup_elem(&active_connection_map, &conid);
+//    if (con == NULL) {
+//        bpf_printk("could not found active connection, pid: %d, sockfd: %d\n", tgid, args->fd);
+//        return;
+//    }
     bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, &data, sizeof(data));
 }
 

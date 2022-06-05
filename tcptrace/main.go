@@ -169,7 +169,19 @@ func main() {
 				continue
 			}
 
-			fmt.Printf("CONNECT from: %d(%s) -> %s:%d, socket fd: %d\n", event.Pid, event.Comm,
+			var opType string
+			switch event.Type {
+			case 1:
+				opType = "CONNECT"
+			case 2:
+				opType = "ACCEPT"
+			case 3:
+				opType = "CLOSE"
+			default:
+				opType = "UNKNOWN"
+			}
+
+			fmt.Printf("%s from: %d(%s) -> %s:%d, socket fd: %d\n", opType, event.Pid, event.Comm,
 				parseAddressV4(event.UpstreamAddrV4), event.UpstreamPort, event.SocketFd)
 		}
 	}()

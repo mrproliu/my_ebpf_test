@@ -54,6 +54,8 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
+	SysClose      *ebpf.ProgramSpec `ebpf:"sys_close"`
+	SysCloseRet   *ebpf.ProgramSpec `ebpf:"sys_close_ret"`
 	SysConnect    *ebpf.ProgramSpec `ebpf:"sys_connect"`
 	SysConnectRet *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
 	SysSendto     *ebpf.ProgramSpec `ebpf:"sys_sendto"`
@@ -66,6 +68,7 @@ type bpfProgramSpecs struct {
 type bpfMapSpecs struct {
 	AcceptingArgs           *ebpf.MapSpec `ebpf:"accepting_args"`
 	ActiveConnectionMap     *ebpf.MapSpec `ebpf:"active_connection_map"`
+	ClosingArgs             *ebpf.MapSpec `ebpf:"closing_args"`
 	ConectingArgs           *ebpf.MapSpec `ebpf:"conecting_args"`
 	SockDataEventCreatorMap *ebpf.MapSpec `ebpf:"sock_data_event_creator_map"`
 	SocketDataEventsQueue   *ebpf.MapSpec `ebpf:"socket_data_events_queue"`
@@ -94,6 +97,7 @@ func (o *bpfObjects) Close() error {
 type bpfMaps struct {
 	AcceptingArgs           *ebpf.Map `ebpf:"accepting_args"`
 	ActiveConnectionMap     *ebpf.Map `ebpf:"active_connection_map"`
+	ClosingArgs             *ebpf.Map `ebpf:"closing_args"`
 	ConectingArgs           *ebpf.Map `ebpf:"conecting_args"`
 	SockDataEventCreatorMap *ebpf.Map `ebpf:"sock_data_event_creator_map"`
 	SocketDataEventsQueue   *ebpf.Map `ebpf:"socket_data_events_queue"`
@@ -105,6 +109,7 @@ func (m *bpfMaps) Close() error {
 	return _BpfClose(
 		m.AcceptingArgs,
 		m.ActiveConnectionMap,
+		m.ClosingArgs,
 		m.ConectingArgs,
 		m.SockDataEventCreatorMap,
 		m.SocketDataEventsQueue,
@@ -117,6 +122,8 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
+	SysClose      *ebpf.Program `ebpf:"sys_close"`
+	SysCloseRet   *ebpf.Program `ebpf:"sys_close_ret"`
 	SysConnect    *ebpf.Program `ebpf:"sys_connect"`
 	SysConnectRet *ebpf.Program `ebpf:"sys_connect_ret"`
 	SysSendto     *ebpf.Program `ebpf:"sys_sendto"`
@@ -125,6 +132,8 @@ type bpfPrograms struct {
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
+		p.SysClose,
+		p.SysCloseRet,
 		p.SysConnect,
 		p.SysConnectRet,
 		p.SysSendto,

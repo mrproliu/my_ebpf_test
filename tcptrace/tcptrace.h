@@ -126,3 +126,14 @@ static __inline struct sock_data_event_t* create_sock_data() {
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
 } socket_data_events_queue SEC(".maps");
+
+// syscall:close
+struct sock_close_args_t {
+    __u32 fd;
+};
+struct {
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries, 10000);
+	__type(key, __u64);
+	__type(value, struct sock_close_args_t);
+} closing_args SEC(".maps");

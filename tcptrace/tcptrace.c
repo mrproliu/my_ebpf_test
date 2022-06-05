@@ -27,6 +27,24 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 		val;                                                           \
 	})
 
+static __inline void submit_close_connection(struct pt_regs* ctx, __u32 tgid, __u32 fd) {
+    __u64 conid = gen_tgid_fd(tgid, fd);
+    struct active_connection_t* con = bpf_map_lookup_elem(&active_connection_map, &conid);
+    if (con == NULL) {
+        bpf_printk("could not found active connection when close sock, pid: %d, sockfd: %d\n", tgid, fd);
+        return;
+    }
+    // event send
+    struct sock_opts_event opts_event = {};
+    opts_event.type = SOCKET_OPTS_TYPE_CLOSE;
+    opts_event.pid = tgid;
+    bpf_get_current_comm(&opts_event.comm, sizeof(opts_event.comm));
+    opts_event.sockfd = fd;
+    bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));
+
+    bpf_map_delete_elem(&active_connection_map, &conid);
+}
+
 static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type, __u32 tgid, __u32 fd,
                                             struct sockaddr* addr, const struct socket* socket) {
     // event send
@@ -165,6 +183,45 @@ int sys_sendto_ret(struct pt_regs* ctx) {
     data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args) {
         process_write_data(ctx, id, data_args, bytes_count);
+    }
+
+    bpf_map_delete_elem(&writing_args, &id);
+    return 0;
+}
+
+SEC("kprobe/__sys_close")
+int sys_close(struct pt_regs* ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+
+    struct sock_close_args_t close_args = {};
+    close_args.fd = PT_REGS_PARM1(ctx);
+    bpf_map_update_elem(&closing_args, &id, &close_args, 0);
+    return 0;
+}
+
+
+static __inline void process_close_sock(struct pt_regs* ctx, __u64 id, struct sock_close_args_t *args) {
+    __u32 tgid = (__u32)(id >> 32);
+    int ret = PT_REGS_RC(ctx);
+    if (ret < 0) {
+        return;
+    }
+    if (args->fd < 0) {
+        return;
+    }
+
+    submit_close_connection(ctx, tgid, args->fd);
+}
+
+
+SEC("kretprobe/__sys_close")
+int sys_close_ret(struct pt_regs* ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+    struct sock_close_args_t *close_args;
+
+    close_args = bpf_map_lookup_elem(&closing_args, &id);
+    if (close_args) {
+        process_close_sock(ctx, id, close_args);
     }
 
     bpf_map_delete_elem(&writing_args, &id);

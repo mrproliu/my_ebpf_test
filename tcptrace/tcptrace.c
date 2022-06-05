@@ -58,7 +58,6 @@ static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type,
     con.downstream_port = opts_event.downstream_port;
     __u64 conid = gen_tgid_fd(tgid, fd);
     bpf_map_update_elem(&active_connection_map, &conid, &con, 0);
-    bpf_printk("save connection: pid: %d, fd: %d\n", tgid, fd);
 }
 
 static __inline void process_connect(struct pt_regs* ctx, __u64 id, struct connect_args_t *connect_args) {

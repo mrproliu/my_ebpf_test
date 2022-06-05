@@ -75,7 +75,7 @@ struct {
 	__uint(type, BPF_MAP_TYPE_PERCPU_HASH);
 	__uint(max_entries, 1);
 	__type(key, __u32);
-	__type(value, struct accept_sock_args_t);
+	__type(value, struct sock_data_event_t);
 } sock_data_event_creator_map SEC(".maps");
 static __inline struct sock_data_event_t *create_sock_data() {
     struct sock_data_event_t *data_event;

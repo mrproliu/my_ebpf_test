@@ -132,7 +132,7 @@ int sys_sendto(struct pt_regs* ctx) {
     return 0;
 }
 
-static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count) {
+static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count, __u32 data_direction) {
     __u32 tgid = (__u32)(id >> 32);
     if (args->buf == NULL) {
         return;
@@ -152,6 +152,7 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
 
     data->sockfd = args->fd;
     data->pid = tgid;
+    data->data_direction = data_direction;
     bpf_get_current_comm(&data->comm, sizeof(data->comm));
 
     const char* buf;
@@ -177,7 +178,7 @@ int sys_sendto_ret(struct pt_regs* ctx) {
 
     data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args) {
-        process_write_data(ctx, id, data_args, bytes_count);
+        process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_EGRESS);
     }
 
     bpf_map_delete_elem(&writing_args, &id);
@@ -245,7 +246,7 @@ int sys_recvfrom_ret(struct pt_regs* ctx) {
 
     data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args) {
-        process_write_data(ctx, id, data_args, bytes_count);
+        process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_INGRESS);
     }
 
     bpf_map_delete_elem(&writing_args, &id);

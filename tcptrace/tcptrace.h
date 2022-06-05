@@ -100,6 +100,8 @@ struct {
 } writing_args SEC(".maps");
 
 // socket write or receive data event, communicate with user space
+#define SOCK_DATA_DIRECTION_INGRESS 1 //receive from
+#define SOCK_DATA_DIRECTION_EGRESS 2  //write to
 struct sock_data_event_t {
     __u32 pid;
     char comm[128];
@@ -108,6 +110,7 @@ struct sock_data_event_t {
     __u32 buf_size;
     __u32 protocol_type;
     __u32 message_type;
+    __u32 data_direction;
 };
 
 struct {

@@ -100,13 +100,13 @@ struct {
 
 // socket write or receive data event, communicate with user space
 struct sock_data_event_t {
-    __u32 sockfed;
     __u32 pid;
     char comm[128];
+    __u32 sockfd;
     char buf[MAX_DATA_SIZE_BUF];
+    __u32 buf_size;
     __u32 protocol_type;
     __u32 message_type;
-    __u32 buf_size;
 };
 
 struct {
@@ -123,3 +123,6 @@ static __inline struct sock_data_event_t* create_sock_data() {
     }
     return event;
 }
+struct {
+	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+} socket_data_events_queue SEC(".maps");

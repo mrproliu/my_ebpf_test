@@ -68,6 +68,7 @@ type bpfMapSpecs struct {
 	ActiveConnectionMap     *ebpf.MapSpec `ebpf:"active_connection_map"`
 	ConectingArgs           *ebpf.MapSpec `ebpf:"conecting_args"`
 	SockDataEventCreatorMap *ebpf.MapSpec `ebpf:"sock_data_event_creator_map"`
+	SocketDataEventsQueue   *ebpf.MapSpec `ebpf:"socket_data_events_queue"`
 	SocketOptsEventsQueue   *ebpf.MapSpec `ebpf:"socket_opts_events_queue"`
 	WritingArgs             *ebpf.MapSpec `ebpf:"writing_args"`
 }
@@ -95,6 +96,7 @@ type bpfMaps struct {
 	ActiveConnectionMap     *ebpf.Map `ebpf:"active_connection_map"`
 	ConectingArgs           *ebpf.Map `ebpf:"conecting_args"`
 	SockDataEventCreatorMap *ebpf.Map `ebpf:"sock_data_event_creator_map"`
+	SocketDataEventsQueue   *ebpf.Map `ebpf:"socket_data_events_queue"`
 	SocketOptsEventsQueue   *ebpf.Map `ebpf:"socket_opts_events_queue"`
 	WritingArgs             *ebpf.Map `ebpf:"writing_args"`
 }
@@ -105,6 +107,7 @@ func (m *bpfMaps) Close() error {
 		m.ActiveConnectionMap,
 		m.ConectingArgs,
 		m.SockDataEventCreatorMap,
+		m.SocketDataEventsQueue,
 		m.SocketOptsEventsQueue,
 		m.WritingArgs,
 	)

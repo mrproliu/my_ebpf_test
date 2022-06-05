@@ -37,6 +37,16 @@ type SocketOptsEvent struct {
 	DownStreamPort   uint16
 }
 
+type SocketDataEvent struct {
+	Pid          uint32
+	Comm         [128]byte
+	SocketFd     uint32
+	Buffer       [1024 * 3]byte
+	BufferSize   uint32
+	ProtocolType uint32
+	MessageType  uint32
+}
+
 type LinkFunc func(symbol string, prog *ebpf.Program) (link.Link, error)
 type TreacepointFunc func(symbol string, prog *ebpf.Program) (link.Link, error)
 
@@ -123,40 +133,73 @@ func main() {
 	}
 	log.Printf("start probes success...")
 
-	rd, err := perf.NewReader(objs.SocketOptsEventsQueue, os.Getpagesize())
+	sockOpsRd, err := perf.NewReader(objs.SocketOptsEventsQueue, os.Getpagesize())
 	if err != nil {
-		log.Fatalf("creating perf event reader: %s", err)
+		log.Fatalf("creating perf event sock ops reader: %s", err)
 	}
+	defer sockOpsRd.Close()
+	sockDataRd, err := perf.NewReader(objs.SocketDataEventsQueue, os.Getpagesize())
+	if err != nil {
+		log.Fatalf("creating perf event sock data reader: %s", err)
+	}
+	defer sockDataRd.Close()
 
 	go func() {
-		<-stopper
-		log.Println("Received signal, exiting program..")
-		rd.Close()
+		var event SocketOptsEvent
+		for {
+			record, err := sockOpsRd.Read()
+			if err != nil {
+				if errors.Is(err, perf.ErrClosed) {
+					return
+				}
+				log.Printf("reading from perf event reader: %s", err)
+				continue
+			}
+
+			if record.LostSamples != 0 {
+				log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
+				continue
+			}
+
+			// Parse the perf event entry into an Event structure.
+			if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
+				log.Printf("parsing perf event: %s", err)
+				continue
+			}
+
+			fmt.Printf("CONNECT from: %d(%s) -> %s:%d, socket fd: %d\n", event.Pid, event.Comm,
+				parseAddressV4(event.UpstreamAddrV4), event.UpstreamPort, event.SocketFd)
+		}
 	}()
 
-	var event SocketOptsEvent
-	for {
-		record, err := rd.Read()
-		if err != nil {
-			if errors.Is(err, perf.ErrClosed) {
-				return
+	go func() {
+		var event SocketDataEvent
+		for {
+			record, err := sockDataRd.Read()
+			if err != nil {
+				if errors.Is(err, perf.ErrClosed) {
+					return
+				}
+				log.Printf("reading from perf event reader: %s", err)
+				continue
 			}
-			log.Printf("reading from perf event reader: %s", err)
-			continue
-		}
 
-		if record.LostSamples != 0 {
-			log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
-			continue
-		}
+			if record.LostSamples != 0 {
+				log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
+				continue
+			}
 
-		// Parse the perf event entry into an Event structure.
-		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
-			log.Printf("parsing perf event: %s", err)
-			continue
-		}
+			// Parse the perf event entry into an Event structure.
+			if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
+				log.Printf("parsing perf event: %s", err)
+				continue
+			}
 
-		fmt.Printf("CONNECT from: %d(%s) -> %s:%d, socket fd: %d\n", event.Pid, event.Comm,
-			parseAddressV4(event.UpstreamAddrV4), event.UpstreamPort, event.SocketFd)
-	}
+			fmt.Printf("DATA send from: %d(%s), protcol: %d, message: %d, socket fd: %d\n", event.Pid, event.Comm,
+				event.ProtocolType, event.MessageType, event.SocketFd)
+		}
+	}()
+
+	<-stopper
+	log.Println("Received signal, exiting program..")
 }

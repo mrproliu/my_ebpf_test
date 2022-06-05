@@ -1,4 +1,4 @@
-#define MAX_DATA_SIZE_BUF 100
+#define MAX_DATA_SIZE_BUF 1024 * 3
 
 // syscall:connect
 struct connect_args_t {
@@ -81,9 +81,9 @@ static __inline struct sock_data_event_t* create_sock_data() {
     __u32 inx = 0;
     struct sock_data_event_t* data_event = bpf_map_lookup_elem(&sock_data_event_creator_map, &inx);
     if (data_event == NULL) {
-        struct sock_data_event_t e = {};
-        bpf_map_update_elem(&sock_data_event_creator_map, &inx, &e, BPF_ANY);
-        return bpf_map_lookup_elem(&sock_data_event_creator_map, &inx);
+        bpf_printk("data empty\n");
+        return NULL;
     }
+    bpf_printk("data exists\n");
     return data_event;
 }

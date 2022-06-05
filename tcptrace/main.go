@@ -190,6 +190,7 @@ func main() {
 			}
 
 			// Parse the perf event entry into an Event structure.
+			fmt.Printf("total data: %v\n", record.RawSample)
 			if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
 				log.Printf("parsing perf event: %s", err)
 				continue

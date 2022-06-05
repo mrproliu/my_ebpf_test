@@ -128,8 +128,7 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
         return;
     }
 
-//    send_data(ctx, tgid);
-//    __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
+    __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
 //
     struct sock_data_event_t* data = create_sock_data();
     if (data == NULL) {
@@ -140,9 +139,9 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     data->pid = tgid;
     bpf_get_current_comm(&data->comm, sizeof(data->comm));
 
-//    const char* buf;
-//    bpf_probe_read(&buf, sizeof(const char*), &args->buf);
-//    bpf_probe_read(data->buf, data_len, buf);
+    const char* buf;
+    bpf_probe_read(&buf, sizeof(const char*), &args->buf);
+    bpf_probe_read(data->buf, data_len, buf);
 //    data->buf_size = data_len;
 //
 //    char *p = data->buf;

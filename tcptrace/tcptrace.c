@@ -116,14 +116,14 @@ struct data_event_t {
     __u32 data_len;
 };
 
-static __inline void send_data(struct pt_regs* ctx, __u32 tgid) {
-    struct sock_data_event_t* data = create_sock_data();
-    if (data == NULL) {
-        return;
-    }
-    data->pid = tgid;
-    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
-}
+//static __inline void send_data(struct pt_regs* ctx, __u32 tgid) {
+//    struct sock_data_event_t* data = create_sock_data();
+//    if (data == NULL) {
+//        return;
+//    }
+//    data->pid = tgid;
+//    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
+//}
 static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count) {
     __u32 tgid = (__u32)(id >> 32);
     if (args->buf == NULL) {
@@ -136,16 +136,16 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
         return;
     }
 
-    send_data(ctx, tgid);
+//    send_data(ctx, tgid);
 //    __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
 //
-//    struct sock_data_event_t* data = create_sock_data();
-//    if (data == NULL) {
-//        return;
-//    }
+    struct sock_data_event_t* data = create_sock_data();
+    if (data == NULL) {
+        return;
+    }
 
 //    data->sockfd = args->fd;
-//    data->pid = tgid;
+    data->pid = tgid;
 //    bpf_get_current_comm(&data->comm, sizeof(data->comm));
 
 //    const char* buf;
@@ -161,7 +161,7 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
 //        bpf_printk("could not found active connection, pid: %d, sockfd: %d\n", tgid, args->fd);
 //        return;
 //    }
-//    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, &data, sizeof(data));
+    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
 }
 
 SEC("kretprobe/__sys_sendto")

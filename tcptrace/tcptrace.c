@@ -118,14 +118,14 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
     bpf_printk("data_len: %d\n", data_len);
 
-    char data[MAX_DATA_SIZE_BUF];
-    bpf_probe_read(&data, data_len, buf);
-
-    if (data[0] == 'G' && data[1] == 'E' && data[2] == 'T') {
-        bpf_printk("get request \n");
-    } else {
-        bpf_printk("unknown\n");
-    }
+//    char data[MAX_DATA_SIZE_BUF];
+//    bpf_probe_read(&data, data_len, buf);
+//
+//    if (data[0] == 'G' && data[1] == 'E' && data[2] == 'T') {
+//        bpf_printk("get request \n");
+//    } else {
+//        bpf_printk("unknown\n");
+//    }
 }
 
 SEC("kretprobe/__sys_sendto")

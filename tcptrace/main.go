@@ -38,8 +38,8 @@ type SocketOptsEvent struct {
 }
 
 type SocketDataEvent struct {
-	Pid  uint32
-	Comm [128]byte
+	Pid uint32
+	//Comm [128]byte
 	//SocketFd     uint32
 	//Buffer       [1024 * 3]byte
 	//BufferSize   uint32
@@ -196,7 +196,7 @@ func main() {
 				continue
 			}
 
-			fmt.Printf("DATA send from: %d(%s), protcol: %d, message: %d, socket fd: %d\n", event.Pid, event.Comm)
+			fmt.Printf("DATA send from: %d(%s), protcol: %d, message: %d, socket fd: %d\n", event.Pid)
 		}
 	}()
 

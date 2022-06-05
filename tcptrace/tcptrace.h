@@ -101,7 +101,7 @@ struct {
 // socket write or receive data event, communicate with user space
 struct sock_data_event_t {
     __u32 pid;
-    char comm[128];
+//    char comm[128];
 //    __u32 sockfd;
 //    char buf[MAX_DATA_SIZE_BUF];
 //    __u32 buf_size;

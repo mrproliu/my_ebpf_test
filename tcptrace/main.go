@@ -161,7 +161,7 @@ func main() {
 			}
 
 			if record.LostSamples != 0 {
-				log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
+				log.Printf("opts perf event ring buffer full, dropped %d samples", record.LostSamples)
 				continue
 			}
 
@@ -201,7 +201,7 @@ func main() {
 			}
 
 			if record.LostSamples != 0 {
-				log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
+				log.Printf("data perf event ring buffer full, dropped %d samples", record.LostSamples)
 				continue
 			}
 

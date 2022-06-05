@@ -122,6 +122,8 @@ func main() {
 	linker.AddLink("__sys_connect", link.Kretprobe, objs.SysConnectRet)
 	linker.AddLink("__sys_sendto", link.Kprobe, objs.SysSendto)
 	linker.AddLink("__sys_sendto", link.Kretprobe, objs.SysSendtoRet)
+	linker.AddLink("__sys_recvfrom", link.Kprobe, objs.SysRecvfrom)
+	linker.AddLink("__sys_recvfrom", link.Kretprobe, objs.SysRecvfromRet)
 	linker.AddLink("close_fd", link.Kprobe, objs.SysClose)
 	linker.AddLink("close_fd", link.Kretprobe, objs.SysCloseRet)
 	//linker.AddTracepoint("syscalls", "sys_exit_connect", objs.SysConnectRet)

@@ -85,6 +85,7 @@ struct {
 
 // syscall:sendto
 #define SOCK_DATA_FUNC_SENDTO 1
+#define SOCK_DATA_FUNC_RECVFROM 2
 struct sock_data_args_t {
     __u32 func;
     __u32 fd;

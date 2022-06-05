@@ -132,11 +132,6 @@ int sys_sendto(struct pt_regs* ctx) {
     return 0;
 }
 
-struct data_event_t {
-    char data[MAX_DATA_SIZE_BUF];
-    __u32 data_len;
-};
-
 static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count) {
     __u32 tgid = (__u32)(id >> 32);
     if (args->buf == NULL) {
@@ -215,7 +210,6 @@ static __inline void process_close_sock(struct pt_regs* ctx, __u64 id, struct so
     submit_close_connection(ctx, tgid, args->fd);
 }
 
-
 SEC("kretprobe/__sys_close")
 int sys_close_ret(struct pt_regs* ctx) {
     __u64 id = bpf_get_current_pid_tgid();
@@ -229,6 +223,35 @@ int sys_close_ret(struct pt_regs* ctx) {
     bpf_map_delete_elem(&writing_args, &id);
     return 0;
 }
+
+
+SEC("kprobe/__sys_recvfrom")
+int sys_recvfrom(struct pt_regs* ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+
+    struct sock_data_args_t data_args = {};
+    data_args.func = SOCK_DATA_FUNC_RECVFROM;
+    data_args.fd = PT_REGS_PARM1(ctx);
+    data_args.buf = (void *)PT_REGS_PARM2(ctx);
+    bpf_map_update_elem(&writing_args, &id, &data_args, 0);
+    return 0;
+}
+
+SEC("kretprobe/__sys_recvfrom")
+int sys_recvfrom_ret(struct pt_regs* ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+    struct sock_data_args_t *data_args;
+    ssize_t bytes_count = PT_REGS_RC(ctx);
+
+    data_args = bpf_map_lookup_elem(&writing_args, &id);
+    if (data_args) {
+        process_write_data(ctx, id, data_args, bytes_count);
+    }
+
+    bpf_map_delete_elem(&writing_args, &id);
+    return 0;
+}
+
 
 //
 //SEC("tracepoint/syscalls/sys_enter_writev")

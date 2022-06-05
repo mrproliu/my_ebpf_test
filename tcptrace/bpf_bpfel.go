@@ -54,12 +54,14 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
-	SysClose      *ebpf.ProgramSpec `ebpf:"sys_close"`
-	SysCloseRet   *ebpf.ProgramSpec `ebpf:"sys_close_ret"`
-	SysConnect    *ebpf.ProgramSpec `ebpf:"sys_connect"`
-	SysConnectRet *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
-	SysSendto     *ebpf.ProgramSpec `ebpf:"sys_sendto"`
-	SysSendtoRet  *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
+	SysClose       *ebpf.ProgramSpec `ebpf:"sys_close"`
+	SysCloseRet    *ebpf.ProgramSpec `ebpf:"sys_close_ret"`
+	SysConnect     *ebpf.ProgramSpec `ebpf:"sys_connect"`
+	SysConnectRet  *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
+	SysRecvfrom    *ebpf.ProgramSpec `ebpf:"sys_recvfrom"`
+	SysRecvfromRet *ebpf.ProgramSpec `ebpf:"sys_recvfrom_ret"`
+	SysSendto      *ebpf.ProgramSpec `ebpf:"sys_sendto"`
+	SysSendtoRet   *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
@@ -122,12 +124,14 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
-	SysClose      *ebpf.Program `ebpf:"sys_close"`
-	SysCloseRet   *ebpf.Program `ebpf:"sys_close_ret"`
-	SysConnect    *ebpf.Program `ebpf:"sys_connect"`
-	SysConnectRet *ebpf.Program `ebpf:"sys_connect_ret"`
-	SysSendto     *ebpf.Program `ebpf:"sys_sendto"`
-	SysSendtoRet  *ebpf.Program `ebpf:"sys_sendto_ret"`
+	SysClose       *ebpf.Program `ebpf:"sys_close"`
+	SysCloseRet    *ebpf.Program `ebpf:"sys_close_ret"`
+	SysConnect     *ebpf.Program `ebpf:"sys_connect"`
+	SysConnectRet  *ebpf.Program `ebpf:"sys_connect_ret"`
+	SysRecvfrom    *ebpf.Program `ebpf:"sys_recvfrom"`
+	SysRecvfromRet *ebpf.Program `ebpf:"sys_recvfrom_ret"`
+	SysSendto      *ebpf.Program `ebpf:"sys_sendto"`
+	SysSendtoRet   *ebpf.Program `ebpf:"sys_sendto_ret"`
 }
 
 func (p *bpfPrograms) Close() error {
@@ -136,6 +140,8 @@ func (p *bpfPrograms) Close() error {
 		p.SysCloseRet,
 		p.SysConnect,
 		p.SysConnectRet,
+		p.SysRecvfrom,
+		p.SysRecvfromRet,
 		p.SysSendto,
 		p.SysSendtoRet,
 	)

@@ -117,7 +117,7 @@ struct data_event_t {
 };
 
 static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count) {
-    __u32 tgid = id >> 32;
+//    __u32 tgid = (__u32)(id >> 32);
     if (args->buf == NULL) {
         return;
     }
@@ -136,9 +136,9 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     }
 
 //    data->sockfd = args->fd;
-    data->pid = tgid;
-    bpf_printk("----pid: %d\n", tgid);
-//    bpf_get_current_comm(&data->comm, sizeof(data->comm));
+//    data->pid = tgid;
+//    bpf_printk("----pid: %d\n", tgid);
+    bpf_get_current_comm(&data->comm, sizeof(data->comm));
 
 //    const char* buf;
 //    bpf_probe_read(&buf, sizeof(const char*), &args->buf);

@@ -77,9 +77,11 @@ struct {
 	__type(key, __u32);
 	__type(value, struct sock_data_event_t);
 } sock_data_event_creator_map SEC(".maps");
-static __inline struct sock_data_event_t *create_sock_data() {
-    struct sock_data_event_t *data_event;
+static __inline struct sock_data_event_t* create_sock_data() {
     __u32 inx = 0;
-    data_event = bpf_map_lookup_elem(&sock_data_event_creator_map, &inx);
+    struct sock_data_event_t* data_event = bpf_map_lookup_elem(&sock_data_event_creator_map, &inx);
+    if (data_event == NULL) {
+        return NULL;
+    }
     return data_event;
 }

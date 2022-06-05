@@ -121,10 +121,8 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
     bpf_printk("data_len: %d\n", data_len);
 
-    struct sock_data_event_t* data_event;
-    __u32 inx = 0;
-    data_event = bpf_map_lookup_elem(&sock_data_event_creator_map, &inx);
-    if (data_event == NULL) {
+    struct sock_data_event_t* data = create_sock_data();
+    if (data == NULL) {
         bpf_printk("sock_data empty\n");
         return;
     }

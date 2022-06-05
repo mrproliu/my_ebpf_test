@@ -70,7 +70,7 @@ struct {
 
 // socket write or receive data event, communicate with user space
 struct sock_data_event_t {
-    char buf[MAX_DATA_SIZE_BUF];
+    char *buf;
     __u32 protocol_type;
     __u32 message_type;
 };

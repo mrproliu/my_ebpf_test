@@ -133,6 +133,7 @@ struct {
 // syscall:accept
 struct accept_args_t {
     __u32 fd;
+    struct sockaddr* addr;
     struct socket* socket;
 };
 struct {

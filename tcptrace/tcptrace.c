@@ -54,13 +54,27 @@ static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type,
     opts_event.pid = tgid;
     bpf_get_current_comm(&opts_event.comm, sizeof(opts_event.comm));
     opts_event.sockfd = fd;
+    // TODO support ipv4 for now
     if (addr != NULL) {
-        // TODO support ipv4 for now
         struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
         bpf_probe_read(&opts_event.upstream_addr_v4, sizeof(opts_event.upstream_addr_v4), &daddr->sin_addr.s_addr);
         bpf_probe_read(&opts_event.upstream_port, sizeof(opts_event.upstream_port), &daddr->sin_port);
         opts_event.upstream_port = bpf_ntohs(opts_event.upstream_port);
     }
+    if (socket != NULL) {
+        // only get from accept function(server side)
+        struct sock* s;
+        BPF_CORE_READ_INTO(&s, socket, sk);
+
+        BPF_CORE_READ_INTO(&opts_event.downstream_port, s, __sk_common.skc_num);
+        BPF_CORE_READ_INTO(&opts_event.downstream_addr_v4, s, __sk_common.skc_rcv_saddr);
+        opts_event.downstream_port = bpf_ntohs(opts_event.downstream_port);
+
+        BPF_CORE_READ_INTO(&opts_event.upstream_port, s, __sk_common.skc_dport);
+        BPF_CORE_READ_INTO(&opts_event.upstream_addr_v4, s, __sk_common.skc_daddr);
+        opts_event.upstream_port = bpf_ntohs(opts_event.upstream_port);
+    }
+
     bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));
 
     // active connection save
@@ -268,21 +282,20 @@ SEC("kprobe/__sys_accpet")
 int sys_accept(struct pt_regs *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
     struct accept_args_t sock = {};
-    sock.fd = PT_REGS_PARM1(ctx);
+    sock.addr = (void *)PT_REGS_PARM2(ctx);
     bpf_map_update_elem(&accepting_args, &id, &sock, 0);
     return 0;
 }
 
-struct key_t {
-    __u32 from_addr_v4;
-    __u32 dist_addr_v4;
-    __u8  from_addr_v6[16];
-    __u8  dist_addr_v6[16];
-    __u16 from_port;
-    __u16 dist_port;
-    __u16 ip_ver;
-    char comm[128];
-};
+static __inline void process_accept(struct pt_regs* ctx, __u64 id, struct accept_args_t *accept_args) {
+    int fd = PT_REGS_RC(ctx);
+    if (fd < 0) {
+        return;
+    }
+    __u32 tgid = id >> 32;
+
+    submit_new_connection(ctx, SOCKET_OPTS_TYPE_ACCEPT, tgid, fd, accept_args->addr, accept_args->socket);
+}
 
 
 SEC("kretprobe/__sys_accpet")
@@ -291,22 +304,9 @@ int sys_accept_ret(struct pt_regs *ctx) {
     struct accept_args_t *accept_sock;
     accept_sock = bpf_map_lookup_elem(&accepting_args, &id);
     if (accept_sock) {
-        int fd = PT_REGS_RC(ctx);
-        __u32 fromfd = accept_sock->fd;
-        struct socket* sot = accept_sock->socket;
-        struct sock* s;
-        BPF_CORE_READ_INTO(&s, sot, sk);
-        struct key_t key = {};
-        BPF_CORE_READ_INTO(&key.from_port, s, __sk_common.skc_num);
-        BPF_CORE_READ_INTO(&key.dist_port, s, __sk_common.skc_dport);
-        BPF_CORE_READ_INTO(&key.from_addr_v4, s, __sk_common.skc_rcv_saddr);
-        BPF_CORE_READ_INTO(&key.dist_addr_v4, s, __sk_common.skc_daddr);
-
-        bpf_printk("socket accept ret: %d, from fd: %d\n", fd, fromfd);
-        // no need to transform the port
-        bpf_printk("socket accept ret: from sock: %d:%d\n", key.dist_addr_v4, key.dist_port);
-        bpf_printk("socket accept ret: dist sock: %d:%d\n", key.from_addr_v4, key.from_port);
+        process_accept(ctx, id, accept_sock);
     }
+    bpf_map_delete_elem(&accepting_args, &id);
     return 0;
 }
 

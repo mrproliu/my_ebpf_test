@@ -222,7 +222,25 @@ func main() {
 			default:
 				direction = "UNKNOWN"
 			}
-			fmt.Printf("%s: %d(%s), protcol: %d, message: %d, socket fd: %d, size: %d\n", direction, event.Pid, event.Comm, event.ProtocolType, event.MessageType, event.SocketFd, event.BufferSize)
+
+			var message string
+			switch event.MessageType {
+			case 1:
+				message = "REQUEST"
+			case 2:
+				message = "RESPONSE"
+			default:
+				message = "UNKNOWN"
+			}
+
+			var protocol string
+			switch event.ProtocolType {
+			case 1:
+				protocol = "HTTP"
+			default:
+				protocol = "UNKNOWN"
+			}
+			fmt.Printf("%s: %d(%s), protcol: %d, message: %d, socket fd: %d, size: %d\n", direction, event.Pid, event.Comm, protocol, message, event.SocketFd, event.BufferSize)
 			if event.MessageType == 1 {
 				request, err := http.ReadRequest(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])))
 				if err != nil {

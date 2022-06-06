@@ -47,7 +47,7 @@ static __inline void submit_close_connection(struct pt_regs* ctx, __u32 tgid, __
 }
 
 static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type, __u32 tgid, __u32 fd,
-                                            struct sockaddr* addr, const struct sock* s) {
+                                            struct sockaddr* addr, const struct socket* socket) {
     // event send
     struct sock_opts_event opts_event = {};
     opts_event.type = from_type;
@@ -61,8 +61,11 @@ static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 fro
         bpf_probe_read(&opts_event.upstream_port, sizeof(opts_event.upstream_port), &daddr->sin_port);
         opts_event.upstream_port = bpf_ntohs(opts_event.upstream_port);
     }
-    if (s != NULL) {
+    if (socket != NULL) {
         // only get from accept function(server side)
+        struct sock* s;
+        BPF_CORE_READ_INTO(&s, socket, sk);
+
         BPF_CORE_READ_INTO(&opts_event.upstream_port, s, __sk_common.skc_num);
         BPF_CORE_READ_INTO(&opts_event.upstream_addr_v4, s, __sk_common.skc_rcv_saddr);
 
@@ -100,7 +103,9 @@ static __inline void process_connect(struct pt_regs* ctx, __u64 id, struct conne
     }
     __u32 tgid = id >> 32;
 
-    submit_new_connection(ctx, SOCKET_OPTS_TYPE_CONNECT, tgid, connect_args->fd, connect_args->addr, connect_args->sock);
+    struct sock *sock = connect_args->sock;
+    struct socket *s = _(sock->sk_socket);
+    submit_new_connection(ctx, SOCKET_OPTS_TYPE_CONNECT, tgid, connect_args->fd, connect_args->addr, s);
 }
 
 
@@ -325,12 +330,7 @@ static __inline void process_accept(struct pt_regs* ctx, __u64 id, struct accept
     }
     __u32 tgid = id >> 32;
 
-    struct socket *socket = accept_args->socket;
-    struct sock* s;
-    if (socket != NULL) {
-        BPF_CORE_READ_INTO(&s, socket, sk);
-    }
-    submit_new_connection(ctx, SOCKET_OPTS_TYPE_ACCEPT, tgid, fd, accept_args->addr, s);
+    submit_new_connection(ctx, SOCKET_OPTS_TYPE_ACCEPT, tgid, fd, accept_args->addr, accept_args->socket);
 }
 
 

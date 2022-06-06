@@ -151,8 +151,8 @@ int sys_sendto(struct pt_regs* ctx) {
     data_args.fd = PT_REGS_PARM1(ctx);
     data_args.buf = (void *)PT_REGS_PARM2(ctx);
     bpf_map_update_elem(&writing_args, &id, &data_args, 0);
-    __u32 tgid = id >> 32;
-    bpf_printk("send to: pid: %d, fd: %d\n", tgid, data_args.fd);
+//    __u32 tgid = id >> 32;
+//    bpf_printk("send to: pid: %d, fd: %d\n", tgid, data_args.fd);
     return 0;
 }
 
@@ -189,7 +189,7 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     __u64 conid = gen_tgid_fd(tgid, args->fd);
     struct active_connection_t* con = bpf_map_lookup_elem(&active_connection_map, &conid);
     if (con == NULL) {
-        bpf_printk("could not found active connection, pid: %d, sockfd: %d\n", tgid, args->fd);
+//        bpf_printk("could not found active connection, pid: %d, sockfd: %d\n", tgid, args->fd);
     }
     bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
 }

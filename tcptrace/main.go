@@ -133,7 +133,9 @@ func main() {
 	//linker.AddTracepoint("syscalls", "sys_exit_connect", objs.SysConnectRet)
 	//linker.AddTracepoint("syscalls", "sys_enter_sendto", objs.SyscallProbeEntryWrite)
 	linker.AddLink("sock_alloc", link.Kretprobe, objs.SockAllocRet)
-	linker.AddLink("__inet_stream_connect", link.Kprobe, objs.SockFromFileRet)
+	//linker.AddLink("__inet_stream_connect", link.Kprobe, objs.SockFromFileRet)
+	linker.AddLink("tcp_v4_connect", link.Kprobe, objs.SockFromFileRet)
+
 	////linker.AddTracepoint("syscalls", "sys_enter_writev", objs.SyscallProbeEntryWritev)
 	defer linker.Close()
 	err := linker.HasError()

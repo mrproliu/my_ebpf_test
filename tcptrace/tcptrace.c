@@ -73,6 +73,7 @@ static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type,
         BPF_CORE_READ_INTO(&opts_event.downstream_addr_v4, s, __sk_common.skc_daddr);
         opts_event.upstream_port = bpf_ntohs(opts_event.upstream_port);
         opts_event.downstream_port = bpf_ntohs(opts_event.downstream_port);
+        bpf_printk("accepting upstream: %d, downstream: %d\n", opts_event.upstream_port, opts_event.downstream_port);
     }
 
     bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));

@@ -17,6 +17,7 @@
 #include <bpf/bpf_core_read.h>
 #include "tcptrace.h"
 #include "protocol_analyze.h"
+#include "socket.h"
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
@@ -262,55 +263,62 @@ int sys_recvfrom_ret(struct pt_regs* ctx) {
 //    bpf_printk("heelo writev: %d->%d\n", fd, len);
 //    return 0;
 //}
-//
-//SEC("kprobe/__sys_accpet")
-//int sys_accept(struct pt_regs *ctx) {
-//    int fd = PT_REGS_PARM1(ctx);
-//    struct sockaddr *addr = (void *)PT_REGS_PARM2(ctx);
-//    struct sockinfo s = get_sock_info(addr);
-//    bpf_printk("socket accept: fd: %d\n", fd);
-//    bpf_printk("socket accept: socket: %d->%d:%d\n", s.family, s.addr, s.port);
-//    __u64 pid_tgid = bpf_get_current_pid_tgid();
-//    struct accept_sock_t sock = {};
-//    sock.fd = fd;
-//    bpf_map_update_elem(&accept_socks, &pid_tgid, &sock, 0);
-//    return 0;
-//}
-//
-//SEC("kretprobe/__sys_accpet")
-//int sys_accept_ret(struct pt_regs *ctx) {
-//    __u64 pid_tgid = bpf_get_current_pid_tgid();
-//    struct accept_sock_t *accept_sock;
-//    accept_sock = bpf_map_lookup_elem(&accept_socks, &pid_tgid);
-//    if (accept_sock) {
-//        int fd = PT_REGS_RC(ctx);
-//        __u32 fromfd = accept_sock->fd;
-//        struct socket* sot = accept_sock->socket;
-//        struct sock* s;
-//        BPF_CORE_READ_INTO(&s, sot, sk);
-//        struct key_t key = {};
-//        BPF_CORE_READ_INTO(&key.from_port, s, __sk_common.skc_num);
-//        BPF_CORE_READ_INTO(&key.dist_port, s, __sk_common.skc_dport);
-//        BPF_CORE_READ_INTO(&key.from_addr_v4, s, __sk_common.skc_rcv_saddr);
-//        BPF_CORE_READ_INTO(&key.dist_addr_v4, s, __sk_common.skc_daddr);
-//
-//        bpf_printk("socket accept ret: %d, from fd: %d\n", fd, fromfd);
-//        // no need to transform the port
-//        bpf_printk("socket accept ret: from sock: %d:%d\n", key.dist_addr_v4, key.dist_port);
-//        bpf_printk("socket accept ret: dist sock: %d:%d\n", key.from_addr_v4, key.from_port);
-//    }
-//    return 0;
-//}
-//
-//SEC("kretprobe/sock_alloc")
-//int sock_alloc_ret(struct pt_regs *ctx) {
-//    __u64 pid_tgid = bpf_get_current_pid_tgid();
-//    struct accept_sock_t *accept_sock;
-//    accept_sock = bpf_map_lookup_elem(&accept_socks, &pid_tgid);
-//    if (accept_sock) {
-//        struct socket *sock = (struct socket*)PT_REGS_RC(ctx);
-//        accept_sock->socket = sock;
-//        bpf_printk("detect sock alloc from fd: %d\n", accept_sock->fd);
-//    }
-//    return 0;
-//}
+
+SEC("kprobe/__sys_accpet")
+int sys_accept(struct pt_regs *ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+    struct accept_args_t sock = {};
+    sock.fd = PT_REGS_PARM1(ctx);
+    bpf_map_update_elem(&accepting_args, &id, &sock, 0);
+    return 0;
+}
+
+struct key_t {
+    __u32 from_addr_v4;
+    __u32 dist_addr_v4;
+    __u8  from_addr_v6[16];
+    __u8  dist_addr_v6[16];
+    __u16 from_port;
+    __u16 dist_port;
+    __u16 ip_ver;
+    char comm[128];
+};
+
+
+SEC("kretprobe/__sys_accpet")
+int sys_accept_ret(struct pt_regs *ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+    struct accept_args_t *accept_sock;
+    accept_sock = bpf_map_lookup_elem(&accepting_args, &id);
+    if (accept_sock) {
+        int fd = PT_REGS_RC(ctx);
+        __u32 fromfd = accept_sock->fd;
+        struct socket* sot = accept_sock->socket;
+        struct sock* s;
+        BPF_CORE_READ_INTO(&s, sot, sk);
+        struct key_t key = {};
+        BPF_CORE_READ_INTO(&key.from_port, s, __sk_common.skc_num);
+        BPF_CORE_READ_INTO(&key.dist_port, s, __sk_common.skc_dport);
+        BPF_CORE_READ_INTO(&key.from_addr_v4, s, __sk_common.skc_rcv_saddr);
+        BPF_CORE_READ_INTO(&key.dist_addr_v4, s, __sk_common.skc_daddr);
+
+        bpf_printk("socket accept ret: %d, from fd: %d\n", fd, fromfd);
+        // no need to transform the port
+        bpf_printk("socket accept ret: from sock: %d:%d\n", key.dist_addr_v4, key.dist_port);
+        bpf_printk("socket accept ret: dist sock: %d:%d\n", key.from_addr_v4, key.from_port);
+    }
+    return 0;
+}
+
+SEC("kretprobe/sock_alloc")
+int sock_alloc_ret(struct pt_regs *ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+    struct accept_args_t *accept_sock;
+    accept_sock = bpf_map_lookup_elem(&accepting_args, &id);
+    if (accept_sock) {
+        struct socket *sock = (struct socket*)PT_REGS_RC(ctx);
+        accept_sock->socket = sock;
+        bpf_printk("detect sock alloc from fd: %d\n", accept_sock->fd);
+    }
+    return 0;
+}

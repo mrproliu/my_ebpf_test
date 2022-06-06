@@ -71,18 +71,6 @@ static __inline __u64 gen_tgid_fd(__u32 tgid, __u32 fd) {
   return ((__u64)tgid << 32) | fd;
 }
 
-// syscall:accept
-struct accept_sock_args_t {
-    __u32 fd;
-	struct socket* socket;
-};
-struct {
-	__uint(type, BPF_MAP_TYPE_HASH);
-	__uint(max_entries, 10000);
-	__type(key, __u64);
-	__type(value, struct accept_sock_args_t);
-} accepting_args SEC(".maps");
-
 // syscall:sendto
 #define SOCK_DATA_FUNC_SENDTO 1
 #define SOCK_DATA_FUNC_RECVFROM 2
@@ -141,3 +129,15 @@ struct {
 	__type(key, __u64);
 	__type(value, struct sock_close_args_t);
 } closing_args SEC(".maps");
+
+// syscall:accept
+struct accept_args_t {
+    __u32 fd;
+    struct socket* socket;
+};
+struct {
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries, 10000);
+	__type(key, __u64);
+	__type(value, struct accept_args_t);
+} accepting_args SEC(".maps");

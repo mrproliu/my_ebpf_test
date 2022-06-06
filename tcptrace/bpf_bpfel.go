@@ -54,6 +54,9 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
+	SockAllocRet   *ebpf.ProgramSpec `ebpf:"sock_alloc_ret"`
+	SysAccept      *ebpf.ProgramSpec `ebpf:"sys_accept"`
+	SysAcceptRet   *ebpf.ProgramSpec `ebpf:"sys_accept_ret"`
 	SysClose       *ebpf.ProgramSpec `ebpf:"sys_close"`
 	SysCloseRet    *ebpf.ProgramSpec `ebpf:"sys_close_ret"`
 	SysConnect     *ebpf.ProgramSpec `ebpf:"sys_connect"`
@@ -124,6 +127,9 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
+	SockAllocRet   *ebpf.Program `ebpf:"sock_alloc_ret"`
+	SysAccept      *ebpf.Program `ebpf:"sys_accept"`
+	SysAcceptRet   *ebpf.Program `ebpf:"sys_accept_ret"`
 	SysClose       *ebpf.Program `ebpf:"sys_close"`
 	SysCloseRet    *ebpf.Program `ebpf:"sys_close_ret"`
 	SysConnect     *ebpf.Program `ebpf:"sys_connect"`
@@ -136,6 +142,9 @@ type bpfPrograms struct {
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
+		p.SockAllocRet,
+		p.SysAccept,
+		p.SysAcceptRet,
 		p.SysClose,
 		p.SysCloseRet,
 		p.SysConnect,

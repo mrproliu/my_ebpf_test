@@ -183,7 +183,7 @@ func main() {
 				base = fmt.Sprintf("ACCEPT: %s:%d -> %s:%d(in %d(%s))", parseAddressV4(event.DownStreamAddrV4), event.DownStreamPort,
 					parseAddressV4(event.UpstreamAddrV4), event.UpstreamPort, event.Pid, event.Comm)
 			case 3:
-				base = fmt.Sprintf("CLOSE: %d(%s) -> %s:%d", event.Pid, event.Comm, parseAddressV4(event.UpstreamAddrV4), event.UpstreamPort)
+				base = fmt.Sprintf("CLOSE: %d(%s)", event.Pid, event.Comm)
 			}
 
 			fmt.Printf("%s, socket fd: %d\n", base, event.SocketFd)

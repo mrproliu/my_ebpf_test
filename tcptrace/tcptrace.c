@@ -32,7 +32,7 @@ static __inline void submit_close_connection(struct pt_regs* ctx, __u32 tgid, __
     __u64 conid = gen_tgid_fd(tgid, fd);
     struct active_connection_t* con = bpf_map_lookup_elem(&active_connection_map, &conid);
     if (con == NULL) {
-        bpf_printk("could not found active connection when close sock, pid: %d, sockfd: %d\n", tgid, fd);
+//        bpf_printk("could not found active connection when close sock, pid: %d, sockfd: %d\n", tgid, fd);
         return;
     }
     // event send
@@ -224,7 +224,7 @@ int sys_close(struct pt_regs* ctx) {
 static __inline void process_close_sock(struct pt_regs* ctx, __u64 id, struct sock_close_args_t *args) {
     __u32 tgid = (__u32)(id >> 32);
     int ret = PT_REGS_RC(ctx);
-    bpf_printk("close ret: pid: %d, fd: %d, ret: %d", tgid, args->fd, ret);
+//    bpf_printk("close ret: pid: %d, fd: %d, ret: %d", tgid, args->fd, ret);
     if (ret < 0) {
         return;
     }

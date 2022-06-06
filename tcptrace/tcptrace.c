@@ -135,10 +135,10 @@ int sys_connect_ret(struct pt_regs *ctx) {
 	return 0;
 }
 
-SEC("kretprobe/sock_from_file")
+SEC("kprobe/sock_from_file")
 int sock_from_file_ret(struct pt_regs *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
-    bpf_printk("exit sock from file: %d\n", id);
+    bpf_printk("sock from file: %d\n", id);
     return 0;
 }
 

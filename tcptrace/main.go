@@ -175,20 +175,18 @@ func main() {
 				continue
 			}
 
-			var opType string
+			var base string
 			switch event.Type {
 			case 1:
-				opType = "CONNECT"
+				base = fmt.Sprintf("CONNECT: %d(%s) -> %s:%d", event.Pid, event.Comm, parseAddressV4(event.UpstreamAddrV4), event.UpstreamPort)
 			case 2:
-				opType = "ACCEPT"
+				base = fmt.Sprintf("ACCEPT: %s:%d -> %s:%d(in %d(%s))", parseAddressV4(event.DownStreamAddrV4), event.DownStreamPort,
+					parseAddressV4(event.UpstreamAddrV4), event.UpstreamPort, event.Pid, event.Comm)
 			case 3:
-				opType = "CLOSE"
-			default:
-				opType = "UNKNOWN"
+				base = fmt.Sprintf("CLOSE: %d(%s) -> %s:%d", event.Pid, event.Comm, parseAddressV4(event.UpstreamAddrV4), event.UpstreamPort)
 			}
 
-			fmt.Printf("%s from: %d(%s) -> %s:%d, socket fd: %d\n", opType, event.Pid, event.Comm,
-				parseAddressV4(event.UpstreamAddrV4), event.UpstreamPort, event.SocketFd)
+			fmt.Printf("%s, socket fd: %d\n", base, event.SocketFd)
 		}
 	}()
 

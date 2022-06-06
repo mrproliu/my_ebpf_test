@@ -21,6 +21,8 @@ TMPDIR=$1
 ARCH=$2
 FROM=$3
 OUTPUT=$4
+PROJECTS=$5
+PROJ_ARRAY=(${str//,/})
 BPF_SO_PATTERN="^bpf\_[a-z0-9]+\.o"
 
 echo "btfhub-archive is a big archive project, maybe take some times..."
@@ -40,7 +42,10 @@ each_all_bpf_so_file() {
         then
             if [[ $file != '.' && $file != '..' ]]
             then
-                each_all_bpf_so_file $1"/"$file
+                if [[ -n "${PROJ_ARRAY[$file]}" ]]
+                then
+                  each_all_bpf_so_file $1"/"$file
+                fi
             fi
         elif [[ "$file" =~ $BPF_SO_PATTERN ]]
         then
@@ -49,6 +54,6 @@ each_all_bpf_so_file() {
     done
 }
 
-${TMPDIR}/btfhub/tools/btfgen.sh -a ${ARCH} $(each_all_bpf_so_file $FROM)
-mkdir -p ${OUTPUT}
-cp -r ${TMPDIR}/btfhub/custom-archive/* ${OUTPUT}
+echo ${TMPDIR}/btfhub/tools/btfgen.sh -a ${ARCH} $(each_all_bpf_so_file $FROM)
+#mkdir -p ${OUTPUT}
+#cp -r ${TMPDIR}/btfhub/custom-archive/* ${OUTPUT}

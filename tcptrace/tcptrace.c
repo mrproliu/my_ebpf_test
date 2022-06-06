@@ -216,8 +216,8 @@ int sys_close(struct pt_regs* ctx) {
     struct sock_close_args_t close_args = {};
     close_args.fd = PT_REGS_PARM1(ctx);
     bpf_map_update_elem(&closing_args, &id, &close_args, 0);
-    __u32 tgid = id >> 32;
-    bpf_printk("close to: pid: %d, fd: %d\n", tgid, close_args.fd);
+//    __u32 tgid = id >> 32;
+//    bpf_printk("close to: pid: %d, fd: %d\n", tgid, close_args.fd);
     return 0;
 }
 

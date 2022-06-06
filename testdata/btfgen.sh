@@ -24,8 +24,12 @@ OUTPUT=$4
 BPF_SO_PATTERN="^bpf\_[a-z0-9]+\.o"
 
 echo "btfhub-archive is a big archive project, maybe take some times..."
-git clone --depth 1 https://github.com/aquasecurity/btfhub $TMPDIR/btfhub
-git clone --depth 1 https://github.com/aquasecurity/btfhub-archive/ $TMPDIR/btfhub-archive/
+if [ -f "$TMPDIR/btfhub" ]; then
+    git clone --depth 1 https://github.com/aquasecurity/btfhub $TMPDIR/btfhub
+fi
+if [ -f "$TMPDIR/btfhub-archive" ]; then
+    git clone --depth 1 https://github.com/aquasecurity/btfhub-archive/ $TMPDIR/btfhub-archive/
+fi
 mv $TMPDIR/btfhub-archive/* $TMPDIR/btfhub/archive/
 
 each_all_bpf_so_file() {

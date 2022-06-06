@@ -13,7 +13,7 @@ func InetNtop(src unsafe.Pointer) string {
 
 func main() {
 	var ip uint32 = 33558956
-	var port uint16 = 80
+	var port uint16 = 45418
 	fmt.Printf("%d\n", binary.BigEndian.Uint16((*(*[2]byte)(unsafe.Pointer(&port)))[:]))
 	fmt.Printf("%s", InetNtop(unsafe.Pointer(&ip)))
 }

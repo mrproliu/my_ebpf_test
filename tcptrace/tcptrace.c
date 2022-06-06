@@ -114,7 +114,7 @@ int sys_connect(struct pt_regs *ctx) {
     connect_args.fd = PT_REGS_PARM1(ctx);
     connect_args.addr = (void *)PT_REGS_PARM2(ctx);
     bpf_map_update_elem(&conecting_args, &id, &connect_args, 0);
-    bpf_printk("enter sys connect: %d\n", id);
+    bpf_printk("enter sys connect11: %d\n", id);
 	return 0;
 }
 
@@ -122,7 +122,7 @@ SEC("kretprobe/__sys_connect")
 int sys_connect_ret(struct pt_regs *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
     struct connect_args_t *connect_args;
-    bpf_printk("exit sys connect: %d\n", id);
+    bpf_printk("exit sys connect11: %d\n", id);
 
     connect_args = bpf_map_lookup_elem(&conecting_args, &id);
     if (connect_args) {
@@ -138,7 +138,7 @@ int sys_connect_ret(struct pt_regs *ctx) {
 SEC("kprobe/sock_from_file")
 int sock_from_file_ret(struct pt_regs *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
-    bpf_printk("sock from file: %d\n", id);
+    bpf_printk("sock from file111: %d\n", id);
     return 0;
 }
 

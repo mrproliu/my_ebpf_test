@@ -21,9 +21,6 @@ TMPDIR=$1
 ARCH=$2
 FROM=$3
 OUTPUT=$4
-PROJECTS=tcpconnect,tcptrace
-PROJ_ARRAY=(${str//,/})
-BPF_SO_PATTERN="^bpf\_[a-z0-9]+\.o"
 
 echo "btfhub-archive is a big archive project, maybe take some times..."
 if [ -f "$TMPDIR/btfhub" ]; then
@@ -34,25 +31,8 @@ if [ -f "$TMPDIR/btfhub-archive" ]; then
     mv $TMPDIR/btfhub-archive/* $TMPDIR/btfhub/archive/
 fi
 
-each_all_bpf_so_file() {
-    result=""
-    for file in `ls -a $1`
-    do
-        if [ -d $1"/"$file ]
-        then
-            if [[ $file != '.' && $file != '..' ]]
-            then
-                for item in "${PROJ_ARRAY[@]}"; do
-                    [[ $file == "$item" ]] && each_all_bpf_so_file $1"/"$file
-                done
-            fi
-        elif [[ "$file" =~ $BPF_SO_PATTERN ]]
-        then
-          echo "-o $1/$file"
-        fi
-    done
-}
-
-echo ${TMPDIR}/btfhub/tools/btfgen.sh -a ${ARCH} $(each_all_bpf_so_file $FROM)
+echo ${TMPDIR}/btfhub/tools/btfgen.sh -a ${ARCH} \
+  -o $FROM/tcpconnect/bpf_bpfel.o \
+  -o $FROM/tcptrace/bpf_bpfel.o
 #mkdir -p ${OUTPUT}
 #cp -r ${TMPDIR}/btfhub/custom-archive/* ${OUTPUT}

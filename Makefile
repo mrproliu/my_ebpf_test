@@ -57,7 +57,7 @@ container-all: build-base-container
 
 GENDIR ?= ""
 btfgen:
-	bash ${REPODIR}/testdata/btfgen.sh /tmp x86_64 ${REPODIR}/${GENDIR} ${REPODIR}/tools/btf/files
+	bash ${REPODIR}/testdata/btfgen.sh /tmp x86_64 ${REPODIR} ${REPODIR}/tools/btf/files ${GENDIR}
 
 # (debug) Drop the user into a shell inside the container as root.
 container-shell:

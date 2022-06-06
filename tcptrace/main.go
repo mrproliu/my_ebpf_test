@@ -6,6 +6,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"ebpf_test/tools/btf"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -114,7 +115,7 @@ func main() {
 
 	// Load pre-compiled programs and maps into the kernel.
 	objs := bpfObjects{}
-	if err := loadBpfObjects(&objs, nil); err != nil {
+	if err := loadBpfObjects(&objs, btf.GetEBPFCollectionOptionsIfNeed()); err != nil {
 		log.Fatalf("loading objects: %s", err)
 	}
 	defer objs.Close()

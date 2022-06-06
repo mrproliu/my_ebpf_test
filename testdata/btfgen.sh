@@ -40,9 +40,11 @@ each_all_bpf_so_file() {
     do
         if [ -d $1"/"$file ]
         then
-            if [[ $file != '.' && $file != '..' && ${PROJ_ARRAY[$file]} ]]
+            if [[ $file != '.' && $file != '..' ]]
             then
-                each_all_bpf_so_file $1"/"$file
+                for item in "${PROJ_ARRAY[@]}"; do
+                    [[ $file == "$item" ]] && each_all_bpf_so_file $1"/"$file
+                done
             fi
         elif [[ "$file" =~ $BPF_SO_PATTERN ]]
         then

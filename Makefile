@@ -55,9 +55,8 @@ container-all: build-base-container
 		"ebpf_test:latest" \
 		make all
 
-GENDIR ?= ""
 btfgen:
-	bash ${REPODIR}/testdata/btfgen.sh /tmp x86_64 ${REPODIR} ${REPODIR}/tools/btf/files ${GENDIR}
+	bash ${REPODIR}/testdata/btfgen.sh /tmp x86_64 ${REPODIR} ${REPODIR}/tools/btf/files
 
 # (debug) Drop the user into a shell inside the container as root.
 container-shell:

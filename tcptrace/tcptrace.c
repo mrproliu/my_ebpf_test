@@ -46,8 +46,8 @@ static __inline void submit_close_connection(struct pt_regs* ctx, __u32 tgid, __
     bpf_map_delete_elem(&active_connection_map, &conid);
 }
 
-static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type, __u32 tgid, __u32 fd,
-                                            struct sockaddr* addr, const struct socket* socket) {
+static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type, __u32 tgid, __u32 fd,
+                                            struct sockaddr* addr, const struct sock* s) {
     // event send
     struct sock_opts_event opts_event = {};
     opts_event.type = from_type;
@@ -61,11 +61,8 @@ static __inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type,
         bpf_probe_read(&opts_event.upstream_port, sizeof(opts_event.upstream_port), &daddr->sin_port);
         opts_event.upstream_port = bpf_ntohs(opts_event.upstream_port);
     }
-    if (socket != NULL) {
+    if (s != NULL) {
         // only get from accept function(server side)
-        struct sock* s;
-        BPF_CORE_READ_INTO(&s, socket, sk);
-
         BPF_CORE_READ_INTO(&opts_event.upstream_port, s, __sk_common.skc_num);
         BPF_CORE_READ_INTO(&opts_event.upstream_addr_v4, s, __sk_common.skc_rcv_saddr);
 
@@ -103,7 +100,7 @@ static __inline void process_connect(struct pt_regs* ctx, __u64 id, struct conne
     }
     __u32 tgid = id >> 32;
 
-    submit_new_connection(ctx, SOCKET_OPTS_TYPE_CONNECT, tgid, connect_args->fd, connect_args->addr, NULL);
+    submit_new_connection(ctx, SOCKET_OPTS_TYPE_CONNECT, tgid, connect_args->fd, connect_args->addr, connect_args->sock);
 }
 
 
@@ -155,14 +152,14 @@ int sys_connect_ret(struct pt_regs *ctx) {
 	return 0;
 }
 
-SEC("kretprobe/sock_from_file")
-int sock_from_file_ret(struct pt_regs *ctx) {
+SEC("kprobe/tcp_v4_v6_connect")
+int tcp_v4_v6_connect(struct pt_regs *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
     struct connect_args_t *connect_args;
 
     connect_args = bpf_map_lookup_elem(&conecting_args, &id);
     if (connect_args) {
-        bpf_printk("detected sock file\n");
+        connect_args->sock = (void *)PT_REGS_PARM1(ctx);
     }
     return 0;
 }
@@ -328,7 +325,12 @@ static __inline void process_accept(struct pt_regs* ctx, __u64 id, struct accept
     }
     __u32 tgid = id >> 32;
 
-    submit_new_connection(ctx, SOCKET_OPTS_TYPE_ACCEPT, tgid, fd, accept_args->addr, accept_args->socket);
+    struct socket *socket = accept_args->socket;
+    struct sock* s;
+    if (socket != NULL) {
+        BPF_CORE_READ_INTO(&s, socket, sk);
+    }
+    submit_new_connection(ctx, SOCKET_OPTS_TYPE_ACCEPT, tgid, fd, accept_args->addr, s);
 }
 
 
@@ -352,7 +354,6 @@ int sock_alloc_ret(struct pt_regs *ctx) {
     if (accept_sock) {
         struct socket *sock = (struct socket*)PT_REGS_RC(ctx);
         accept_sock->socket = sock;
-        bpf_printk("detect sock alloc from fd: %d\n", accept_sock->fd);
     }
     return 0;
 }

@@ -21,7 +21,7 @@ TMPDIR=$1
 ARCH=$2
 FROM=$3
 OUTPUT=$4
-PROJECTS=$5
+PROJECTS=tcpconnect,tcptrace
 PROJ_ARRAY=(${str//,/})
 BPF_SO_PATTERN="^bpf\_[a-z0-9]+\.o"
 
@@ -31,8 +31,8 @@ if [ -f "$TMPDIR/btfhub" ]; then
 fi
 if [ -f "$TMPDIR/btfhub-archive" ]; then
     git clone --depth 1 https://github.com/aquasecurity/btfhub-archive/ $TMPDIR/btfhub-archive/
+    mv $TMPDIR/btfhub-archive/* $TMPDIR/btfhub/archive/
 fi
-mv $TMPDIR/btfhub-archive/* $TMPDIR/btfhub/archive/
 
 each_all_bpf_so_file() {
     result=""
@@ -40,12 +40,9 @@ each_all_bpf_so_file() {
     do
         if [ -d $1"/"$file ]
         then
-            if [[ $file != '.' && $file != '..' ]]
+            if [[ $file != '.' && $file != '..' && ${PROJ_ARRAY[$file]} ]]
             then
-                if [[ -n "${PROJ_ARRAY[$file]}" ]]
-                then
-                  each_all_bpf_so_file $1"/"$file
-                fi
+                each_all_bpf_so_file $1"/"$file
             fi
         elif [[ "$file" =~ $BPF_SO_PATTERN ]]
         then

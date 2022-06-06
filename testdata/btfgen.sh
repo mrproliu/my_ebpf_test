@@ -31,8 +31,8 @@ if [ -f "$TMPDIR/btfhub-archive" ]; then
     mv $TMPDIR/btfhub-archive/* $TMPDIR/btfhub/archive/
 fi
 
-echo ${TMPDIR}/btfhub/tools/btfgen.sh -a ${ARCH} \
+${TMPDIR}/btfhub/tools/btfgen.sh -a ${ARCH} \
   -o $FROM/tcpconnect/bpf_bpfel.o \
   -o $FROM/tcptrace/bpf_bpfel.o
-#mkdir -p ${OUTPUT}
-#cp -r ${TMPDIR}/btfhub/custom-archive/* ${OUTPUT}
+mkdir -p ${OUTPUT}
+cp -r ${TMPDIR}/btfhub/custom-archive/* ${OUTPUT}

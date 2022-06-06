@@ -19,15 +19,13 @@ package btf
 
 import (
 	"debug/elf"
+	"ebpf_test/tools/operator"
+	"ebpf_test/tools/path"
 	"fmt"
-
-	"github.com/apache/skywalking-rover/pkg/tools/host"
-	"github.com/apache/skywalking-rover/pkg/tools/operator"
-	"github.com/apache/skywalking-rover/pkg/tools/path"
 )
 
 func ExistKernelBTF() (string, error) {
-	if path.Exists(host.GetFileInHost("/sys/kernel/btf/vmlinux")) {
+	if path.Exists("/sys/kernel/btf/vmlinux") {
 		return "/sys/kernel/btf/vmlinux", nil
 	}
 
@@ -49,7 +47,7 @@ func ExistKernelBTF() (string, error) {
 	}
 
 	for _, loc := range locations {
-		_, err := elf.Open(host.GetFileInHost(fmt.Sprintf(loc, uname.Release)))
+		_, err := elf.Open(fmt.Sprintf(loc, uname.Release))
 		if err == nil {
 			return loc, nil
 		}

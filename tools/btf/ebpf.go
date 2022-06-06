@@ -19,13 +19,11 @@ package btf
 
 import (
 	"bytes"
+	"ebpf_test/tools/operator"
 	"embed"
 	"fmt"
 	"path/filepath"
 	"sync"
-
-	"github.com/apache/skywalking-rover/pkg/logger"
-	"github.com/apache/skywalking-rover/pkg/tools/operator"
 
 	"github.com/cilium/ebpf"
 )
@@ -36,15 +34,12 @@ var assets embed.FS
 var (
 	customizedBTFData []byte
 	findBTFOnce       sync.Once
-
-	log = logger.GetLogger("tools", "btf")
 )
 
 func GetEBPFCollectionOptionsIfNeed() *ebpf.CollectionOptions {
 	findBTFOnce.Do(func() {
 		btfPath, isCustomizedBTF, err := getKernelBTFAddress()
 		if err != nil {
-			log.Warnf("found BTF failure: %v", err)
 			return
 		}
 
@@ -53,7 +48,6 @@ func GetEBPFCollectionOptionsIfNeed() *ebpf.CollectionOptions {
 		}
 		d, err := asset(btfPath)
 		if err != nil {
-			log.Warnf("could not found the customized BTF file: %s", btfPath)
 			return
 		}
 		customizedBTFData = d

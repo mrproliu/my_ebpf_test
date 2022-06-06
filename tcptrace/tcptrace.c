@@ -108,24 +108,6 @@ static __inline void process_connect(struct pt_regs* ctx, __u64 id, struct conne
     submit_new_connection(ctx, SOCKET_OPTS_TYPE_CONNECT, tgid, connect_args->fd, connect_args->addr, s);
 }
 
-
-struct sockinfo {
-    __u16 family;
-    __u32 addr;
-    __u16 port;
-};
-
-static __always_inline struct sockinfo
-get_sock_info(struct sockaddr *addr)
-{
-    struct sockinfo s = {};
-    bpf_probe_read(&s.family, sizeof(s.family), &(addr->sa_family));
-    struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
-    bpf_probe_read(&s.addr, sizeof(s.addr), &daddr->sin_addr.s_addr);
-    bpf_probe_read(&s.port, sizeof(s.port), &daddr->sin_port);
-    return s;
-}
-
 SEC("kprobe/__sys_connect")
 int sys_connect(struct pt_regs *ctx) {
     uint64_t id = bpf_get_current_pid_tgid();
@@ -134,9 +116,7 @@ int sys_connect(struct pt_regs *ctx) {
     connect_args.fd = PT_REGS_PARM1(ctx);
     connect_args.addr = (void *)PT_REGS_PARM2(ctx);
     bpf_map_update_elem(&conecting_args, &id, &connect_args, 0);
-    bpf_printk("enter sys connect--: %d", id);
-    struct sockinfo s = get_sock_info(connect_args.addr);
-    bpf_printk("sock addr: %s:%d\n", s.addr, s.port);
+    bpf_printk("enter sys connect--: %d\n", id);
 	return 0;
 }
 
@@ -165,6 +145,7 @@ int tcp_v4_v6_connect(struct pt_regs *ctx) {
     connect_args = bpf_map_lookup_elem(&conecting_args, &id);
     if (connect_args) {
         connect_args->sock = (void *)PT_REGS_PARM1(ctx);
+        bpf_printk("detected tcp connect hook\n");
     }
     return 0;
 }

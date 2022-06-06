@@ -186,7 +186,7 @@ func main() {
 					event.Pid, event.Comm, parseAddressV4(event.DownStreamAddrV4), parsePort(event.DownStreamPort))
 			case 2:
 				base = fmt.Sprintf("ACCEPT: %s:%d -> %s:%d(in %d(%s))", parseAddressV4(event.DownStreamAddrV4), event.DownStreamPort,
-					parseAddressV4(event.UpstreamAddrV4), event.UpstreamPort, event.Pid, event.Comm)
+					parseAddressV4(event.UpstreamAddrV4), parsePort(parsePort(uint16(event.UpstreamPort))), event.Pid, event.Comm)
 			case 3:
 				base = fmt.Sprintf("CLOSE: %d(%s)", event.Pid, event.Comm)
 			}

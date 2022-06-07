@@ -88,7 +88,7 @@ static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 fro
     bpf_map_update_elem(&active_connection_map, &conid, &con, 0);
 
     if (con.socket_family != AF_INET && con.socket_family != AF_INET6) {
-        bpf_printk("current create connect is not ip address, so ignores. %d\n", con.socket_family);
+        bpf_printk("current create connect is not ip address, so ignores. %d, from type: %d\n", con.socket_family, from_type);
         return;
     }
 

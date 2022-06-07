@@ -69,10 +69,10 @@ static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 fro
             BPF_CORE_READ_INTO(&con.upstream_addr_v4, s, __sk_common.skc_rcv_saddr);
             BPF_CORE_READ_INTO(&con.downstream_port, s, __sk_common.skc_dport);
             BPF_CORE_READ_INTO(&con.downstream_addr_v4, s, __sk_common.skc_daddr);
+            bpf_printk("new connect v4: %d->%d\n", con.upstream_addr_v4, con.downstream_addr_v4);
         } else if (con.socket_family == AF_INET6) {
             BPF_CORE_READ_INTO(&con.upstream_port, s, __sk_common.skc_num);
             BPF_CORE_READ_INTO(&con.upstream_addr_v6, s, __sk_common.skc_v6_rcv_saddr.in6_u.u6_addr8);
-
             BPF_CORE_READ_INTO(&con.downstream_port, s, __sk_common.skc_dport);
             BPF_CORE_READ_INTO(&con.downstream_addr_v6, s, __sk_common.skc_v6_daddr.in6_u.u6_addr8);
        }

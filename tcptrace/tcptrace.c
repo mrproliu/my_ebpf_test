@@ -222,6 +222,7 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     bpf_probe_read(data->buf, data_len, buf);
     data->buf_size = data_len;
     data->exe_time = curr_nacs - args->start_nacs;
+    data->rtt = args->rtt;
 //
     char *p = data->buf;
     sock_data_analyze_protocol(p, data_len, data);

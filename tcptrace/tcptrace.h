@@ -110,6 +110,7 @@ struct sock_data_event_t {
     __u32 message_type;
     __u32 data_direction;
     __u64 exe_time;
+    __u32 rtt;
 };
 
 struct {

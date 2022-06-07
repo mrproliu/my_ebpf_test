@@ -52,6 +52,7 @@ int tcp_drop(struct pt_regs *ctx) {
         BPF_CORE_READ_INTO(&event, s, __sk_common.skc_dport);
         event.upstream_port = port;
         BPF_CORE_READ_INTO(&event.upstream_addr_v4, s, __sk_common.skc_daddr);
+        bpf_printk("tcp v4 drop: from: %d:%d\n", event.downstream_addr_v4, event.downstream_port);
     } else if (skc_family == AF_INET6) {
         BPF_CORE_READ_INTO(&port, s, __sk_common.skc_num);
         event.downstream_port = port;
@@ -59,6 +60,7 @@ int tcp_drop(struct pt_regs *ctx) {
         BPF_CORE_READ_INTO(&port, s, __sk_common.skc_dport);
         event.upstream_port = port;
         BPF_CORE_READ_INTO(&event.upstream_addr_v6, s, __sk_common.skc_v6_daddr.in6_u.u6_addr8);
+        bpf_printk("tcp v6 drop: from: %s:%d\n", event.downstream_addr_v4, event.downstream_port);
     } else {
         bpf_printk("now ip drop so ignore: %d\n", skc_family);
         return 0;

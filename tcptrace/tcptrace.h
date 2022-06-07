@@ -29,7 +29,6 @@ struct sock_opts_event {
     char comm[128];
     // socket file descriptor
     __u32 sockfd;
-    __u64 exe_time;
     // upstream(works on server and client side)
     __u32 upstream_addr_v4;
     __u8 upstream_addr_v6[16];
@@ -38,6 +37,8 @@ struct sock_opts_event {
     __u32 downstream_addr_v4;
     __u8 downstream_addr_v6[16];
     __u32 downstream_port;
+    __u32 test;
+    __u64 exe_time;
 };
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);

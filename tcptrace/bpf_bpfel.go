@@ -54,18 +54,19 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
-	SockAllocRet   *ebpf.ProgramSpec `ebpf:"sock_alloc_ret"`
-	SysAccept      *ebpf.ProgramSpec `ebpf:"sys_accept"`
-	SysAcceptRet   *ebpf.ProgramSpec `ebpf:"sys_accept_ret"`
-	SysClose       *ebpf.ProgramSpec `ebpf:"sys_close"`
-	SysCloseRet    *ebpf.ProgramSpec `ebpf:"sys_close_ret"`
-	SysConnect     *ebpf.ProgramSpec `ebpf:"sys_connect"`
-	SysConnectRet  *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
-	SysRecvfrom    *ebpf.ProgramSpec `ebpf:"sys_recvfrom"`
-	SysRecvfromRet *ebpf.ProgramSpec `ebpf:"sys_recvfrom_ret"`
-	SysSendto      *ebpf.ProgramSpec `ebpf:"sys_sendto"`
-	SysSendtoRet   *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
-	TcpConnect     *ebpf.ProgramSpec `ebpf:"tcp_connect"`
+	SockAllocRet      *ebpf.ProgramSpec `ebpf:"sock_alloc_ret"`
+	SysAccept         *ebpf.ProgramSpec `ebpf:"sys_accept"`
+	SysAcceptRet      *ebpf.ProgramSpec `ebpf:"sys_accept_ret"`
+	SysClose          *ebpf.ProgramSpec `ebpf:"sys_close"`
+	SysCloseRet       *ebpf.ProgramSpec `ebpf:"sys_close_ret"`
+	SysConnect        *ebpf.ProgramSpec `ebpf:"sys_connect"`
+	SysConnectRet     *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
+	SysRecvfrom       *ebpf.ProgramSpec `ebpf:"sys_recvfrom"`
+	SysRecvfromRet    *ebpf.ProgramSpec `ebpf:"sys_recvfrom_ret"`
+	SysSendto         *ebpf.ProgramSpec `ebpf:"sys_sendto"`
+	SysSendtoRet      *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
+	TcpConnect        *ebpf.ProgramSpec `ebpf:"tcp_connect"`
+	TcpRcvEstablished *ebpf.ProgramSpec `ebpf:"tcp_rcv_established"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
@@ -128,18 +129,19 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
-	SockAllocRet   *ebpf.Program `ebpf:"sock_alloc_ret"`
-	SysAccept      *ebpf.Program `ebpf:"sys_accept"`
-	SysAcceptRet   *ebpf.Program `ebpf:"sys_accept_ret"`
-	SysClose       *ebpf.Program `ebpf:"sys_close"`
-	SysCloseRet    *ebpf.Program `ebpf:"sys_close_ret"`
-	SysConnect     *ebpf.Program `ebpf:"sys_connect"`
-	SysConnectRet  *ebpf.Program `ebpf:"sys_connect_ret"`
-	SysRecvfrom    *ebpf.Program `ebpf:"sys_recvfrom"`
-	SysRecvfromRet *ebpf.Program `ebpf:"sys_recvfrom_ret"`
-	SysSendto      *ebpf.Program `ebpf:"sys_sendto"`
-	SysSendtoRet   *ebpf.Program `ebpf:"sys_sendto_ret"`
-	TcpConnect     *ebpf.Program `ebpf:"tcp_connect"`
+	SockAllocRet      *ebpf.Program `ebpf:"sock_alloc_ret"`
+	SysAccept         *ebpf.Program `ebpf:"sys_accept"`
+	SysAcceptRet      *ebpf.Program `ebpf:"sys_accept_ret"`
+	SysClose          *ebpf.Program `ebpf:"sys_close"`
+	SysCloseRet       *ebpf.Program `ebpf:"sys_close_ret"`
+	SysConnect        *ebpf.Program `ebpf:"sys_connect"`
+	SysConnectRet     *ebpf.Program `ebpf:"sys_connect_ret"`
+	SysRecvfrom       *ebpf.Program `ebpf:"sys_recvfrom"`
+	SysRecvfromRet    *ebpf.Program `ebpf:"sys_recvfrom_ret"`
+	SysSendto         *ebpf.Program `ebpf:"sys_sendto"`
+	SysSendtoRet      *ebpf.Program `ebpf:"sys_sendto_ret"`
+	TcpConnect        *ebpf.Program `ebpf:"tcp_connect"`
+	TcpRcvEstablished *ebpf.Program `ebpf:"tcp_rcv_established"`
 }
 
 func (p *bpfPrograms) Close() error {
@@ -156,6 +158,7 @@ func (p *bpfPrograms) Close() error {
 		p.SysSendto,
 		p.SysSendtoRet,
 		p.TcpConnect,
+		p.TcpRcvEstablished,
 	)
 }
 

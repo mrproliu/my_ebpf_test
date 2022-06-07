@@ -316,6 +316,17 @@ int sys_recvfrom_ret(struct pt_regs* ctx) {
     return 0;
 }
 
+SEC("kprobe/tcp_rcv_established")
+int tcp_rcv_established(struct pt_regs* ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+    struct sock_data_args_t *data_args;
+    data_args = bpf_map_lookup_elem(&writing_args, &id);
+    if (data_args) {
+        bpf_printk("tcp rcv call\n");
+    }
+    return 0;
+}
+
 //
 //SEC("tracepoint/syscalls/sys_enter_writev")
 //int syscall__probe_entry_writev(struct trace_event_raw_sys_enter *ctx) {

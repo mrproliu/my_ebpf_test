@@ -140,6 +140,7 @@ func main() {
 	linker.AddLink("sock_alloc", link.Kretprobe, objs.SockAllocRet)
 	//linker.AddLink("__inet_stream_connect", link.Kprobe, objs.SockFromFileRet)
 	linker.AddLink("tcp_connect", link.Kprobe, objs.TcpConnect)
+	linker.AddLink("tcp_rcv_established", link.Kprobe, objs.TcpRcvEstablished)
 
 	////linker.AddTracepoint("syscalls", "sys_enter_writev", objs.SyscallProbeEntryWritev)
 	defer linker.Close()

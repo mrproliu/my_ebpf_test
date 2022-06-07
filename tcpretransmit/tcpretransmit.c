@@ -29,7 +29,7 @@ struct tcp_retransmit_event {
     __u32 downstream_addr_v4;
     __u8 downstream_addr_v6[16];
     __u32 downstream_port;
-    __u64 len;
+    __u32 len;
 };
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);

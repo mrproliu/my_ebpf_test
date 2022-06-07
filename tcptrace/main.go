@@ -130,6 +130,8 @@ func main() {
 	linker.AddLink("__sys_sendto", link.Kretprobe, objs.SysSendtoRet)
 	linker.AddLink("__sys_recvfrom", link.Kprobe, objs.SysRecvfrom)
 	linker.AddLink("__sys_recvfrom", link.Kretprobe, objs.SysRecvfromRet)
+	linker.AddLink("__sys_read", link.Kprobe, objs.SysRead)
+	linker.AddLink("__sys_read", link.Kretprobe, objs.SysReadRet)
 	// close_fd or __close_fd
 	linker.AddLink("close_fd", link.Kprobe, objs.SysClose)
 	linker.AddLink("close_fd", link.Kretprobe, objs.SysCloseRet)

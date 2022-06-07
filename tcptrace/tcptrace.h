@@ -81,6 +81,7 @@ static __inline __u64 gen_tgid_fd(__u32 tgid, __u32 fd) {
 // syscall:sendto
 #define SOCK_DATA_FUNC_SENDTO 1
 #define SOCK_DATA_FUNC_RECVFROM 2
+#define SOCK_DATA_FUNC_READ 3
 struct sock_data_args_t {
     __u32 func;
     __u32 fd;

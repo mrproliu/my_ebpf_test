@@ -61,6 +61,8 @@ type bpfProgramSpecs struct {
 	SysCloseRet       *ebpf.ProgramSpec `ebpf:"sys_close_ret"`
 	SysConnect        *ebpf.ProgramSpec `ebpf:"sys_connect"`
 	SysConnectRet     *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
+	SysRead           *ebpf.ProgramSpec `ebpf:"sys_read"`
+	SysReadRet        *ebpf.ProgramSpec `ebpf:"sys_read_ret"`
 	SysRecvfrom       *ebpf.ProgramSpec `ebpf:"sys_recvfrom"`
 	SysRecvfromRet    *ebpf.ProgramSpec `ebpf:"sys_recvfrom_ret"`
 	SysSendto         *ebpf.ProgramSpec `ebpf:"sys_sendto"`
@@ -136,6 +138,8 @@ type bpfPrograms struct {
 	SysCloseRet       *ebpf.Program `ebpf:"sys_close_ret"`
 	SysConnect        *ebpf.Program `ebpf:"sys_connect"`
 	SysConnectRet     *ebpf.Program `ebpf:"sys_connect_ret"`
+	SysRead           *ebpf.Program `ebpf:"sys_read"`
+	SysReadRet        *ebpf.Program `ebpf:"sys_read_ret"`
 	SysRecvfrom       *ebpf.Program `ebpf:"sys_recvfrom"`
 	SysRecvfromRet    *ebpf.Program `ebpf:"sys_recvfrom_ret"`
 	SysSendto         *ebpf.Program `ebpf:"sys_sendto"`
@@ -153,6 +157,8 @@ func (p *bpfPrograms) Close() error {
 		p.SysCloseRet,
 		p.SysConnect,
 		p.SysConnectRet,
+		p.SysRead,
+		p.SysReadRet,
 		p.SysRecvfrom,
 		p.SysRecvfromRet,
 		p.SysSendto,

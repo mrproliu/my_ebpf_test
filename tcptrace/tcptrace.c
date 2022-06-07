@@ -109,7 +109,7 @@ static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 fro
     memcpy(opts_event.downstream_addr_v6, con.downstream_addr_v6, 16*sizeof(__u8));
     opts_event.downstream_port = con.downstream_port;
     opts_event.exe_time = curr_nacs - start_nacs;
-    bpf_printk("execute time: start: %d, cur: %d, exe: %d", start_nacs, curr_nacs, opts_event.exe_time);
+    bpf_printk("execute time: start: %d, cur: %d, exe: %d\n", start_nacs, curr_nacs, opts_event.exe_time);
 
     bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));
 
@@ -139,7 +139,7 @@ int sys_connect(struct pt_regs *ctx) {
     connect_args.addr = (void *)PT_REGS_PARM2(ctx);
     connect_args.start_nacs = bpf_ktime_get_ns();
     bpf_map_update_elem(&conecting_args, &id, &connect_args, 0);
-    bpf_printk("enter sys connect--: %d\n", id);
+    bpf_printk("enter sys connect--: %d, curtime: %d\n", id, connect_args.start_nacs);
 	return 0;
 }
 
@@ -147,12 +147,10 @@ SEC("kretprobe/__sys_connect")
 int sys_connect_ret(struct pt_regs *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
     struct connect_args_t *connect_args;
-    bpf_printk("exit sys connect--: %d\n", id);
+    bpf_printk("exit sys connect--: %d, curtime: %d\n", id, bpf_ktime_get_ns());
 
     connect_args = bpf_map_lookup_elem(&conecting_args, &id);
     if (connect_args) {
-        __u32 tgid = id >> 32;
-        bpf_printk("connect to ret: pid: %d, fd: %d\n", tgid, connect_args->fd);
         process_connect(ctx, id, connect_args);
     }
 

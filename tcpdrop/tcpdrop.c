@@ -49,7 +49,7 @@ int tcp_drop(struct pt_regs *ctx) {
         BPF_CORE_READ_INTO(&port, s, __sk_common.skc_num);
         event.downstream_port = port;
         BPF_CORE_READ_INTO(&event.downstream_addr_v4, s, __sk_common.skc_rcv_saddr);
-        BPF_CORE_READ_INTO(&event, s, __sk_common.skc_dport);
+        BPF_CORE_READ_INTO(&port, s, __sk_common.skc_dport);
         event.upstream_port = port;
         BPF_CORE_READ_INTO(&event.upstream_addr_v4, s, __sk_common.skc_daddr);
         bpf_printk("tcp v4 drop: from: %d:%d\n", event.downstream_addr_v4, event.downstream_port);

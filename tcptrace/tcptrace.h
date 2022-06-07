@@ -42,6 +42,7 @@ struct sock_opts_event {
 };
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+	__uint(max_entries, 4096);
 } socket_opts_events_queue SEC(".maps");
 
 #define CONNECTION_ROLE_TYPE_UNKNOWN 0
@@ -123,6 +124,7 @@ static __inline struct sock_data_event_t* create_sock_data() {
 }
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+	__uint(max_entries, 4096);
 } socket_data_events_queue SEC(".maps");
 
 // syscall:close

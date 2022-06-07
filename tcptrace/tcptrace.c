@@ -185,13 +185,16 @@ int sys_sendto(struct pt_regs* ctx) {
     data_args.func = SOCK_DATA_FUNC_SENDTO;
     data_args.fd = PT_REGS_PARM1(ctx);
     data_args.buf = (void *)PT_REGS_PARM2(ctx);
+    data_args.start_nacs = bpf_ktime_get_ns();
     bpf_map_update_elem(&writing_args, &id, &data_args, 0);
 //    __u32 tgid = id >> 32;
 //    bpf_printk("send to: pid: %d, fd: %d\n", tgid, data_args.fd);
     return 0;
 }
 
-static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count, __u32 data_direction) {
+static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count,
+                                        __u32 data_direction) {
+    __u64 curr_nacs = bpf_ktime_get_ns();
     __u32 tgid = (__u32)(id >> 32);
     if (args->buf == NULL) {
         return;
@@ -218,6 +221,7 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     bpf_probe_read(&buf, sizeof(const char*), &args->buf);
     bpf_probe_read(data->buf, data_len, buf);
     data->buf_size = data_len;
+    data->exe_time = curr_nacs - args->start_nacs;
 //
     char *p = data->buf;
     sock_data_analyze_protocol(p, data_len, data);
@@ -292,6 +296,7 @@ int sys_recvfrom(struct pt_regs* ctx) {
     data_args.func = SOCK_DATA_FUNC_RECVFROM;
     data_args.fd = PT_REGS_PARM1(ctx);
     data_args.buf = (void *)PT_REGS_PARM2(ctx);
+    data_args.start_nacs = bpf_ktime_get_ns();
     bpf_map_update_elem(&writing_args, &id, &data_args, 0);
     return 0;
 }

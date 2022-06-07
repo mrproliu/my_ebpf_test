@@ -59,7 +59,7 @@ func main() {
 	}
 	defer objs.Close()
 
-	kprobe, err := link.Kprobe("tcp_retransmit", objs.TcpRetransmit)
+	kprobe, err := link.Kprobe("tcp_retransmit_skb", objs.TcpRetransmit)
 	if err != nil {
 		log.Fatalf("link tcp drop failure: %v", err)
 	}

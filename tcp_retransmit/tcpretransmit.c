@@ -35,7 +35,7 @@ struct {
 	__uint(max_entries, 4096);
 } events SEC(".maps");
 
-SEC("kprobe/tcp_retransmit")
+SEC("kprobe/tcp_retransmit_skb")
 int tcp_retransmit(struct pt_regs *ctx) {
 //    struct sock *s = (void *)PT_REGS_PARM1(ctx);
 //    __u64 id = bpf_get_current_pid_tgid();

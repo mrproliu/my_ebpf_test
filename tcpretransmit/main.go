@@ -108,7 +108,7 @@ func main() {
 				downstreamAddr = parseAddressV6(event.DownstreamAddrV6)
 				upstreamAddr = parseAddressV6(event.UpstreamAddrV6)
 			}
-			fmt.Printf("TCP RETRANSMIT: familu: %d: %s:%d(in %d(%s)) -> %s:%d, len: %d\n", event.Family, downstreamAddr, parsePort(uint16(event.DownstreamPort)),
+			fmt.Printf("TCP RETRANSMIT: family: %d: %s:%d(in %d(%s)) -> %s:%d, len: %d\n", event.Family, downstreamAddr, parsePort(uint16(event.DownstreamPort)),
 				event.Pid, event.Comm, upstreamAddr, parsePort(uint16(event.UpstreamPort)), event.Len)
 		}
 	}()

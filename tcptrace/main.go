@@ -39,6 +39,7 @@ type SocketOptsEvent struct {
 	DownStreamAddrV4 uint32
 	DownStreamAddrV6 [16]uint8
 	DownStreamPort   uint32
+	Fix              uint32
 	ExeTime          uint64
 }
 

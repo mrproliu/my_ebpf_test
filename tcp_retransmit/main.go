@@ -4,9 +4,13 @@
 package main
 
 import (
+	"bytes"
 	"ebpf_test/tools/btf"
 	"encoding/binary"
+	"errors"
+	"fmt"
 	"github.com/cilium/ebpf/link"
+	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
 	"log"
 	"net"
@@ -29,6 +33,7 @@ type TcpRetransmitEvent struct {
 	DownstreamAddrV4 uint32
 	DownstreamAddrV6 [16]uint8
 	DownstreamPort   uint32
+	Len              uint64
 }
 
 func parsePort(val uint16) uint16 {
@@ -66,47 +71,47 @@ func main() {
 	defer kprobe.Close()
 	log.Printf("start probes success...")
 
-	//eventsFd, err := perf.NewReader(objs.Events, os.Getpagesize())
-	//if err != nil {
-	//	log.Fatalf("creating perf event sock data reader: %s", err)
-	//}
-	//defer eventsFd.Close()
-	//
-	//go func() {
-	//	var event TcpRetransmitEvent
-	//	for {
-	//		record, err := eventsFd.Read()
-	//		if err != nil {
-	//			if errors.Is(err, perf.ErrClosed) {
-	//				return
-	//			}
-	//			log.Printf("reading from perf event reader: %s", err)
-	//			continue
-	//		}
-	//
-	//		if record.LostSamples != 0 {
-	//			log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
-	//			continue
-	//		}
-	//
-	//		// Parse the perf event entry into an Event structure.
-	//		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
-	//			log.Printf("parsing perf event: %s", err)
-	//			continue
-	//		}
-	//
-	//		var downstreamAddr, upstreamAddr string
-	//		if syscall.AF_INET == event.Family {
-	//			downstreamAddr = parseAddressV4(event.DownstreamAddrV4)
-	//			upstreamAddr = parseAddressV4(event.UpstreamAddrV4)
-	//		} else {
-	//			downstreamAddr = parseAddressV6(event.DownstreamAddrV6)
-	//			upstreamAddr = parseAddressV6(event.UpstreamAddrV6)
-	//		}
-	//		fmt.Printf("TCP DROP: familu: %d: %s:%d(in %d(%s)) -> %s:%d\n", event.Family, downstreamAddr, parsePort(uint16(event.DownstreamPort)),
-	//			event.Pid, event.Comm, upstreamAddr, parsePort(uint16(event.UpstreamPort)))
-	//	}
-	//}()
+	eventsFd, err := perf.NewReader(objs.Events, os.Getpagesize())
+	if err != nil {
+		log.Fatalf("creating perf event sock data reader: %s", err)
+	}
+	defer eventsFd.Close()
+
+	go func() {
+		var event TcpRetransmitEvent
+		for {
+			record, err := eventsFd.Read()
+			if err != nil {
+				if errors.Is(err, perf.ErrClosed) {
+					return
+				}
+				log.Printf("reading from perf event reader: %s", err)
+				continue
+			}
+
+			if record.LostSamples != 0 {
+				log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
+				continue
+			}
+
+			// Parse the perf event entry into an Event structure.
+			if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
+				log.Printf("parsing perf event: %s", err)
+				continue
+			}
+
+			var downstreamAddr, upstreamAddr string
+			if syscall.AF_INET == event.Family {
+				downstreamAddr = parseAddressV4(event.DownstreamAddrV4)
+				upstreamAddr = parseAddressV4(event.UpstreamAddrV4)
+			} else {
+				downstreamAddr = parseAddressV6(event.DownstreamAddrV6)
+				upstreamAddr = parseAddressV6(event.UpstreamAddrV6)
+			}
+			fmt.Printf("TCP RETRANSMIT: familu: %d: %s:%d(in %d(%s)) -> %s:%d, len: %d\n", event.Family, downstreamAddr, parsePort(uint16(event.DownstreamPort)),
+				event.Pid, event.Comm, upstreamAddr, parsePort(uint16(event.UpstreamPort)), event.Len)
+		}
+	}()
 
 	<-stopper
 	log.Println("Received signal, exiting program..")

@@ -42,3 +42,8 @@ struct sock {
 	struct sock_common	__sk_common;
 	struct socket		*sk_socket;
 } __attribute__((preserve_access_index));
+
+struct sk_buff {
+	unsigned int len;
+	unsigned int data_len;
+} __attribute__((preserve_access_index));

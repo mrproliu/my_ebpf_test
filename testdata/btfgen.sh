@@ -34,6 +34,7 @@ fi
 ${TMPDIR}/btfhub/tools/btfgen.sh -a ${ARCH} \
   -o $FROM/tcpconnect/bpf_bpfel.o \
   -o $FROM/tcptrace/bpf_bpfel.o \
+  -o $FROM/tcpretransmit/bpf_bpfel.o \
   -o $FROM/tcpdrop/bpf_bpfel.o
 mkdir -p ${OUTPUT}
 cp -r ${TMPDIR}/btfhub/custom-archive/* ${OUTPUT}

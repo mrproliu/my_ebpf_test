@@ -351,7 +351,7 @@ int tcp_rcv_established(struct pt_regs* ctx) {
     data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args) {
         struct sock *sk = (void *)PT_REGS_PARM1(ctx);
-        struct tcp_sock *tcp_sock = bpf_skc_to_tcp_sock(sk);
+        struct tcp_sock *tcp_sock = (struct tcp_sock *)sk;
         if (tcp_sock != NULL) {
             __u32 srtt;
             BPF_CORE_READ_INTO(&srtt, tcp_sock, srtt_us);

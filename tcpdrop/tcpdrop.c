@@ -38,8 +38,9 @@ SEC("kprobe/tcp_drop")
 int tcp_drop(struct pt_regs *ctx) {
     struct sock *s = (void *)PT_REGS_PARM1(ctx);
     __u64 id = bpf_get_current_pid_tgid();
+    __u32 tgid = id >> 32;
     struct tcp_drop_event event = {};
-    event.pid = id >> 32;
+    event.pid = tgid;
     bpf_get_current_comm(&event.comm, sizeof(event.comm));
     short unsigned int skc_family;
     __u16 port;

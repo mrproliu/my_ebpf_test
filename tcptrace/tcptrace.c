@@ -59,7 +59,9 @@ static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 fro
         struct sock* s;
         BPF_CORE_READ_INTO(&s, socket, sk);
 
-        BPF_CORE_READ_INTO(&con.socket_family, s, __sk_common.skc_family);
+        short unsigned int skc_family;
+        BPF_CORE_READ_INTO(&skc_family, s, __sk_common.skc_family);
+        bpf_printk("create new connection from socket, family: %d\n", skc_family);
         if (con.socket_family == AF_INET) {
             BPF_CORE_READ_INTO(&con.upstream_port, s, __sk_common.skc_num);
             BPF_CORE_READ_INTO(&con.upstream_addr_v4, s, __sk_common.skc_rcv_saddr);

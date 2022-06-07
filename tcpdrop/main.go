@@ -109,8 +109,8 @@ func main() {
 			} else {
 				upstreamAddr = parseAddressV6(event.UpstreamAddrV6)
 			}
-			fmt.Printf("TCP DROP: %s:%d(in %d) -> %s:%d\n", upstreamAddr, parsePort(uint16(event.UpstreamPort)),
-				event.Pid, downstreamAddr, parsePort(uint16(event.DownstreamPort)))
+			fmt.Printf("TCP DROP: %s:%d(in %d) -> %s:%d\n", downstreamAddr, parsePort(uint16(event.DownstreamPort)),
+				event.Pid, upstreamAddr, parsePort(uint16(event.UpstreamPort)))
 		}
 	}()
 

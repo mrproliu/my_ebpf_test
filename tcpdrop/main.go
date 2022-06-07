@@ -100,14 +100,11 @@ func main() {
 			}
 
 			var downstreamAddr, upstreamAddr string
-			if event.DownstreamAddrV4 != 0 {
+			if syscall.AF_INET == event.Family {
 				downstreamAddr = parseAddressV4(event.DownstreamAddrV4)
-			} else {
-				downstreamAddr = parseAddressV6(event.DownstreamAddrV6)
-			}
-			if event.UpstreamAddrV4 != 0 {
 				upstreamAddr = parseAddressV4(event.UpstreamAddrV4)
 			} else {
+				downstreamAddr = parseAddressV6(event.DownstreamAddrV6)
 				upstreamAddr = parseAddressV6(event.UpstreamAddrV6)
 			}
 			fmt.Printf("TCP DROP: familu: %d: %s:%d(in %d(%s)) -> %s:%d\n", event.Family, downstreamAddr, parsePort(uint16(event.DownstreamPort)),

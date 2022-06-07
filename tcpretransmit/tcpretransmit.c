@@ -47,6 +47,8 @@ int tcp_retransmit(struct pt_regs *ctx) {
     bpf_get_current_comm(&event.comm, sizeof(event.comm));
     __u16 skc_family, port;
     BPF_CORE_READ_INTO(&skc_family, s, __sk_common.skc_family);
+    unsigned int len;
+    BPF_CORE_READ_INTO(&len, buff, len);
     event.skc_family = skc_family;
     if (skc_family == AF_INET) {
         BPF_CORE_READ_INTO(&port, s, __sk_common.skc_num);
@@ -66,7 +68,6 @@ int tcp_retransmit(struct pt_regs *ctx) {
         bpf_printk("now ip retransmit so ignore: %d\n", skc_family);
         return 0;
     }
-    BPF_CORE_READ_INTO(&event.len, buff, len);
     bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, &event, sizeof(event));
     return 0;
 }

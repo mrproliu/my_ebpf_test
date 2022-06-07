@@ -37,7 +37,6 @@ struct sock_opts_event {
     __u32 downstream_addr_v4;
     __u8 downstream_addr_v6[16];
     __u32 downstream_port;
-    __u32 test;
     __u64 exe_time;
 };
 struct {

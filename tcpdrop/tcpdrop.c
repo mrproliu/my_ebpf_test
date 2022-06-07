@@ -21,6 +21,7 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 struct tcp_drop_event {
     __u32 pid;
     char comm[128];
+    __u16 skc_family;
     __u32 upstream_addr_v4;
     __u8 upstream_addr_v6[16];
     __u32 upstream_port;
@@ -42,9 +43,9 @@ int tcp_drop(struct pt_regs *ctx) {
     struct tcp_drop_event event = {};
     event.pid = tgid;
     bpf_get_current_comm(&event.comm, sizeof(event.comm));
-    short unsigned int skc_family;
-    __u16 port;
+    __u16 skc_family, port;
     BPF_CORE_READ_INTO(&skc_family, s, __sk_common.skc_family);
+    event.skc_family = skc_family;
     if (skc_family == AF_INET) {
         BPF_CORE_READ_INTO(&port, s, __sk_common.skc_num);
         event.downstream_port = port;

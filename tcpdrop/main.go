@@ -26,6 +26,7 @@ import (
 type TcpDropEvent struct {
 	Pid              uint32
 	Comm             [128]byte
+	Family           uint16
 	UpstreamAddrV4   uint32
 	UpstreamAddrV6   [16]uint8
 	UpstreamPort     uint32
@@ -109,8 +110,8 @@ func main() {
 			} else {
 				upstreamAddr = parseAddressV6(event.UpstreamAddrV6)
 			}
-			fmt.Printf("TCP DROP: %s:%d(in %d) -> %s:%d\n", downstreamAddr, parsePort(uint16(event.DownstreamPort)),
-				event.Pid, upstreamAddr, parsePort(uint16(event.UpstreamPort)))
+			fmt.Printf("TCP DROP: familu: %d: %s:%d(in %d(%s)) -> %s:%d\n", event.Family, downstreamAddr, parsePort(uint16(event.DownstreamPort)),
+				event.Pid, event.Comm, upstreamAddr, parsePort(uint16(event.UpstreamPort)))
 		}
 	}()
 

@@ -109,6 +109,7 @@ static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 fro
     memcpy(opts_event.downstream_addr_v6, con.downstream_addr_v6, 16*sizeof(__u8));
     opts_event.downstream_port = con.downstream_port;
     opts_event.exe_time = curr_nacs - start_nacs;
+    bpf_printk("execute time: start: %d, cur: %d, exe: %d", start_nacs, curr_nacs, opts_event.exe_time);
 
     bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));
 

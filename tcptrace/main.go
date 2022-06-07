@@ -33,13 +33,13 @@ type SocketOptsEvent struct {
 	Pid              uint32
 	Comm             [128]byte
 	SocketFd         uint32
+	ExeTime          uint64
 	UpstreamAddrV4   uint32
 	UpstreamAddrV6   [16]uint8
 	UpstreamPort     uint32
 	DownStreamAddrV4 uint32
 	DownStreamAddrV6 [16]uint8
 	DownStreamPort   uint32
-	ExeTime          uint64
 }
 
 type SocketDataEvent struct {

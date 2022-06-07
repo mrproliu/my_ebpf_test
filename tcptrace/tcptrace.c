@@ -114,7 +114,6 @@ static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 fro
     opts_event.downstream_addr_v4 = con.downstream_addr_v4;
     memcpy(opts_event.downstream_addr_v6, con.downstream_addr_v6, 16*sizeof(__u8));
     opts_event.downstream_port = con.downstream_port;
-    opts_event.test = 1;
     opts_event.exe_time = curr_nacs - start_nacs;
     bpf_printk("execute time: start: %d, cur: %d, exe: %d\n", start_nacs, curr_nacs, opts_event.exe_time);
 

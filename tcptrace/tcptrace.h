@@ -124,7 +124,7 @@ static __inline struct sock_data_event_t* create_sock_data() {
 }
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
-	__uint(max_entries, 4096);
+	__uint(max_entries, 1024 * 20);
 } socket_data_events_queue SEC(".maps");
 
 // syscall:close

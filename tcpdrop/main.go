@@ -26,7 +26,7 @@ import (
 type TcpDropEvent struct {
 	Pid              uint32
 	Comm             [128]byte
-	Family           uint16
+	Family           uint32
 	UpstreamAddrV4   uint32
 	UpstreamAddrV6   [16]uint8
 	UpstreamPort     uint32

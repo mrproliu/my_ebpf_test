@@ -21,7 +21,7 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 struct tcp_drop_event {
     __u32 pid;
     char comm[128];
-    __u16 skc_family;
+    __u32 skc_family;
     __u32 upstream_addr_v4;
     __u8 upstream_addr_v6[16];
     __u32 upstream_port;

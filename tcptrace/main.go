@@ -22,6 +22,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 	"unsafe"
 )
 
@@ -205,7 +206,7 @@ func main() {
 				base = fmt.Sprintf("CLOSE: %d(%s)", event.Pid, event.Comm)
 			}
 
-			fmt.Printf("%s, execute time: %dns, socket fd: %d\n", base, event.ExeTime, event.SocketFd)
+			fmt.Printf("%s, execute time: %dms, socket fd: %d\n", base, time.Duration(event.ExeTime).Milliseconds(), event.SocketFd)
 		}
 	}()
 

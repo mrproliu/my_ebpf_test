@@ -182,14 +182,25 @@ func main() {
 				continue
 			}
 
+			var downstreamAddr, upstreamAddr string
+			if event.DownStreamAddrV4 != 0 {
+				downstreamAddr = parseAddressV4(event.DownStreamAddrV4)
+			} else {
+				downstreamAddr = parseAddressV6(event.DownStreamAddrV6)
+			}
+			if event.UpstreamAddrV4 != 0 {
+				upstreamAddr = parseAddressV4(event.UpstreamAddrV4)
+			} else {
+				upstreamAddr = parseAddressV6(event.UpstreamAddrV6)
+			}
 			var base string
 			switch event.Type {
 			case 1:
-				base = fmt.Sprintf("CONNECT: %s:%d(in %d(%s)) -> %s:%d", parseAddressV4(event.UpstreamAddrV4), parsePort(uint16(event.UpstreamPort)),
-					event.Pid, event.Comm, parseAddressV4(event.DownStreamAddrV4), parsePort(uint16(event.DownStreamPort)))
+				base = fmt.Sprintf("CONNECT: %s:%d(in %d(%s)) -> %s:%d", upstreamAddr, parsePort(uint16(event.UpstreamPort)),
+					event.Pid, event.Comm, downstreamAddr, parsePort(uint16(event.DownStreamPort)))
 			case 2:
-				base = fmt.Sprintf("ACCEPT: %s:%d -> %s:%d(in %d(%s))", parseAddressV4(event.DownStreamAddrV4), event.DownStreamPort,
-					parseAddressV4(event.UpstreamAddrV4), parsePort(parsePort(uint16(event.UpstreamPort))), event.Pid, event.Comm)
+				base = fmt.Sprintf("ACCEPT: %s:%d -> %s:%d(in %d(%s))", downstreamAddr, event.DownStreamPort,
+					upstreamAddr, parsePort(parsePort(uint16(event.UpstreamPort))), event.Pid, event.Comm)
 			case 3:
 				base = fmt.Sprintf("CLOSE: %d(%s)", event.Pid, event.Comm)
 			}

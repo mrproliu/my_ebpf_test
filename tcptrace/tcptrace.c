@@ -71,7 +71,6 @@ static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 fro
             BPF_CORE_READ_INTO(&port, s, __sk_common.skc_dport);
             con.downstream_port = port;
             BPF_CORE_READ_INTO(&con.downstream_addr_v4, s, __sk_common.skc_daddr);
-            bpf_printk("new connect v4: %d->%d\n", con.upstream_addr_v4, con.downstream_addr_v4);
         } else if (con.socket_family == AF_INET6) {
             BPF_CORE_READ_INTO(&port, s, __sk_common.skc_num);
             con.upstream_port = port;
@@ -165,8 +164,8 @@ int sys_connect_ret(struct pt_regs *ctx) {
 	return 0;
 }
 
-SEC("kprobe/tcp_v4_v6_connect")
-int tcp_v4_v6_connect(struct pt_regs *ctx) {
+SEC("kprobe/tcp_connect")
+int tcp_connect(struct pt_regs *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
     struct connect_args_t *connect_args;
 
@@ -284,7 +283,6 @@ int sys_close_ret(struct pt_regs* ctx) {
     bpf_map_delete_elem(&writing_args, &id);
     return 0;
 }
-
 
 SEC("kprobe/__sys_recvfrom")
 int sys_recvfrom(struct pt_regs* ctx) {

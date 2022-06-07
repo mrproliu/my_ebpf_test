@@ -65,7 +65,7 @@ type bpfProgramSpecs struct {
 	SysRecvfromRet *ebpf.ProgramSpec `ebpf:"sys_recvfrom_ret"`
 	SysSendto      *ebpf.ProgramSpec `ebpf:"sys_sendto"`
 	SysSendtoRet   *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
-	TcpV4V6Connect *ebpf.ProgramSpec `ebpf:"tcp_v4_v6_connect"`
+	TcpConnect     *ebpf.ProgramSpec `ebpf:"tcp_connect"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
@@ -139,7 +139,7 @@ type bpfPrograms struct {
 	SysRecvfromRet *ebpf.Program `ebpf:"sys_recvfrom_ret"`
 	SysSendto      *ebpf.Program `ebpf:"sys_sendto"`
 	SysSendtoRet   *ebpf.Program `ebpf:"sys_sendto_ret"`
-	TcpV4V6Connect *ebpf.Program `ebpf:"tcp_v4_v6_connect"`
+	TcpConnect     *ebpf.Program `ebpf:"tcp_connect"`
 }
 
 func (p *bpfPrograms) Close() error {
@@ -155,7 +155,7 @@ func (p *bpfPrograms) Close() error {
 		p.SysRecvfromRet,
 		p.SysSendto,
 		p.SysSendtoRet,
-		p.TcpV4V6Connect,
+		p.TcpConnect,
 	)
 }
 

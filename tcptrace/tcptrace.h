@@ -87,6 +87,7 @@ struct sock_data_args_t {
     __u32 fd;
     const char* buf;
     __u64 start_nacs;
+    __u32 rtt;
 };
 
 struct {

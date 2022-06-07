@@ -350,7 +350,16 @@ int tcp_rcv_established(struct pt_regs* ctx) {
     struct sock_data_args_t *data_args;
     data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args) {
-        bpf_printk("tcp rcv call\n");
+        struct sock *sk = (void *)PT_REGS_PARM1(ctx);
+        struct tcp_sock *tcp_sock = bpf_skc_to_tcp_sock(sk);
+        if (tcp_sock != NULL) {
+            __u32 srtt;
+            BPF_CORE_READ_INTO(&srtt, tcp_sock, srtt_us);
+            data_args->rtt = srtt >> 3;
+            bpf_printk("tcp sock srtt: %d -> %d", srtt, data_args->rtt);
+        } else {
+            bpf_printk("tcp sock not found\n");
+        }
     }
     return 0;
 }

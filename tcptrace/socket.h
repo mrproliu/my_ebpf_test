@@ -42,3 +42,7 @@ struct sock {
 	struct sock_common	__sk_common;
 	struct socket		*sk_socket;
 } __attribute__((preserve_access_index));
+
+struct tcp_sock {
+	__u32 srtt_us;
+} __attribute__((preserve_access_index));

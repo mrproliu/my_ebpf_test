@@ -53,6 +53,8 @@ struct active_connection_t {
     __u32 sockfd;
     // the type of role in current connection
     __u32 role;
+    // socket type
+    __u32 socket_family;
     // upstream(works on server and client side)
     __u32 upstream_addr_v4;
     __u8 upstream_addr_v6[16];

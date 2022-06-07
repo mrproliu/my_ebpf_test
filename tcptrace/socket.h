@@ -29,6 +29,7 @@ struct sock_common {
 			__u16	skc_num;
 		} __attribute__((preserve_access_index));
 	};
+	short unsigned int skc_family;
 	struct in6_addr_redefine		skc_v6_daddr;
     struct in6_addr_redefine		skc_v6_rcv_saddr;
 } __attribute__((preserve_access_index));

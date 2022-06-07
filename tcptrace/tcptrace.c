@@ -48,49 +48,65 @@ static __inline void submit_close_connection(struct pt_regs* ctx, __u32 tgid, __
 
 static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type, __u32 tgid, __u32 fd,
                                             struct sockaddr* addr, const struct socket* socket) {
+    // active connection save
+    struct active_connection_t con = {};
+    con.pid = tgid;
+    bpf_get_current_comm(&con.comm, sizeof(con.comm));
+    con.sockfd = fd;
+    con.role = CONNECTION_ROLE_TYPE_CLIENT;
+    if (socket != NULL) {
+        // only get from accept function(server side)
+        struct sock* s;
+        BPF_CORE_READ_INTO(&s, socket, sk);
+
+        BPF_CORE_READ_INTO(&con.socket_family, s, __sk_common.skc_family);
+        if (con.socket_family == AF_INET) {
+            BPF_CORE_READ_INTO(&con.upstream_port, s, __sk_common.skc_num);
+            BPF_CORE_READ_INTO(&con.upstream_addr_v4, s, __sk_common.skc_rcv_saddr);
+            BPF_CORE_READ_INTO(&con.downstream_port, s, __sk_common.skc_dport);
+            BPF_CORE_READ_INTO(&con.downstream_addr_v4, s, __sk_common.skc_daddr);
+        } else if (con.socket_family == AF_INET6) {
+            BPF_CORE_READ_INTO(&con.upstream_port, s, __sk_common.skc_num);
+            BPF_CORE_READ_INTO(&con.upstream_addr_v6, s, __sk_common.skc_v6_rcv_saddr.in6_u.u6_addr8);
+
+            BPF_CORE_READ_INTO(&con.downstream_port, s, __sk_common.skc_dport);
+            BPF_CORE_READ_INTO(&con.downstream_addr_v6, s, __sk_common.skc_v6_daddr.in6_u.u6_addr8);
+       }
+    } else if (addr != NULL) {
+        con.socket_family = _(addr->sa_family);
+        if (con.socket_family == AF_INET) {
+            struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
+            bpf_probe_read(&con.upstream_addr_v4, sizeof(con.upstream_addr_v4), &daddr->sin_addr.s_addr);
+            bpf_probe_read(&con.upstream_port, sizeof(con.upstream_port), &daddr->sin_port);
+        } else if (con.socket_family == AF_INET6) {
+            struct sockaddr_in6 *daddr = (struct sockaddr_in6 *)addr;
+            bpf_probe_read(&con.upstream_addr_v6, sizeof(con.upstream_addr_v6), &daddr->sin6_addr.s6_addr);
+            bpf_probe_read(&con.upstream_port, sizeof(con.upstream_port), &daddr->sin6_port);
+        }
+    }
+    __u64 conid = gen_tgid_fd(tgid, fd);
+    bpf_map_update_elem(&active_connection_map, &conid, &con, 0);
+
+    if (con.socket_family != AF_INET && con.socket_family != AF_INET6) {
+        bpf_printk("current create connect is not ip address, so ignores. %d\n", con.socket_family);
+        return;
+    }
+
     // event send
     struct sock_opts_event opts_event = {};
     opts_event.type = from_type;
     opts_event.pid = tgid;
     bpf_get_current_comm(&opts_event.comm, sizeof(opts_event.comm));
     opts_event.sockfd = fd;
-    // TODO support ipv4 for now
-    if (addr != NULL) {
-        struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
-        bpf_probe_read(&opts_event.upstream_addr_v4, sizeof(opts_event.upstream_addr_v4), &daddr->sin_addr.s_addr);
-        bpf_probe_read(&opts_event.upstream_port, sizeof(opts_event.upstream_port), &daddr->sin_port);
-//        opts_event.upstream_port = bpf_ntohs(opts_event.upstream_port);
-    }
-    if (socket != NULL) {
-        // only get from accept function(server side)
-        struct sock* s;
-        BPF_CORE_READ_INTO(&s, socket, sk);
-
-        BPF_CORE_READ_INTO(&opts_event.upstream_port, s, __sk_common.skc_num);
-        BPF_CORE_READ_INTO(&opts_event.upstream_addr_v4, s, __sk_common.skc_rcv_saddr);
-
-        BPF_CORE_READ_INTO(&opts_event.downstream_port, s, __sk_common.skc_dport);
-        BPF_CORE_READ_INTO(&opts_event.downstream_addr_v4, s, __sk_common.skc_daddr);
-//        opts_event.upstream_port = bpf_ntohs(bpf_ntohs(opts_event.upstream_port));
-//        opts_event.downstream_port = bpf_ntohs(bpf_ntohs(opts_event.downstream_port));
-    }
+    opts_event.upstream_addr_v4 = con.upstream_addr_v4;
+    memcpy(opts_event.upstream_addr_v6, con.upstream_addr_v6, 16*sizeof(__u8));
+    opts_event.upstream_port = con.upstream_port;
+    opts_event.downstream_addr_v4 = con.downstream_addr_v4;
+    memcpy(opts_event.downstream_addr_v6, con.downstream_addr_v6, 16*sizeof(__u8));
+    opts_event.downstream_port = con.downstream_port;
 
     bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));
 
-    // active connection save
-    struct active_connection_t con = {};
-    con.pid = tgid;
-//    strcpy(con.comm, opts_event.comm);
-    con.sockfd = fd;
-    con.role = CONNECTION_ROLE_TYPE_CLIENT;
-    con.upstream_addr_v4 = opts_event.upstream_addr_v4;
-    memcpy(con.upstream_addr_v6, opts_event.upstream_addr_v6, 16*sizeof(__u8));
-    con.upstream_port = opts_event.upstream_port;
-    con.downstream_addr_v4 = opts_event.downstream_addr_v4;
-//    strcpy(con.downstream_addr_v6, opts_event.downstream_addr_v6);
-    con.downstream_port = opts_event.downstream_port;
-    __u64 conid = gen_tgid_fd(tgid, fd);
-    bpf_map_update_elem(&active_connection_map, &conid, &con, 0);
 }
 
 static __inline void process_connect(struct pt_regs* ctx, __u64 id, struct connect_args_t *connect_args) {

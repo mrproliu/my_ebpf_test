@@ -62,7 +62,6 @@ static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 fro
 
         short unsigned int skc_family;
         BPF_CORE_READ_INTO(&skc_family, s, __sk_common.skc_family);
-        bpf_printk("create new connection from socket, family: %d\n", skc_family);
         con.socket_family = skc_family;
         if (con.socket_family == AF_INET) {
             BPF_CORE_READ_INTO(&con.upstream_port, s, __sk_common.skc_num);
@@ -75,6 +74,10 @@ static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 fro
             BPF_CORE_READ_INTO(&con.upstream_addr_v6, s, __sk_common.skc_v6_rcv_saddr.in6_u.u6_addr8);
             BPF_CORE_READ_INTO(&con.downstream_port, s, __sk_common.skc_dport);
             BPF_CORE_READ_INTO(&con.downstream_addr_v6, s, __sk_common.skc_v6_daddr.in6_u.u6_addr8);
+       }
+
+       if (con.upstream_addr_v4 == 0 && con.downstream_addr_v4 == 0) {
+            bpf_printk("detected now v4 protocol request: port: %d->%d, family: %d\n", con.downstream_port, con.upstream_port, con.socket_family);
        }
     } else if (addr != NULL) {
         con.socket_family = _(addr->sa_family);

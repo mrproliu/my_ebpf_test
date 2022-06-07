@@ -127,7 +127,7 @@ static __inline void process_connect(struct pt_regs* ctx, __u64 id, struct conne
 
     struct sock *sock = connect_args->sock;
     struct socket *s = _(sock->sk_socket);
-    submit_new_connection(ctx, SOCKET_OPTS_TYPE_CONNECT, tgid, connect_args->start_nacs, connect_args->fd, connect_args->addr, s);
+    submit_new_connection(ctx, SOCKET_OPTS_TYPE_CONNECT, tgid, connect_args->fd, connect_args->start_nacs, connect_args->addr, s);
 }
 
 SEC("kprobe/__sys_connect")
@@ -151,6 +151,7 @@ int sys_connect_ret(struct pt_regs *ctx) {
 
     connect_args = bpf_map_lookup_elem(&conecting_args, &id);
     if (connect_args) {
+        bpf_printk("exit sys connect de: start time: %d\n", connect_args->start_nacs);
         process_connect(ctx, id, connect_args);
     }
 

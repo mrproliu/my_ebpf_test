@@ -55,6 +55,7 @@ static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 fro
     bpf_get_current_comm(&con.comm, sizeof(con.comm));
     con.sockfd = fd;
     con.role = CONNECTION_ROLE_TYPE_CLIENT;
+    __u16 port;
     if (socket != NULL) {
         // only get from accept function(server side)
         struct sock* s;
@@ -64,31 +65,33 @@ static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 fro
         BPF_CORE_READ_INTO(&skc_family, s, __sk_common.skc_family);
         con.socket_family = skc_family;
         if (con.socket_family == AF_INET) {
-            BPF_CORE_READ_INTO(&con.upstream_port, s, __sk_common.skc_num);
+            BPF_CORE_READ_INTO(&port, s, __sk_common.skc_num);
+            con.upstream_port = port;
             BPF_CORE_READ_INTO(&con.upstream_addr_v4, s, __sk_common.skc_rcv_saddr);
-            BPF_CORE_READ_INTO(&con.downstream_port, s, __sk_common.skc_dport);
+            BPF_CORE_READ_INTO(&port, s, __sk_common.skc_dport);
+            con.downstream_port = port;
             BPF_CORE_READ_INTO(&con.downstream_addr_v4, s, __sk_common.skc_daddr);
             bpf_printk("new connect v4: %d->%d\n", con.upstream_addr_v4, con.downstream_addr_v4);
         } else if (con.socket_family == AF_INET6) {
-            BPF_CORE_READ_INTO(&con.upstream_port, s, __sk_common.skc_num);
+            BPF_CORE_READ_INTO(&port, s, __sk_common.skc_num);
+            con.upstream_port = port;
             BPF_CORE_READ_INTO(&con.upstream_addr_v6, s, __sk_common.skc_v6_rcv_saddr.in6_u.u6_addr8);
-            BPF_CORE_READ_INTO(&con.downstream_port, s, __sk_common.skc_dport);
+            BPF_CORE_READ_INTO(&port, s, __sk_common.skc_dport);
+            con.downstream_port = port;
             BPF_CORE_READ_INTO(&con.downstream_addr_v6, s, __sk_common.skc_v6_daddr.in6_u.u6_addr8);
-       }
-
-       if (con.upstream_addr_v4 == 0 && con.downstream_addr_v4 == 0) {
-            bpf_printk("detected now v4 protocol request: port: %d->%d, family: %d\n", con.downstream_port, con.upstream_port, con.socket_family);
        }
     } else if (addr != NULL) {
         con.socket_family = _(addr->sa_family);
         if (con.socket_family == AF_INET) {
             struct sockaddr_in *daddr = (struct sockaddr_in *)addr;
             bpf_probe_read(&con.upstream_addr_v4, sizeof(con.upstream_addr_v4), &daddr->sin_addr.s_addr);
-            bpf_probe_read(&con.upstream_port, sizeof(con.upstream_port), &daddr->sin_port);
+            bpf_probe_read(&port, sizeof(con.upstream_port), &daddr->sin_port);
+            con.upstream_port = port;
         } else if (con.socket_family == AF_INET6) {
             struct sockaddr_in6 *daddr = (struct sockaddr_in6 *)addr;
             bpf_probe_read(&con.upstream_addr_v6, sizeof(con.upstream_addr_v6), &daddr->sin6_addr.s6_addr);
-            bpf_probe_read(&con.upstream_port, sizeof(con.upstream_port), &daddr->sin6_port);
+            bpf_probe_read(&port, sizeof(con.upstream_port), &daddr->sin6_port);
+            con.upstream_port = port;
         }
     }
     __u64 conid = gen_tgid_fd(tgid, fd);

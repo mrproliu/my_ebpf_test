@@ -7,6 +7,7 @@ struct connect_args_t {
     __u32 fd;
     struct sockaddr* addr;
     struct sock *sock;
+    __u64 start_nacs;
 };
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);
@@ -35,7 +36,8 @@ struct sock_opts_event {
     // downstream(only works on server side)
     __u32 downstream_addr_v4;
     __u8 downstream_addr_v6[16];
-    __u16 downstream_port;
+    __u32 downstream_port;
+    __u64 exe_time;
 };
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
@@ -138,6 +140,7 @@ struct accept_args_t {
     __u32 fd;
     struct sockaddr* addr;
     struct socket* socket;
+    __u64 start_nacs;
 };
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);

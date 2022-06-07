@@ -46,8 +46,9 @@ static __inline void submit_close_connection(struct pt_regs* ctx, __u32 tgid, __
     bpf_map_delete_elem(&active_connection_map, &conid);
 }
 
-static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type, __u32 tgid, __u32 fd,
+static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 from_type, __u32 tgid, __u32 fd, __u64 start_nacs,
                                             struct sockaddr* addr, const struct socket* socket) {
+    __u64 curr_nacs = bpf_ktime_get_ns();
     // active connection save
     struct active_connection_t con = {};
     con.pid = tgid;
@@ -107,6 +108,7 @@ static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 fro
     opts_event.downstream_addr_v4 = con.downstream_addr_v4;
     memcpy(opts_event.downstream_addr_v6, con.downstream_addr_v6, 16*sizeof(__u8));
     opts_event.downstream_port = con.downstream_port;
+    opts_event.exe_time = curr_nacs - start_nacs;
 
     bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));
 
@@ -124,7 +126,7 @@ static __inline void process_connect(struct pt_regs* ctx, __u64 id, struct conne
 
     struct sock *sock = connect_args->sock;
     struct socket *s = _(sock->sk_socket);
-    submit_new_connection(ctx, SOCKET_OPTS_TYPE_CONNECT, tgid, connect_args->fd, connect_args->addr, s);
+    submit_new_connection(ctx, SOCKET_OPTS_TYPE_CONNECT, tgid, connect_args->start_nacs, connect_args->fd, connect_args->addr, s);
 }
 
 SEC("kprobe/__sys_connect")
@@ -134,6 +136,7 @@ int sys_connect(struct pt_regs *ctx) {
     struct connect_args_t connect_args = {};
     connect_args.fd = PT_REGS_PARM1(ctx);
     connect_args.addr = (void *)PT_REGS_PARM2(ctx);
+    connect_args.start_nacs = bpf_ktime_get_ns();
     bpf_map_update_elem(&conecting_args, &id, &connect_args, 0);
     bpf_printk("enter sys connect--: %d\n", id);
 	return 0;
@@ -319,6 +322,7 @@ int sys_accept(struct pt_regs *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
     struct accept_args_t sock = {};
     sock.addr = (void *)PT_REGS_PARM2(ctx);
+    sock.start_nacs = bpf_ktime_get_ns();
     bpf_map_update_elem(&accepting_args, &id, &sock, 0);
     return 0;
 }
@@ -330,7 +334,7 @@ static __inline void process_accept(struct pt_regs* ctx, __u64 id, struct accept
     }
     __u32 tgid = id >> 32;
 
-    submit_new_connection(ctx, SOCKET_OPTS_TYPE_ACCEPT, tgid, fd, accept_args->addr, accept_args->socket);
+    submit_new_connection(ctx, SOCKET_OPTS_TYPE_ACCEPT, tgid, fd, accept_args->start_nacs, accept_args->addr, accept_args->socket);
 }
 
 

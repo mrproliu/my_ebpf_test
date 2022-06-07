@@ -38,7 +38,8 @@ type SocketOptsEvent struct {
 	UpstreamPort     uint32
 	DownStreamAddrV4 uint32
 	DownStreamAddrV6 [16]uint8
-	DownStreamPort   uint16
+	DownStreamPort   uint32
+	ExeTime          uint64
 }
 
 type SocketDataEvent struct {
@@ -185,7 +186,7 @@ func main() {
 			switch event.Type {
 			case 1:
 				base = fmt.Sprintf("CONNECT: %s:%d(in %d(%s)) -> %s:%d", parseAddressV4(event.UpstreamAddrV4), parsePort(uint16(event.UpstreamPort)),
-					event.Pid, event.Comm, parseAddressV4(event.DownStreamAddrV4), parsePort(event.DownStreamPort))
+					event.Pid, event.Comm, parseAddressV4(event.DownStreamAddrV4), parsePort(uint16(event.DownStreamPort)))
 			case 2:
 				base = fmt.Sprintf("ACCEPT: %s:%d -> %s:%d(in %d(%s))", parseAddressV4(event.DownStreamAddrV4), event.DownStreamPort,
 					parseAddressV4(event.UpstreamAddrV4), parsePort(parsePort(uint16(event.UpstreamPort))), event.Pid, event.Comm)
@@ -193,7 +194,7 @@ func main() {
 				base = fmt.Sprintf("CLOSE: %d(%s)", event.Pid, event.Comm)
 			}
 
-			fmt.Printf("%s, socket fd: %d\n", base, event.SocketFd)
+			fmt.Printf("%s, execute time: %dns, socket fd: %d\n", base, event.ExeTime, event.SocketFd)
 		}
 	}()
 

@@ -260,7 +260,7 @@ func main() {
 			default:
 				protocol = "UNKNOWN"
 			}
-			fmt.Printf("%s: %d(%s), protcol: %s, message: %s, socket fd: %d, size: %d, exe time: %dms\n", direction, event.Pid, event.Comm, protocol, message, event.SocketFd, event.BufferSize, float64(event.ExeTime)/1e6)
+			fmt.Printf("%s: %d(%s), protcol: %s, message: %s, socket fd: %d, size: %d, exe time: %fms\n", direction, event.Pid, event.Comm, protocol, message, event.SocketFd, event.BufferSize, float64(event.ExeTime)/1e6)
 			if event.MessageType == 1 {
 				request, err := http.ReadRequest(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])))
 				if err != nil {

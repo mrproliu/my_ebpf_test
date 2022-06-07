@@ -33,7 +33,7 @@ type TcpRetransmitEvent struct {
 	DownstreamAddrV4 uint32
 	DownstreamAddrV6 [16]uint8
 	DownstreamPort   uint32
-	Len              uint64
+	Len              uint32
 }
 
 func parsePort(val uint16) uint16 {

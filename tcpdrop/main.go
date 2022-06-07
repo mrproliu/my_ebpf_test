@@ -4,21 +4,12 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"ebpf_test/tools/btf"
 	"encoding/binary"
-	"errors"
-	"fmt"
-	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/link"
-	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
-	"github.com/hashicorp/go-multierror"
-	"io/ioutil"
 	"log"
 	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"

@@ -49,6 +49,7 @@ int tcp_retransmit(struct pt_regs *ctx) {
     BPF_CORE_READ_INTO(&skc_family, s, __sk_common.skc_family);
     unsigned int len;
     BPF_CORE_READ_INTO(&len, buff, len);
+    event.len = len;
     event.skc_family = skc_family;
     if (skc_family == AF_INET) {
         BPF_CORE_READ_INTO(&port, s, __sk_common.skc_num);

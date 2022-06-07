@@ -18,7 +18,7 @@
 
 char __license[] SEC("license") = "Dual MIT/GPL";
 
-SEC("kprobe:tcp_drop")
+SEC("kprobe/tcp_drop")
 int tcp_drop(struct pt_regs *ctx) {
 //    struct sock *sk = PT_REGS_PARM1(ctx);
     bpf_printk("detect tcp drop\n");

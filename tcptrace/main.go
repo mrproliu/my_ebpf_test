@@ -406,25 +406,35 @@ func main() {
 					fmt.Printf("%d, %s:%d -> %s:%d\n", event.SocketFamily, upstreamAddr, parsePort(parsePort(uint16(event.UpstreamPort))), downstreamAddr, parsePort(uint16(event.DownStreamPort)))
 				}
 			} else {
-				sockaddr, err := syscall.Getsockname(int(event.SocketFd))
+				connections := Tcp(int(event.Pid))
+				link := fmt.Sprintf("/proc/%d/fd/%d", event.Pid, event.SocketFd)
+				dest, err := os.Readlink(link)
 				if err != nil {
-					fmt.Errorf("------load local sock name error: %v\n", err)
+					log.Fatalf("---read sockfile path error: %s, %v", link, err)
+					continue
 				}
-				localAddr, localPort := getAddr(sockaddr)
-				peeraddr, err := syscall.Getpeername(int(event.SocketFd))
-				if err != nil {
-					fmt.Errorf("------load remote sock name error: %v\n", err)
+				if !strings.HasPrefix(dest, "socket[") {
+					log.Printf("---current socketfd:%d is not socket", event.SocketFd)
+					continue
 				}
 
-				remoteAddr, remotePort := getAddr(peeraddr)
-				if sockaddr == nil || peeraddr == nil {
-					fmt.Printf("---local: %v, remote: %v\n", sockaddr, peeraddr)
+				inode := strings.TrimSuffix(strings.TrimPrefix(dest, "socket["), "]")
+				found := false
+				for _, c := range connections {
+					if c.Inode == inode {
+						if event.DataDirection == 1 {
+							fmt.Printf("---load from linux fs, %s\n", c.Addr)
+						} else {
+							fmt.Printf("---load from linux fs, %s\n", c.ReverseAddr)
+						}
+						found = true
+					}
 				}
-				if event.DataDirection == 1 {
-					fmt.Printf("---load from syscall, %s:%d -> %s:%d\n", remoteAddr, remotePort, localAddr, localPort)
-				} else {
-					fmt.Printf("---load from syscall, %s:%d -> %s:%d\n", localAddr, localPort, remoteAddr, remotePort)
+
+				if !found {
+					fmt.Printf("---could not found the socket fd in: %v", connections)
 				}
+
 			}
 			//if event.MessageType == 1 {
 			//	request, err := http.ReadRequest(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])))
@@ -451,4 +461,144 @@ func main() {
 
 	<-stopper
 	log.Println("Received signal, exiting program..")
+}
+
+type ConnectionItem struct {
+	Addr        string `json:"addr" valid:"-"`
+	ReverseAddr string `json:"reverse_addr" valid:"-"`
+	SrcIP       string `json:"ip"`
+	SrcPort     string `json:"port"`
+	DestIP      string `json:"foreignip"`
+	DestPort    string `json:"foreignport"`
+	Inode       string
+}
+
+func parseNetworkLines(pid int) ([]string, error) {
+	pf := fmt.Sprintf("/proc/%d/net/tcp", pid)
+
+	data, err := ioutil.ReadFile(pf)
+	if err != nil {
+		fmt.Printf("read error: %v", err)
+		return nil, err
+	}
+
+	lines := strings.Split(string(data), "\n")
+	return lines[1 : len(lines)-1], nil
+}
+
+func hex2dec(hexstr string) string {
+	i, _ := strconv.ParseInt(hexstr, 16, 0)
+	return strconv.FormatInt(i, 10)
+}
+
+func hex2ip(hexstr string) (string, string) {
+	var ip string
+	if len(hexstr) != 8 {
+		err := "parse error"
+		return ip, err
+	}
+
+	i1, _ := strconv.ParseInt(hexstr[6:8], 16, 0)
+	i2, _ := strconv.ParseInt(hexstr[4:6], 16, 0)
+	i3, _ := strconv.ParseInt(hexstr[2:4], 16, 0)
+	i4, _ := strconv.ParseInt(hexstr[0:2], 16, 0)
+	ip = fmt.Sprintf("%d.%d.%d.%d", i1, i2, i3, i4)
+
+	return ip, ""
+}
+
+func parseAddr(str string) (string, string) {
+	l := strings.Split(str, ":")
+	if len(l) != 2 {
+		return str, ""
+	}
+
+	ip, err := hex2ip(l[0])
+	if err != "" {
+		return str, ""
+	}
+
+	return ip, hex2dec(l[1])
+}
+
+// convert hexadecimal to decimal.
+func hexToDec(h string) int64 {
+	d, err := strconv.ParseInt(h, 16, 32)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	return d
+}
+
+// remove empty data from line
+func removeEmpty(array []string) []string {
+	var columns []string
+	for _, i := range array {
+		if i == "" {
+			continue
+		}
+		columns = append(columns, i)
+	}
+	return columns
+}
+
+func netstat(pid int) ([]*ConnectionItem, error) {
+	var (
+		conns []*ConnectionItem
+	)
+
+	data, err := parseNetworkLines(pid)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, line := range data {
+		pp := getConnectionItem(line)
+		if pp == nil {
+			continue
+		}
+
+		conns = append(conns, pp)
+	}
+
+	return conns, nil
+}
+
+func getConnectionItem(line string) *ConnectionItem {
+	// local ip and port
+	source := strings.Split(strings.TrimSpace(line), " ")
+
+	// ignore local listenning records
+	destIP, destPort := parseAddr(source[2])
+	if destIP == "0.0.0.0" {
+		return nil
+	}
+
+	// source ip and port
+	ip, port := parseAddr(source[1])
+
+	// tcp 4 fileds
+	addr := ip + ":" + port + "->" + destIP + ":" + destPort
+	raddr := destIP + ":" + destPort + "->" + ip + ":" + port
+
+	inode := source[9]
+
+	cc := &ConnectionItem{
+		Addr:        addr,
+		ReverseAddr: raddr,
+		SrcIP:       ip,
+		SrcPort:     port,
+		DestIP:      destIP,
+		Inode:       inode,
+		DestPort:    destPort,
+	}
+	return cc
+}
+
+// Tcp func Get a slice of Process type with TCP data
+func Tcp(pid int) []*ConnectionItem {
+	data, _ := netstat(pid)
+	return data
 }

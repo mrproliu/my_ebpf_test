@@ -278,6 +278,8 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
         bpf_printk("-EINVAL\n");
     } else if (ret == -EOPNOTSUPP) {
         bpf_printk("-EOPNOTSUPP\n");
+    } else if (ret == -ENOSPC) {
+        bpf_printk("-ENOSPC;\n");
     }
     bpf_printk("data3: from: %d, data_direction: %d, ret: %d\n", args->func, data_direction, ret);
 }

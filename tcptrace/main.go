@@ -212,6 +212,11 @@ func main() {
 				continue
 			}
 
+			// for gcloud, remove output
+			if fmt.Sprintf("%s", event.Comm) == "sshd" {
+				continue
+			}
+
 			var downstreamAddr, upstreamAddr string
 			if event.DownStreamAddrV4 != 0 {
 				downstreamAddr = parseAddressV4(event.DownStreamAddrV4)

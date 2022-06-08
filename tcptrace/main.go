@@ -290,7 +290,8 @@ func main() {
 			}
 
 			// for gcloud terminal, remove output
-			if strings.Contains(fmt.Sprintf("%s", event.Comm), "sshd") {
+			comm := fmt.Sprintf("%s", event.Comm)
+			if strings.Contains(comm, "sshd") || strings.Contains(comm, "kubelet") || strings.Contains(comm, "containerd") {
 				continue
 			}
 

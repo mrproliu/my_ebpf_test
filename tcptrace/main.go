@@ -410,7 +410,7 @@ func main() {
 				link := fmt.Sprintf("/proc/%d/fd/%d", event.Pid, event.SocketFd)
 				dest, err := os.Readlink(link)
 				if err != nil {
-					log.Fatalf("---read sockfile path error: %s, %v", link, err)
+					log.Printf("---read sockfile path error: %s, %v", link, err)
 					continue
 				}
 				if !strings.HasPrefix(dest, "socket[") {

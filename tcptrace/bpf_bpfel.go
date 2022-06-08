@@ -67,6 +67,10 @@ type bpfProgramSpecs struct {
 	SysReadRet            *ebpf.ProgramSpec `ebpf:"sys_read_ret"`
 	SysRecvfrom           *ebpf.ProgramSpec `ebpf:"sys_recvfrom"`
 	SysRecvfromRet        *ebpf.ProgramSpec `ebpf:"sys_recvfrom_ret"`
+	SysSend               *ebpf.ProgramSpec `ebpf:"sys_send"`
+	SysSendRet            *ebpf.ProgramSpec `ebpf:"sys_send_ret"`
+	SysSendmsg            *ebpf.ProgramSpec `ebpf:"sys_sendmsg"`
+	SysSendmsgRet         *ebpf.ProgramSpec `ebpf:"sys_sendmsg_ret"`
 	SysSendto             *ebpf.ProgramSpec `ebpf:"sys_sendto"`
 	SysSendtoRet          *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
 	SysWrite              *ebpf.ProgramSpec `ebpf:"sys_write"`
@@ -150,6 +154,10 @@ type bpfPrograms struct {
 	SysReadRet            *ebpf.Program `ebpf:"sys_read_ret"`
 	SysRecvfrom           *ebpf.Program `ebpf:"sys_recvfrom"`
 	SysRecvfromRet        *ebpf.Program `ebpf:"sys_recvfrom_ret"`
+	SysSend               *ebpf.Program `ebpf:"sys_send"`
+	SysSendRet            *ebpf.Program `ebpf:"sys_send_ret"`
+	SysSendmsg            *ebpf.Program `ebpf:"sys_sendmsg"`
+	SysSendmsgRet         *ebpf.Program `ebpf:"sys_sendmsg_ret"`
 	SysSendto             *ebpf.Program `ebpf:"sys_sendto"`
 	SysSendtoRet          *ebpf.Program `ebpf:"sys_sendto_ret"`
 	SysWrite              *ebpf.Program `ebpf:"sys_write"`
@@ -175,6 +183,10 @@ func (p *bpfPrograms) Close() error {
 		p.SysReadRet,
 		p.SysRecvfrom,
 		p.SysRecvfromRet,
+		p.SysSend,
+		p.SysSendRet,
+		p.SysSendmsg,
+		p.SysSendmsgRet,
 		p.SysSendto,
 		p.SysSendtoRet,
 		p.SysWrite,

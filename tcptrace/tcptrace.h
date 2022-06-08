@@ -89,6 +89,8 @@ static __inline __u64 gen_tgid_fd(__u32 tgid, __u32 fd) {
 #define SOCK_DATA_FUNC_READ 3
 #define SOCK_DATA_FUNC_WRITE 4
 #define SOCK_DATA_FUNC_WRITEV 5
+#define SOCK_DATA_FUNC_SEND 6
+#define SOCK_DATA_FUNC_SENDMSG 7
 struct sock_data_args_t {
     __u32 func;
     __u32 fd;

@@ -78,6 +78,7 @@ func main() {
 	for _, t := range tcp {
 		fmt.Printf("%s: %s:%s -> %s:%s\n", t.Inode, t.SrcIP, t.SrcPort, t.DestIP, t.DestPort)
 	}
+
 }
 
 const (
@@ -140,6 +141,7 @@ func parseNetworkLines(tp string, pid int) ([]string, error) {
 		return nil, err
 	}
 
+	fmt.Printf("total data: \n%s", string(data))
 	lines := strings.Split(string(data), "\n")
 	return lines[1 : len(lines)-1], nil
 }

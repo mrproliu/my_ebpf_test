@@ -330,7 +330,7 @@ func main() {
 					upstreamAddr = parseAddressV6(event.UpstreamAddrV6)
 				}
 				if event.DataDirection == 1 {
-					fmt.Printf("%d, %s:%d -> %s:%d\n", event.SocketFamily, downstreamAddr, parsePort(uint16(event.DownStreamPort)), upstreamAddr, parsePort(parsePort(uint16(event.UpstreamPort))))
+					fmt.Printf("%d, %s:%d -> %s:%d\n", event.SocketFamily, downstreamAddr, parsePort(parsePort(uint16(event.DownStreamPort))), upstreamAddr, parsePort(parsePort(uint16(event.UpstreamPort))))
 				} else {
 					fmt.Printf("%d, %s:%d -> %s:%d\n", event.SocketFamily, upstreamAddr, parsePort(parsePort(uint16(event.UpstreamPort))), downstreamAddr, parsePort(uint16(event.DownStreamPort)))
 				}

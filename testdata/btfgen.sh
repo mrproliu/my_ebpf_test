@@ -23,13 +23,13 @@ FROM=$3
 OUTPUT=$4
 
 echo "btfhub-archive is a big archive project, maybe take some times..."
-#if [ -f "$TMPDIR/btfhub" ]; then
+if [ ! -d "$TMPDIR/btfhub" ]; then
     git clone --depth 1 https://github.com/aquasecurity/btfhub $TMPDIR/btfhub
-#fi
-#if [ -f "$TMPDIR/btfhub-archive" ]; then
+fi
+if [ ! -d "$TMPDIR/btfhub-archive" ]; then
     git clone --depth 1 https://github.com/aquasecurity/btfhub-archive/ $TMPDIR/btfhub-archive/
     mv $TMPDIR/btfhub-archive/* $TMPDIR/btfhub/archive/
-#fi
+fi
 
 ${TMPDIR}/btfhub/tools/btfgen.sh -a ${ARCH} \
   -o $FROM/tcpconnect/bpf_bpfel.o \

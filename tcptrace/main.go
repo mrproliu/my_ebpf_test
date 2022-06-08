@@ -262,7 +262,23 @@ func main() {
 				continue
 			}
 			if strings.Contains(fmt.Sprintf("%s", event.Comm), "nginx") {
-				fmt.Printf("contians nginx: %v\n", event)
+				//fmt.Printf("contians nginx: %v\n", event)
+				fmt.Printf("nginx: ")
+
+				request, err := http.ReadRequest(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])))
+				if err == nil {
+					fmt.Printf("request host: %s, url: %s\n", request.Host, request.URL)
+				}
+
+				response, err := http.ReadResponse(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])), nil)
+				if err == nil {
+					body, err := ioutil.ReadAll(response.Body)
+					if err == nil {
+						fmt.Printf("response data: %s\n", string(body))
+					}
+				}
+
+				fmt.Printf("\n")
 			}
 
 			var direction string

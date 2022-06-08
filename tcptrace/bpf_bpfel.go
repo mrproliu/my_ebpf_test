@@ -69,6 +69,8 @@ type bpfProgramSpecs struct {
 	SysRecvfromRet        *ebpf.ProgramSpec `ebpf:"sys_recvfrom_ret"`
 	SysSend               *ebpf.ProgramSpec `ebpf:"sys_send"`
 	SysSendRet            *ebpf.ProgramSpec `ebpf:"sys_send_ret"`
+	SysSendmmsg           *ebpf.ProgramSpec `ebpf:"sys_sendmmsg"`
+	SysSendmmsgRet        *ebpf.ProgramSpec `ebpf:"sys_sendmmsg_ret"`
 	SysSendmsg            *ebpf.ProgramSpec `ebpf:"sys_sendmsg"`
 	SysSendmsgRet         *ebpf.ProgramSpec `ebpf:"sys_sendmsg_ret"`
 	SysSendto             *ebpf.ProgramSpec `ebpf:"sys_sendto"`
@@ -156,6 +158,8 @@ type bpfPrograms struct {
 	SysRecvfromRet        *ebpf.Program `ebpf:"sys_recvfrom_ret"`
 	SysSend               *ebpf.Program `ebpf:"sys_send"`
 	SysSendRet            *ebpf.Program `ebpf:"sys_send_ret"`
+	SysSendmmsg           *ebpf.Program `ebpf:"sys_sendmmsg"`
+	SysSendmmsgRet        *ebpf.Program `ebpf:"sys_sendmmsg_ret"`
 	SysSendmsg            *ebpf.Program `ebpf:"sys_sendmsg"`
 	SysSendmsgRet         *ebpf.Program `ebpf:"sys_sendmsg_ret"`
 	SysSendto             *ebpf.Program `ebpf:"sys_sendto"`
@@ -185,6 +189,8 @@ func (p *bpfPrograms) Close() error {
 		p.SysRecvfromRet,
 		p.SysSend,
 		p.SysSendRet,
+		p.SysSendmmsg,
+		p.SysSendmmsgRet,
 		p.SysSendmsg,
 		p.SysSendmsgRet,
 		p.SysSendto,

@@ -131,6 +131,7 @@ func main() {
 	}
 	defer objs.Close()
 
+	// try to using the tracepoint
 	linker := &MultipleLinker{}
 	linker.AddLink("__sys_connect", link.Kprobe, objs.SysConnect)
 	linker.AddLink("__sys_connect", link.Kretprobe, objs.SysConnectRet)
@@ -148,6 +149,8 @@ func main() {
 	linker.AddLink("__sys_sendto", link.Kretprobe, objs.SysSendtoRet)
 	linker.AddLink("__sys_sendmsg", link.Kprobe, objs.SysSendmsg)
 	linker.AddLink("__sys_sendmsg", link.Kretprobe, objs.SysSendmsgRet)
+	linker.AddLink("__sys_sendmmsg", link.Kprobe, objs.SysSendmmsg)
+	linker.AddLink("__sys_sendmmsg", link.Kretprobe, objs.SysSendmmsgRet)
 	linker.AddLink("__sys_recvfrom", link.Kprobe, objs.SysRecvfrom)
 	linker.AddLink("__sys_recvfrom", link.Kretprobe, objs.SysRecvfromRet)
 	linker.AddLink("sys_read", link.Kprobe, objs.SysRead)

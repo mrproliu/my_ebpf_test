@@ -252,7 +252,6 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
     }
     data->exe_time = curr_nacs - args->start_nacs;
     data->rtt = args->rtt;
-    bpf_printk("data1: from: %d\n", args->func);
 
     char *p = data->buf;
     sock_data_analyze_protocol(p, data_len, data);
@@ -267,7 +266,7 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
         memcpy(data->downstream_addr_v6, con->downstream_addr_v6, 16*sizeof(__u8));
         data->downstream_port = con->downstream_port;
     }
-    bpf_printk("data2: from: %d\n", args->func);
+    bpf_printk("data2: from: %d, data_direction: %d\n", args->func, data_direction);
     bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
 }
 

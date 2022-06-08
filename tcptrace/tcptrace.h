@@ -2,6 +2,18 @@
 
 #define MAX_DATA_SIZE_BUF 1
 
+struct trace_event_raw_sys_enter {
+	long int id;
+	long unsigned int args[6];
+	char __data[0];
+};
+
+struct trace_event_raw_sys_exit {
+	long int id;
+	long int ret;
+	char __data[0];
+};
+
 typedef enum
 {
     true=1, false=0

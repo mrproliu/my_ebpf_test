@@ -413,12 +413,12 @@ func main() {
 					log.Printf("---read sockfile path error: %s, %v", link, err)
 					continue
 				}
-				if !strings.HasPrefix(dest, "socket[") {
+				if !strings.HasPrefix(dest, "socket:[") {
 					log.Printf("---current socketfd:%d is not socket: %s", event.SocketFd, dest)
 					continue
 				}
 
-				inode := strings.TrimSuffix(strings.TrimPrefix(dest, "socket["), "]")
+				inode := strings.TrimSuffix(strings.TrimPrefix(dest, "socket:["), "]")
 				found := false
 				for _, c := range connections {
 					if c.Inode == inode {

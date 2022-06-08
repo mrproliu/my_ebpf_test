@@ -397,6 +397,13 @@ int tcp_rcv_established(struct pt_regs* ctx) {
     return 0;
 }
 
+//SEC("tracepoint/syscalls/sys_enter_writev")
+//int syscall__probe_entry_writev(struct trace_event_raw_sys_enter *ctx) {
+//    int fd = ctx->args[0];
+//    int len = ctx->args[2];
+//    bpf_printk("heelo writev: %d->%d\n", fd, len);
+//    return 0;
+//}
 //
 //SEC("tracepoint/syscalls/sys_enter_writev")
 //int syscall__probe_entry_writev(struct trace_event_raw_sys_enter *ctx) {
@@ -534,6 +541,7 @@ int sys_writev_ret(struct pt_regs* ctx) {
     data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args && data_args->sock_event) {
         process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_EGRESS, true);
+        bpf_printk("executing return writev\n");
     }
 
     bpf_map_delete_elem(&writing_args, &id);

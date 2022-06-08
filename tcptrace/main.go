@@ -156,8 +156,8 @@ func main() {
 	//linker.AddLink("__close_fd", link.Kprobe, objs.SysClose)
 	//linker.AddLink("__close_fd", link.Kretprobe, objs.SysCloseRet)
 
-	//linker.AddTracepoint("syscalls", "sys_exit_connect", objs.SysConnectRet)
-	//linker.AddTracepoint("syscalls", "sys_enter_sendto", objs.SyscallProbeEntryWrite)
+	//linker.AddTracepoint("syscalls", "sys_enter_writev", objs.SyscallProbeEntryWrite)
+	//linker.AddTracepoint("syscalls", "sys_exit_writev", objs.SysConnectRet)
 	linker.AddLink("sock_alloc", link.Kretprobe, objs.SockAllocRet)
 	//linker.AddLink("__inet_stream_connect", link.Kprobe, objs.SockFromFileRet)
 	linker.AddLink("tcp_connect", link.Kprobe, objs.TcpConnect)

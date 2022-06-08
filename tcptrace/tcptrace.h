@@ -1,6 +1,6 @@
 #pragma once
 
-#define MAX_DATA_SIZE_BUF 1024 * 3
+#define MAX_DATA_SIZE_BUF 1
 
 typedef enum
 {

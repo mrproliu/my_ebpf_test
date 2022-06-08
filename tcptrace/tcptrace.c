@@ -252,11 +252,13 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
     }
     data->exe_time = curr_nacs - args->start_nacs;
     data->rtt = args->rtt;
+    bpf_printk("data1: pid: %d, vecs: %d, from: %v\n", data->pid, vecs, args->func);
 
     char *p = data->buf;
     sock_data_analyze_protocol(p, data_len, data);
     __u64 conid = gen_tgid_fd(tgid, args->fd);
     struct active_connection_t* con = bpf_map_lookup_elem(&active_connection_map, &conid);
+    bpf_printk("data2: pid: %d, vecs: %d, from: %v\n", data->pid, vecs, args->func);
     if (con != NULL) {
         data->socket_family = con->socket_family;
         data->upstream_addr_v4 = con->upstream_addr_v4;
@@ -266,7 +268,7 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
         memcpy(data->downstream_addr_v6, con->downstream_addr_v6, 16*sizeof(__u8));
         data->downstream_port = con->downstream_port;
     }
-    bpf_printk("data: pid: %d, vecs: %d, from: %v\n", data->pid, vecs, args->func);
+    bpf_printk("data2: pid: %d, vecs: %d, from: %v\n", data->pid, vecs, args->func);
     bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
 }
 

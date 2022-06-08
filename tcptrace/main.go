@@ -137,6 +137,19 @@ func getAllContainedProcessIdList() ([]int, error) {
 	return res, nil
 }
 
+func getAddr(addr syscall.Sockaddr) (ip string, port int) {
+	switch addr.(type) {
+	case *syscall.SockaddrInet4:
+		inet4 := addr.(*syscall.SockaddrInet4)
+		ipv4Addr := inet4.Addr
+		ip = fmt.Sprintf("%d.%d.%d.%d", ipv4Addr[0], ipv4Addr[1], ipv4Addr[2], ipv4Addr[3])
+		port = inet4.Port
+	case *syscall.SockaddrInet6:
+		ip = "v6"
+	}
+	return ip, port
+}
+
 func main() {
 	pidList, err := getAllContainedProcessIdList()
 	if err != nil {
@@ -382,6 +395,22 @@ func main() {
 					fmt.Printf("%d, %s:%d -> %s:%d\n", event.SocketFamily, downstreamAddr, parsePort(parsePort(uint16(event.DownStreamPort))), upstreamAddr, parsePort(parsePort(uint16(event.UpstreamPort))))
 				} else {
 					fmt.Printf("%d, %s:%d -> %s:%d\n", event.SocketFamily, upstreamAddr, parsePort(parsePort(uint16(event.UpstreamPort))), downstreamAddr, parsePort(uint16(event.DownStreamPort)))
+				}
+			} else {
+				sockaddr, err := syscall.Getsockname(int(event.SocketFd))
+				if err != nil {
+					fmt.Errorf("------load local sock name error: %v\n", err)
+				}
+				localAddr, localPort := getAddr(sockaddr)
+				peeraddr, err := syscall.Getpeername(int(event.SocketFd))
+				if err != nil {
+					fmt.Errorf("------load remote sock name error: %v\n", err)
+				}
+				remoteAddr, remotePort := getAddr(peeraddr)
+				if event.DataDirection == 1 {
+					fmt.Printf("---load from syscall, %s:%d -> %s:%d\n", remoteAddr, remotePort, localAddr, localPort)
+				} else {
+					fmt.Printf("---load from syscall, %s:%d -> %s:%d\n", localAddr, localPort, remoteAddr, remotePort)
 				}
 			}
 			//if event.MessageType == 1 {

@@ -284,7 +284,11 @@ func main() {
 				} else {
 					upstreamAddr = parseAddressV6(event.UpstreamAddrV6)
 				}
-				fmt.Printf("family: %d, %s:%d -> %s:%d\n", event.SocketFamily, downstreamAddr, parsePort(uint16(event.DownStreamPort)), upstreamAddr, parsePort(parsePort(uint16(event.UpstreamPort))))
+				if event.DataDirection == 1 {
+					fmt.Printf("%d, %s:%d -> %s:%d\n", event.SocketFamily, downstreamAddr, parsePort(uint16(event.DownStreamPort)), upstreamAddr, parsePort(parsePort(uint16(event.UpstreamPort))))
+				} else {
+					fmt.Printf("%d, %s:%d -> %s:%d\n", event.SocketFamily, upstreamAddr, parsePort(parsePort(uint16(event.UpstreamPort))), downstreamAddr, parsePort(uint16(event.DownStreamPort)))
+				}
 			}
 			if event.MessageType == 1 {
 				request, err := http.ReadRequest(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])))

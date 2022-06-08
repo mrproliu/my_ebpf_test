@@ -196,7 +196,7 @@ int sys_sendto(struct pt_regs* ctx) {
     return 0;
 }
 
-static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count,
+static __always_inline  void process_write_data(void *ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count,
                                         __u32 data_direction, const bool vecs) {
     __u64 curr_nacs = bpf_ktime_get_ns();
     __u32 tgid = (__u32)(id >> 32);
@@ -398,21 +398,50 @@ int tcp_rcv_established(struct pt_regs* ctx) {
     return 0;
 }
 
-//SEC("tracepoint/syscalls/sys_enter_writev")
-//int syscall__probe_entry_writev(struct trace_event_raw_sys_enter *ctx) {
-//    int fd = ctx->args[0];
-//    int len = ctx->args[2];
-//    bpf_printk("heelo writev: %d->%d\n", fd, len);
-//    return 0;
-//}
-//
-//SEC("tracepoint/syscalls/sys_enter_writev")
-//int syscall__probe_entry_writev(struct trace_event_raw_sys_enter *ctx) {
-//    int fd = ctx->args[0];
-//    int len = ctx->args[2];
-//    bpf_printk("heelo writev: %d->%d\n", fd, len);
-//    return 0;
-//}
+struct trace_event_raw_sys_enter {
+	long int id;
+	long unsigned int args[6];
+	char __data[0];
+};
+
+struct trace_event_raw_sys_exit {
+	long int id;
+	long int ret;
+	char __data[0];
+};
+
+SEC("tracepoint/syscalls/sys_enter_writev")
+int tracepoint_sys_enter_writev(struct trace_event_raw_sys_enter *ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+
+    struct sock_data_args_t data_args = {};
+    data_args.func = SOCK_DATA_FUNC_WRITEV;
+    data_args.fd = ctx->args[1];
+    data_args.iov = (void *)ctx->args[2];
+    data_args.iovlen = ctx->args[3];
+    data_args.start_nacs = bpf_ktime_get_ns();
+    bpf_map_update_elem(&writing_args, &id, &data_args, 0);
+//    struct sock_opts_event t = {};
+//    __u64 ret = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t, sizeof(struct sock_opts_event));
+//    bpf_printk("writev send queue: %d\n", ret);
+    return 0;
+}
+
+SEC("tracepoint/syscalls/sys_exit_writev")
+int tracepoint_sys_exit_writev(struct trace_event_raw_sys_exit *ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+    struct sock_data_args_t *data_args;
+    ssize_t bytes_count = ctx->ret;
+
+    data_args = bpf_map_lookup_elem(&writing_args, &id);
+    if (data_args && data_args->sock_event) {
+        process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_EGRESS, true);
+        bpf_printk("executing return writev11\n");
+    }
+
+    bpf_map_delete_elem(&writing_args, &id);
+    return 0;
+}
 
 SEC("kprobe/__sys_accpet")
 int sys_accept(struct pt_regs *ctx) {

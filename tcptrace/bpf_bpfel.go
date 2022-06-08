@@ -54,33 +54,35 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
-	SecuritySocketRecvmsg *ebpf.ProgramSpec `ebpf:"security_socket_recvmsg"`
-	SecuritySocketSendmsg *ebpf.ProgramSpec `ebpf:"security_socket_sendmsg"`
-	SockAllocRet          *ebpf.ProgramSpec `ebpf:"sock_alloc_ret"`
-	SysAccept             *ebpf.ProgramSpec `ebpf:"sys_accept"`
-	SysAcceptRet          *ebpf.ProgramSpec `ebpf:"sys_accept_ret"`
-	SysClose              *ebpf.ProgramSpec `ebpf:"sys_close"`
-	SysCloseRet           *ebpf.ProgramSpec `ebpf:"sys_close_ret"`
-	SysConnect            *ebpf.ProgramSpec `ebpf:"sys_connect"`
-	SysConnectRet         *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
-	SysRead               *ebpf.ProgramSpec `ebpf:"sys_read"`
-	SysReadRet            *ebpf.ProgramSpec `ebpf:"sys_read_ret"`
-	SysRecvfrom           *ebpf.ProgramSpec `ebpf:"sys_recvfrom"`
-	SysRecvfromRet        *ebpf.ProgramSpec `ebpf:"sys_recvfrom_ret"`
-	SysSend               *ebpf.ProgramSpec `ebpf:"sys_send"`
-	SysSendRet            *ebpf.ProgramSpec `ebpf:"sys_send_ret"`
-	SysSendmmsg           *ebpf.ProgramSpec `ebpf:"sys_sendmmsg"`
-	SysSendmmsgRet        *ebpf.ProgramSpec `ebpf:"sys_sendmmsg_ret"`
-	SysSendmsg            *ebpf.ProgramSpec `ebpf:"sys_sendmsg"`
-	SysSendmsgRet         *ebpf.ProgramSpec `ebpf:"sys_sendmsg_ret"`
-	SysSendto             *ebpf.ProgramSpec `ebpf:"sys_sendto"`
-	SysSendtoRet          *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
-	SysWrite              *ebpf.ProgramSpec `ebpf:"sys_write"`
-	SysWriteRet           *ebpf.ProgramSpec `ebpf:"sys_write_ret"`
-	SysWritev             *ebpf.ProgramSpec `ebpf:"sys_writev"`
-	SysWritevRet          *ebpf.ProgramSpec `ebpf:"sys_writev_ret"`
-	TcpConnect            *ebpf.ProgramSpec `ebpf:"tcp_connect"`
-	TcpRcvEstablished     *ebpf.ProgramSpec `ebpf:"tcp_rcv_established"`
+	SecuritySocketRecvmsg    *ebpf.ProgramSpec `ebpf:"security_socket_recvmsg"`
+	SecuritySocketSendmsg    *ebpf.ProgramSpec `ebpf:"security_socket_sendmsg"`
+	SockAllocRet             *ebpf.ProgramSpec `ebpf:"sock_alloc_ret"`
+	SysAccept                *ebpf.ProgramSpec `ebpf:"sys_accept"`
+	SysAcceptRet             *ebpf.ProgramSpec `ebpf:"sys_accept_ret"`
+	SysClose                 *ebpf.ProgramSpec `ebpf:"sys_close"`
+	SysCloseRet              *ebpf.ProgramSpec `ebpf:"sys_close_ret"`
+	SysConnect               *ebpf.ProgramSpec `ebpf:"sys_connect"`
+	SysConnectRet            *ebpf.ProgramSpec `ebpf:"sys_connect_ret"`
+	SysRead                  *ebpf.ProgramSpec `ebpf:"sys_read"`
+	SysReadRet               *ebpf.ProgramSpec `ebpf:"sys_read_ret"`
+	SysRecvfrom              *ebpf.ProgramSpec `ebpf:"sys_recvfrom"`
+	SysRecvfromRet           *ebpf.ProgramSpec `ebpf:"sys_recvfrom_ret"`
+	SysSend                  *ebpf.ProgramSpec `ebpf:"sys_send"`
+	SysSendRet               *ebpf.ProgramSpec `ebpf:"sys_send_ret"`
+	SysSendmmsg              *ebpf.ProgramSpec `ebpf:"sys_sendmmsg"`
+	SysSendmmsgRet           *ebpf.ProgramSpec `ebpf:"sys_sendmmsg_ret"`
+	SysSendmsg               *ebpf.ProgramSpec `ebpf:"sys_sendmsg"`
+	SysSendmsgRet            *ebpf.ProgramSpec `ebpf:"sys_sendmsg_ret"`
+	SysSendto                *ebpf.ProgramSpec `ebpf:"sys_sendto"`
+	SysSendtoRet             *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
+	SysWrite                 *ebpf.ProgramSpec `ebpf:"sys_write"`
+	SysWriteRet              *ebpf.ProgramSpec `ebpf:"sys_write_ret"`
+	SysWritev                *ebpf.ProgramSpec `ebpf:"sys_writev"`
+	SysWritevRet             *ebpf.ProgramSpec `ebpf:"sys_writev_ret"`
+	TcpConnect               *ebpf.ProgramSpec `ebpf:"tcp_connect"`
+	TcpRcvEstablished        *ebpf.ProgramSpec `ebpf:"tcp_rcv_established"`
+	TracepointSysEnterWritev *ebpf.ProgramSpec `ebpf:"tracepoint_sys_enter_writev"`
+	TracepointSysExitWritev  *ebpf.ProgramSpec `ebpf:"tracepoint_sys_exit_writev"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
@@ -146,33 +148,35 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
-	SecuritySocketRecvmsg *ebpf.Program `ebpf:"security_socket_recvmsg"`
-	SecuritySocketSendmsg *ebpf.Program `ebpf:"security_socket_sendmsg"`
-	SockAllocRet          *ebpf.Program `ebpf:"sock_alloc_ret"`
-	SysAccept             *ebpf.Program `ebpf:"sys_accept"`
-	SysAcceptRet          *ebpf.Program `ebpf:"sys_accept_ret"`
-	SysClose              *ebpf.Program `ebpf:"sys_close"`
-	SysCloseRet           *ebpf.Program `ebpf:"sys_close_ret"`
-	SysConnect            *ebpf.Program `ebpf:"sys_connect"`
-	SysConnectRet         *ebpf.Program `ebpf:"sys_connect_ret"`
-	SysRead               *ebpf.Program `ebpf:"sys_read"`
-	SysReadRet            *ebpf.Program `ebpf:"sys_read_ret"`
-	SysRecvfrom           *ebpf.Program `ebpf:"sys_recvfrom"`
-	SysRecvfromRet        *ebpf.Program `ebpf:"sys_recvfrom_ret"`
-	SysSend               *ebpf.Program `ebpf:"sys_send"`
-	SysSendRet            *ebpf.Program `ebpf:"sys_send_ret"`
-	SysSendmmsg           *ebpf.Program `ebpf:"sys_sendmmsg"`
-	SysSendmmsgRet        *ebpf.Program `ebpf:"sys_sendmmsg_ret"`
-	SysSendmsg            *ebpf.Program `ebpf:"sys_sendmsg"`
-	SysSendmsgRet         *ebpf.Program `ebpf:"sys_sendmsg_ret"`
-	SysSendto             *ebpf.Program `ebpf:"sys_sendto"`
-	SysSendtoRet          *ebpf.Program `ebpf:"sys_sendto_ret"`
-	SysWrite              *ebpf.Program `ebpf:"sys_write"`
-	SysWriteRet           *ebpf.Program `ebpf:"sys_write_ret"`
-	SysWritev             *ebpf.Program `ebpf:"sys_writev"`
-	SysWritevRet          *ebpf.Program `ebpf:"sys_writev_ret"`
-	TcpConnect            *ebpf.Program `ebpf:"tcp_connect"`
-	TcpRcvEstablished     *ebpf.Program `ebpf:"tcp_rcv_established"`
+	SecuritySocketRecvmsg    *ebpf.Program `ebpf:"security_socket_recvmsg"`
+	SecuritySocketSendmsg    *ebpf.Program `ebpf:"security_socket_sendmsg"`
+	SockAllocRet             *ebpf.Program `ebpf:"sock_alloc_ret"`
+	SysAccept                *ebpf.Program `ebpf:"sys_accept"`
+	SysAcceptRet             *ebpf.Program `ebpf:"sys_accept_ret"`
+	SysClose                 *ebpf.Program `ebpf:"sys_close"`
+	SysCloseRet              *ebpf.Program `ebpf:"sys_close_ret"`
+	SysConnect               *ebpf.Program `ebpf:"sys_connect"`
+	SysConnectRet            *ebpf.Program `ebpf:"sys_connect_ret"`
+	SysRead                  *ebpf.Program `ebpf:"sys_read"`
+	SysReadRet               *ebpf.Program `ebpf:"sys_read_ret"`
+	SysRecvfrom              *ebpf.Program `ebpf:"sys_recvfrom"`
+	SysRecvfromRet           *ebpf.Program `ebpf:"sys_recvfrom_ret"`
+	SysSend                  *ebpf.Program `ebpf:"sys_send"`
+	SysSendRet               *ebpf.Program `ebpf:"sys_send_ret"`
+	SysSendmmsg              *ebpf.Program `ebpf:"sys_sendmmsg"`
+	SysSendmmsgRet           *ebpf.Program `ebpf:"sys_sendmmsg_ret"`
+	SysSendmsg               *ebpf.Program `ebpf:"sys_sendmsg"`
+	SysSendmsgRet            *ebpf.Program `ebpf:"sys_sendmsg_ret"`
+	SysSendto                *ebpf.Program `ebpf:"sys_sendto"`
+	SysSendtoRet             *ebpf.Program `ebpf:"sys_sendto_ret"`
+	SysWrite                 *ebpf.Program `ebpf:"sys_write"`
+	SysWriteRet              *ebpf.Program `ebpf:"sys_write_ret"`
+	SysWritev                *ebpf.Program `ebpf:"sys_writev"`
+	SysWritevRet             *ebpf.Program `ebpf:"sys_writev_ret"`
+	TcpConnect               *ebpf.Program `ebpf:"tcp_connect"`
+	TcpRcvEstablished        *ebpf.Program `ebpf:"tcp_rcv_established"`
+	TracepointSysEnterWritev *ebpf.Program `ebpf:"tracepoint_sys_enter_writev"`
+	TracepointSysExitWritev  *ebpf.Program `ebpf:"tracepoint_sys_exit_writev"`
 }
 
 func (p *bpfPrograms) Close() error {
@@ -204,6 +208,8 @@ func (p *bpfPrograms) Close() error {
 		p.SysWritevRet,
 		p.TcpConnect,
 		p.TcpRcvEstablished,
+		p.TracepointSysEnterWritev,
+		p.TracepointSysExitWritev,
 	)
 }
 

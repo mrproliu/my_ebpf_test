@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"unsafe"
 )
@@ -259,6 +260,9 @@ func main() {
 			if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
 				log.Printf("parsing perf event: %s", err)
 				continue
+			}
+			if strings.Contains(fmt.Sprintf("%s", event.Comm), "nginx") {
+				fmt.Printf("contians nginx: %v\n", event)
 			}
 
 			var direction string

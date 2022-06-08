@@ -277,6 +277,7 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
 
        data->sockfd = args->fd;
        data->pid = tgid;
+       bpf_printk("rebuild sock data: data_direction: %d\n", data->data_direction);
     }
     __u64 ret = bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
     if (ret == -E2BIG) {

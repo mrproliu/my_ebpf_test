@@ -266,7 +266,7 @@ func main() {
 				log.Printf("parsing perf event: %s", err)
 				continue
 			}
-			fmt.Printf("test queu data \n")
+			fmt.Printf("test queu data %s\n", event.Comm)
 		}
 	}()
 

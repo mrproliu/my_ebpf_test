@@ -245,6 +245,7 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
        bpf_printk("data3: from: %d, data_direction: %d, ret: %d\n", args->func, data_direction, ret);
 
        struct sock_opts_event t1 = {};
+       bpf_get_current_comm(&t1.comm, sizeof(t1.comm));
        __u64 ret2 = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t1, sizeof(struct sock_opts_event));
        bpf_printk("writev send queue ret22: %d\n", ret2);
        return;

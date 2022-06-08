@@ -270,6 +270,15 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
     }
     bpf_printk("data2: from: %d, data_direction: %d\n", args->func, data_direction);
     __u64 ret = bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
+    if (ret == -E2BIG) {
+        bpf_printk("-E2BIG;\n");
+    } else if (ret == -ENOENT) {
+        bpf_printk("-ENOENT\n");
+    } else if (ret == -EINVAL) {
+        bpf_printk("-EINVAL\n");
+    } else if (ret == -EOPNOTSUPP) {
+        bpf_printk("-EOPNOTSUPP\n");
+    }
     bpf_printk("data3: from: %d, data_direction: %d, ret: %d\n", args->func, data_direction, ret);
 }
 

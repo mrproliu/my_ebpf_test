@@ -227,6 +227,7 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
         bpf_probe_read(data->buf, data_len, buf);
         data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
         data->buf_size = data_len;
+        bpf_printk("buf read by not vecs");
     } else {
         struct iovec iov_cpy;
         bpf_probe_read(&iov_cpy, sizeof(iov_cpy), &args->iov[0]);
@@ -238,6 +239,7 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
         const char* buf;
         bpf_probe_read(&buf, sizeof(const char*), &iov_cpy.iov_base);
         bpf_probe_read(data->buf, data_len, buf);
+        bpf_printk("buf read by vecs");
     }
     data->exe_time = curr_nacs - args->start_nacs;
     data->rtt = args->rtt;

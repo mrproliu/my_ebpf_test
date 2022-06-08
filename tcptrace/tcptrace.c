@@ -228,9 +228,9 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
         bpf_probe_read(data->buf, data_len, buf);
         data->buf_size = data_len;
 
-        if (data->buf_size > 10) {
-            bpf_printk("contains data from not vs: %s\n", data->buf);
-        }
+//        if (data->buf_size > 10) {
+//            bpf_printk("contains data from not vs: %s\n", data->buf);
+//        }
     } else {
         struct iovec iov_cpy;
         bpf_probe_read(&iov_cpy, sizeof(iov_cpy), &args->iov[0]);
@@ -244,11 +244,11 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
         bpf_probe_read(data->buf, data_len, &iov_cpy.iov_base);
         data->buf_size = data_len;
 
-        if (data->buf_size > 10) {
-            bpf_printk("contains data from vs: size: %d: %s\n", data->buf_size, data->buf);
-        } else {
-            bpf_printk("receive from vs size: %d\n", data->buf_size);
-        }
+//        if (data->buf_size > 10) {
+//            bpf_printk("contains data from vs: size: %d: %s\n", data->buf_size, data->buf);
+//        } else {
+//            bpf_printk("receive from vs size: %d\n", data->buf_size);
+//        }
     }
     data->exe_time = curr_nacs - args->start_nacs;
     data->rtt = args->rtt;

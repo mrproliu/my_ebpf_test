@@ -467,8 +467,6 @@ int sys_write_ret(struct pt_regs* ctx) {
     data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args && data_args->sock_event) {
         process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_EGRESS, false);
-    } else {
-        bpf_printk("data args is null or sock event is failure\n");
     }
 
     bpf_map_delete_elem(&writing_args, &id);
@@ -498,8 +496,6 @@ int sys_writev_ret(struct pt_regs* ctx) {
     data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args && data_args->sock_event) {
         process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_EGRESS, true);
-    } else {
-        bpf_printk("data args is null or sock event is failure\n");
     }
 
     bpf_map_delete_elem(&writing_args, &id);
@@ -512,7 +508,6 @@ int security_socket_sendmsg(struct pt_regs* ctx) {
     struct sock_data_args_t *data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args != NULL) {
         data_args->sock_event = true;
-        bpf_printk("security sock sendmsg hook\n");
     }
     return 0;
 }
@@ -523,7 +518,6 @@ int security_socket_recvmsg(struct pt_regs* ctx) {
     struct sock_data_args_t *data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args != NULL) {
         data_args->sock_event = true;
-        bpf_printk("security sock recvmsg hook\n");
     }
     return 0;
 }

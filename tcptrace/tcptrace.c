@@ -28,6 +28,12 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 		val;                                                           \
 	})
 
+
+struct {
+	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+} test_queue SEC(".maps");
+
+
 static __inline void submit_close_connection(struct pt_regs* ctx, __u32 tgid, __u32 fd) {
     __u64 conid = gen_tgid_fd(tgid, fd);
     struct active_connection_t* con = bpf_map_lookup_elem(&active_connection_map, &conid);
@@ -200,9 +206,9 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
     if (!vecs && args->buf == NULL) {
         return;
     }
-//    if (vecs && (args->iov == NULL || args->iovlen <= 0)) {
-//        return;
-//    }
+    if (vecs && (args->iov == NULL || args->iovlen <= 0)) {
+        return;
+    }
     if (args->fd < 0) {
         return;
     }
@@ -216,6 +222,9 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
        if (data == NULL) {
            return;
        }
+       struct sock_opts_event t = {};
+      __u64 ret1 = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t, sizeof(struct sock_opts_event));
+      bpf_printk("writev send queue ret11: %d\n", ret1);
 
        data->sockfd = args->fd;
        data->pid = tgid;
@@ -234,6 +243,10 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
            bpf_printk("-ENOSPC;\n");
        }
        bpf_printk("data3: from: %d, data_direction: %d, ret: %d\n", args->func, data_direction, ret);
+
+       struct sock_opts_event t1 = {};
+       __u64 ret2 = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t1, sizeof(struct sock_opts_event));
+       bpf_printk("writev send queue ret22: %d\n", ret2);
        return;
     }
 
@@ -540,10 +553,6 @@ int sys_send_ret(struct pt_regs* ctx) {
     return 0;
 }
 
-struct {
-	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
-} test_queue SEC(".maps");
-
 SEC("kprobe/__sys_writev")
 int sys_writev(struct pt_regs* ctx) {
     __u64 id = bpf_get_current_pid_tgid();
@@ -573,9 +582,6 @@ int sys_writev_ret(struct pt_regs* ctx) {
     }
 
     bpf_map_delete_elem(&writing_args, &id);
-    struct sock_opts_event t = {};
-    __u64 ret = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t, sizeof(struct sock_opts_event));
-    bpf_printk("writev send queue ret: %d\n", ret);
     return 0;
 }
 

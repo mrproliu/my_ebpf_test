@@ -29,7 +29,6 @@ struct tcp_retransmit_event {
     __u32 downstream_addr_v4;
     __u8 downstream_addr_v6[16];
     __u32 downstream_port;
-    __u32 len;
 };
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
@@ -39,7 +38,6 @@ struct {
 SEC("kprobe/tcp_retransmit_skb")
 int tcp_retransmit(struct pt_regs *ctx) {
     struct sock *s = (void *)PT_REGS_PARM1(ctx);
-    struct sk_buff *buff = (void *)PT_REGS_PARM1(ctx);
     __u64 id = bpf_get_current_pid_tgid();
     __u32 tgid = id >> 32;
     struct tcp_retransmit_event event = {};
@@ -47,9 +45,6 @@ int tcp_retransmit(struct pt_regs *ctx) {
     bpf_get_current_comm(&event.comm, sizeof(event.comm));
     __u16 skc_family, port;
     BPF_CORE_READ_INTO(&skc_family, s, __sk_common.skc_family);
-    unsigned int len;
-    BPF_CORE_READ_INTO(&len, buff, data_len);
-    event.len = len;
     event.skc_family = skc_family;
     if (skc_family == AF_INET) {
         BPF_CORE_READ_INTO(&port, s, __sk_common.skc_num);

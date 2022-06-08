@@ -33,7 +33,6 @@ type TcpRetransmitEvent struct {
 	DownstreamAddrV4 uint32
 	DownstreamAddrV6 [16]uint8
 	DownstreamPort   uint32
-	Len              uint32
 }
 
 func parsePort(val uint16) uint16 {
@@ -109,7 +108,7 @@ func main() {
 				upstreamAddr = parseAddressV6(event.UpstreamAddrV6)
 			}
 			fmt.Printf("TCP RETRANSMIT: family: %d: %s:%d(in %d(%s)) -> %s:%d, len: %d\n", event.Family, downstreamAddr, parsePort(uint16(event.DownstreamPort)),
-				event.Pid, event.Comm, upstreamAddr, parsePort(uint16(event.UpstreamPort)), event.Len)
+				event.Pid, event.Comm, upstreamAddr, parsePort(uint16(event.UpstreamPort)))
 		}
 	}()
 

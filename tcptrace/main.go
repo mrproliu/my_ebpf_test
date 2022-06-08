@@ -44,16 +44,23 @@ type SocketOptsEvent struct {
 }
 
 type SocketDataEvent struct {
-	Pid           uint32
-	Comm          [128]byte
-	SocketFd      uint32
-	Buffer        [1024 * 3]byte
-	BufferSize    uint32
-	ProtocolType  uint32
-	MessageType   uint32
-	DataDirection uint32
-	ExeTime       uint64
-	Rtt           uint32
+	Pid              uint32
+	Comm             [128]byte
+	SocketFd         uint32
+	Buffer           [1024 * 3]byte
+	BufferSize       uint32
+	ProtocolType     uint32
+	MessageType      uint32
+	DataDirection    uint32
+	ExeTime          uint64
+	Rtt              uint32
+	SocketFamily     uint32
+	UpstreamAddrV4   uint32
+	UpstreamAddrV6   [16]uint8
+	UpstreamPort     uint32
+	DownStreamAddrV4 uint32
+	DownStreamAddrV6 [16]uint8
+	DownStreamPort   uint32
 }
 
 type LinkFunc func(symbol string, prog *ebpf.Program) (link.Link, error)
@@ -265,6 +272,20 @@ func main() {
 				protocol = "UNKNOWN"
 			}
 			fmt.Printf("%s: %d(%s), protcol: %s, message: %s, socket fd: %d, size: %d, exe time: %fms, RTT: %d\n", direction, event.Pid, event.Comm, protocol, message, event.SocketFd, event.BufferSize, float64(event.ExeTime)/1e6, event.Rtt)
+			if event.SocketFamily != 0 {
+				var downstreamAddr, upstreamAddr string
+				if event.SocketFamily == syscall.AF_INET {
+					downstreamAddr = parseAddressV4(event.DownStreamAddrV4)
+				} else {
+					downstreamAddr = parseAddressV6(event.DownStreamAddrV6)
+				}
+				if event.SocketFamily == syscall.AF_INET {
+					upstreamAddr = parseAddressV4(event.UpstreamAddrV4)
+				} else {
+					upstreamAddr = parseAddressV6(event.UpstreamAddrV6)
+				}
+				fmt.Printf("%s:%d -> %s:%d\n", downstreamAddr, parsePort(uint16(event.DownStreamPort)), upstreamAddr, parsePort(parsePort(uint16(event.UpstreamPort))))
+			}
 			if event.MessageType == 1 {
 				request, err := http.ReadRequest(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])))
 				if err != nil {

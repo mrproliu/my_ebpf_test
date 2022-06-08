@@ -148,6 +148,13 @@ func getAddr(addr syscall.Sockaddr) (ip string, port int) {
 		ip = "v6"
 	case *syscall.SockaddrUnix:
 		ip = "unix"
+	case *syscall.SockaddrLinklayer:
+		ip = "link layer"
+	case *syscall.SockaddrNetlink:
+		ip = "netlink"
+	}
+	if addr == nil {
+		ip = "addr is null"
 	}
 	return ip, port
 }

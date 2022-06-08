@@ -188,6 +188,11 @@ func main() {
 		log.Fatalf("creating perf event sock data reader: %s", err)
 	}
 	defer sockDataRd.Close()
+	testRd, err := perf.NewReader(objs.TestQueue, os.Getpagesize())
+	if err != nil {
+		log.Fatalf("creating perf event sock ops reader: %s", err)
+	}
+	defer testRd.Close()
 
 	go func() {
 		var event SocketOptsEvent
@@ -236,6 +241,32 @@ func main() {
 			}
 
 			fmt.Printf("%s, execute time: %fms, socket fd: %d\n", base, float64(event.ExeTime)/1e6, event.SocketFd)
+		}
+	}()
+
+	go func() {
+		var event SocketOptsEvent
+		for {
+			record, err := testRd.Read()
+			if err != nil {
+				if errors.Is(err, perf.ErrClosed) {
+					return
+				}
+				log.Printf("reading from perf event reader: %s", err)
+				continue
+			}
+
+			if record.LostSamples != 0 {
+				log.Printf("opts perf event ring buffer full, dropped %d samples", record.LostSamples)
+				continue
+			}
+
+			// Parse the perf event entry into an Event structure.
+			if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
+				log.Printf("parsing perf event: %s", err)
+				continue
+			}
+			fmt.Printf("test queu data \n")
 		}
 	}()
 

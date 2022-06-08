@@ -414,7 +414,7 @@ func main() {
 					continue
 				}
 				if !strings.HasPrefix(dest, "socket[") {
-					log.Printf("---current socketfd:%d is not socket", event.SocketFd)
+					log.Printf("---current socketfd:%d is not socket: %s", event.SocketFd, dest)
 					continue
 				}
 

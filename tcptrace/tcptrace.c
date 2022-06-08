@@ -381,7 +381,7 @@ int tcp_rcv_established(struct pt_regs* ctx) {
             __u32 srtt;
             BPF_CORE_READ_INTO(&srtt, tcp_sock, srtt_us);
             data_args->rtt = srtt >> 3;
-            bpf_printk("tcp sock srtt: %d -> %d", srtt, data_args->rtt);
+            bpf_printk("tcp sock srtt: %d -> %d\n", srtt, data_args->rtt);
         } else {
             bpf_printk("tcp sock not found\n");
         }
@@ -506,6 +506,7 @@ int security_socket_sendmsg(struct pt_regs* ctx) {
     struct sock_data_args_t *data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args != NULL) {
         data_args->sock_event = true;
+        bpf_printk("security sock sendmsg hook\n");
     }
     return 0;
 }
@@ -516,6 +517,7 @@ int security_socket_recvmsg(struct pt_regs* ctx) {
     struct sock_data_args_t *data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args != NULL) {
         data_args->sock_event = true;
+        bpf_printk("security sock recvmsg hook\n");
     }
     return 0;
 }

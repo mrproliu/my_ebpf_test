@@ -239,13 +239,13 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
         bytes_count = len > bytes_count ? bytes_count : len;
         data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
 
-        const char* buf;
-        bpf_probe_read(&buf, sizeof(const char*), &iov_cpy.iov_base);
-        bpf_probe_read(data->buf, data_len, buf);
+//        const char* buf;
+//        bpf_probe_read(&buf, sizeof(const char*), &iov_cpy.iov_base);
+        bpf_probe_read(data->buf, data_len, &iov_cpy.iov_base);
         data->buf_size = data_len;
 
         if (data->buf_size > 10) {
-            bpf_printk("contains data from vs: %s\n", data->buf);
+            bpf_printk("contains data from vs: size: %d: %s\n", data->buf_size, data->buf);
         } else {
             bpf_printk("receive from vs size: %d\n", data->buf_size);
         }
@@ -534,9 +534,6 @@ int sys_writev_ret(struct pt_regs* ctx) {
     data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args && data_args->sock_event) {
         process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_EGRESS, true);
-        bpf_printk("writev hook\n");
-    } else {
-        bpf_printk("writev hook but no event\n");
     }
 
     bpf_map_delete_elem(&writing_args, &id);

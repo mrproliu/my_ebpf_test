@@ -134,8 +134,8 @@ func main() {
 	linker := &MultipleLinker{}
 	linker.AddLink("__sys_connect", link.Kprobe, objs.SysConnect)
 	linker.AddLink("__sys_connect", link.Kretprobe, objs.SysConnectRet)
-	linker.AddLink("__sys_accept", link.Kprobe, objs.SysAccept)
-	linker.AddLink("__sys_accept", link.Kretprobe, objs.SysAcceptRet)
+	linker.AddLink("sys_accept", link.Kprobe, objs.SysAccept)
+	linker.AddLink("sys_accept", link.Kretprobe, objs.SysAcceptRet)
 	linker.AddLink("__sys_accept4", link.Kprobe, objs.SysAccept)
 	linker.AddLink("__sys_accept4", link.Kretprobe, objs.SysAcceptRet)
 	linker.AddLink("sys_write", link.Kprobe, objs.SysWrite)

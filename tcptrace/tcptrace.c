@@ -556,7 +556,7 @@ int sys_writev(struct pt_regs* ctx) {
 //    data_args.start_nacs = bpf_ktime_get_ns();
 //    bpf_map_update_elem(&writing_args, &id, &data_args, 0);
     struct sock_opts_event t = {};
-    __u64 ret = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t, sizeof(struct sock_data_event_t));
+    __u64 ret = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t, sizeof(struct sock_opts_event));
     bpf_printk("writev send queue: %d\n", ret);
     return 0;
 }
@@ -574,7 +574,7 @@ int sys_writev_ret(struct pt_regs* ctx) {
 //
 //    bpf_map_delete_elem(&writing_args, &id);
     struct sock_opts_event t = {};
-    __u64 ret = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t, sizeof(struct sock_data_event_t));
+    __u64 ret = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t, sizeof(struct sock_opts_event));
     bpf_printk("writev send queue ret: %d\n", ret);
     return 0;
 }

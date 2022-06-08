@@ -4,7 +4,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"ebpf_test/tools/btf"
 	"encoding/binary"
@@ -15,13 +14,10 @@ import (
 	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
 	"github.com/hashicorp/go-multierror"
-	"io/ioutil"
 	"log"
 	"net"
-	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"unsafe"
 )
@@ -48,7 +44,6 @@ type SocketDataEvent struct {
 	Pid              uint32
 	Comm             [128]byte
 	SocketFd         uint32
-	Buffer           [1]byte
 	BufferSize       uint32
 	ProtocolType     uint32
 	MessageType      uint32
@@ -303,26 +298,6 @@ func main() {
 				direction = "UNKNOWN"
 			}
 
-			if strings.Contains(fmt.Sprintf("%s", event.Comm), "nginx") {
-				//fmt.Printf("contians nginx: %v\n", event)
-				fmt.Printf("nginx: %s ", direction)
-
-				request, err := http.ReadRequest(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])))
-				if err == nil {
-					fmt.Printf("request host: %s, url: %s\n", request.Host, request.URL)
-				}
-
-				response, err := http.ReadResponse(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])), nil)
-				if err == nil {
-					body, err := ioutil.ReadAll(response.Body)
-					if err == nil {
-						fmt.Printf("response data: %s\n", string(body))
-					}
-				}
-
-				fmt.Printf("\n")
-			}
-
 			var message string
 			switch event.MessageType {
 			case 1:
@@ -359,26 +334,26 @@ func main() {
 					fmt.Printf("%d, %s:%d -> %s:%d\n", event.SocketFamily, upstreamAddr, parsePort(parsePort(uint16(event.UpstreamPort))), downstreamAddr, parsePort(uint16(event.DownStreamPort)))
 				}
 			}
-			if event.MessageType == 1 {
-				request, err := http.ReadRequest(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])))
-				if err != nil {
-					fmt.Errorf("read request error: %v\n", err)
-					continue
-				}
-				fmt.Printf("request host: %s, url: %s\n", request.Host, request.URL)
-			} else if event.MessageType == 2 {
-				response, err := http.ReadResponse(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])), nil)
-				if err != nil {
-					fmt.Errorf("read response error: %v\n", err)
-					continue
-				}
-				body, err := ioutil.ReadAll(response.Body)
-				if err != nil {
-					fmt.Errorf("read response body error: %v\n", err)
-					continue
-				}
-				fmt.Printf("response data: %s\n", string(body))
-			}
+			//if event.MessageType == 1 {
+			//	request, err := http.ReadRequest(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])))
+			//	if err != nil {
+			//		fmt.Errorf("read request error: %v\n", err)
+			//		continue
+			//	}
+			//	fmt.Printf("request host: %s, url: %s\n", request.Host, request.URL)
+			//} else if event.MessageType == 2 {
+			//	response, err := http.ReadResponse(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])), nil)
+			//	if err != nil {
+			//		fmt.Errorf("read response error: %v\n", err)
+			//		continue
+			//	}
+			//	body, err := ioutil.ReadAll(response.Body)
+			//	if err != nil {
+			//		fmt.Errorf("read response body error: %v\n", err)
+			//		continue
+			//	}
+			//	fmt.Printf("response data: %s\n", string(body))
+			//}
 		}
 	}()
 

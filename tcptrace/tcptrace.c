@@ -215,87 +215,76 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
     if (bytes_count <= 0) {
         return;
     }
+//
+//    if (vecs) {
+//        bpf_printk("data2: from: %d, data_direction: %d\n", args->func, data_direction);
+//       struct sock_data_event_t data = {};
+////       if (data == NULL) {
+////           return;
+////       }
+//
+//       data.sockfd = args->fd;
+//       data.pid = tgid;
+//       bpf_get_current_comm(&data.comm, sizeof(data.comm));
+//       bpf_printk("rebuild sock data: data_direction: %d\n", data.data_direction);
+//       __u64 ret = bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, &data, sizeof(struct sock_data_event_t));
+//       bpf_printk("data3: from: %d, data_direction: %d, ret: %d\n", args->func, data_direction, ret);
+//
+//       struct sock_opts_event t1 = {};
+//       bpf_get_current_comm(&t1.comm, sizeof(t1.comm));
+//       __u64 ret2 = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t1, sizeof(struct sock_opts_event));
+//       bpf_printk("writev send queue ret22: %d\n", ret2);
+//       return;
+//    }
 
-    if (vecs) {
-        bpf_printk("data2: from: %d, data_direction: %d\n", args->func, data_direction);
-       struct sock_data_event_t data = {};
-//       if (data == NULL) {
-//           return;
-//       }
+    struct sock_data_event_t data = {};
+//    if (data == NULL) {
+//        return;
+//    }
 
-       data.sockfd = args->fd;
-       data.pid = tgid;
-       bpf_get_current_comm(&data.comm, sizeof(data.comm));
-       bpf_printk("rebuild sock data: data_direction: %d\n", data.data_direction);
-       __u64 ret = bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, &data, sizeof(struct sock_data_event_t));
-       bpf_printk("data3: from: %d, data_direction: %d, ret: %d\n", args->func, data_direction, ret);
-
-       struct sock_opts_event t1 = {};
-       bpf_get_current_comm(&t1.comm, sizeof(t1.comm));
-       __u64 ret2 = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t1, sizeof(struct sock_opts_event));
-       bpf_printk("writev send queue ret22: %d\n", ret2);
-       return;
-    }
-
-    struct sock_data_event_t* data = create_sock_data();
-    if (data == NULL) {
-        return;
-    }
-
-    data->sockfd = args->fd;
-    data->pid = tgid;
-    data->data_direction = data_direction;
-    bpf_get_current_comm(&data->comm, sizeof(data->comm));
+    data.sockfd = args->fd;
+    data.pid = tgid;
+    data.data_direction = data_direction;
+    bpf_get_current_comm(&data.comm, sizeof(data.comm));
 
     __u32 data_len = 0;
     if (!vecs) {
         const char* buf;
         bpf_probe_read(&buf, sizeof(const char*), &args->buf);
         data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
-        bpf_probe_read(data->buf, data_len, buf);
-        data->buf_size = data_len;
+//        bpf_probe_read(data->buf, data_len, buf);
+        data.buf_size = data_len;
 
 //        if (data->buf_size > 10) {
 //            bpf_printk("contains data from not vs: %s\n", data->buf);
 //        }
     } else {
+        // this read way is not correct
         struct iovec iov_cpy;
         bpf_probe_read(&iov_cpy, sizeof(iov_cpy), &args->iov[0]);
         __kernel_size_t len;
         bpf_probe_read(&len, sizeof(len), &iov_cpy.iov_len);
         bytes_count = len > bytes_count ? bytes_count : len;
         data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
-        data->buf_size = 1;
-        data->buf[0] = 'H';
-
-//        const char* buf;
-//        bpf_probe_read(&buf, sizeof(const char*), &iov_cpy.iov_base);
-//        bpf_probe_read(data->buf, data_len, &iov_cpy.iov_base);
-//        data->buf_size = data_len;
-
-//        if (data->buf_size > 10) {
-//            bpf_printk("contains data from vs: size: %d: %s\n", data->buf_size, data->buf);
-//        } else {
-//            bpf_printk("receive from vs size: %d\n", data->buf_size);
-//        }
+        data.buf_size = bytes_count;
     }
-    data->exe_time = curr_nacs - args->start_nacs;
-    data->rtt = args->rtt;
+    data.exe_time = curr_nacs - args->start_nacs;
+    data.rtt = args->rtt;
 
-    char *p = data->buf;
-    sock_data_analyze_protocol(p, data_len, data);
+//    char *p = data->buf;
+//    sock_data_analyze_protocol(p, data_len, data);
     __u64 conid = gen_tgid_fd(tgid, args->fd);
     struct active_connection_t* con = bpf_map_lookup_elem(&active_connection_map, &conid);
     if (con != NULL) {
-        data->socket_family = con->socket_family;
-        data->upstream_addr_v4 = con->upstream_addr_v4;
-        memcpy(data->upstream_addr_v6, con->upstream_addr_v6, 16*sizeof(__u8));
-        data->upstream_port = con->upstream_port;
-        data->downstream_addr_v4 = con->downstream_addr_v4;
-        memcpy(data->downstream_addr_v6, con->downstream_addr_v6, 16*sizeof(__u8));
-        data->downstream_port = con->downstream_port;
+        data.socket_family = con->socket_family;
+        data.upstream_addr_v4 = con->upstream_addr_v4;
+        memcpy(data.upstream_addr_v6, con->upstream_addr_v6, 16*sizeof(__u8));
+        data.upstream_port = con->upstream_port;
+        data.downstream_addr_v4 = con->downstream_addr_v4;
+        memcpy(data.downstream_addr_v6, con->downstream_addr_v6, 16*sizeof(__u8));
+        data.downstream_port = con->downstream_port;
     }
-    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
+    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, &data, sizeof(struct sock_data_event_t));
 }
 
 SEC("kretprobe/__sys_sendto")

@@ -120,7 +120,7 @@ static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 fro
     memcpy(opts_event.downstream_addr_v6, con.downstream_addr_v6, 16*sizeof(__u8));
     opts_event.downstream_port = con.downstream_port;
     opts_event.exe_time = curr_nacs - start_nacs;
-    bpf_printk("execute time: start: %d, cur: %d, exe: %d\n", start_nacs, curr_nacs, opts_event.exe_time);
+//    bpf_printk("execute time: start: %d, cur: %d, exe: %d\n", start_nacs, curr_nacs, opts_event.exe_time);
 
     bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));
 
@@ -158,11 +158,9 @@ SEC("kretprobe/__sys_connect")
 int sys_connect_ret(struct pt_regs *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
     struct connect_args_t *connect_args;
-    bpf_printk("exit sys connect--: %d, curtime: %d\n", id, bpf_ktime_get_ns());
 
     connect_args = bpf_map_lookup_elem(&conecting_args, &id);
     if (connect_args) {
-        bpf_printk("exit sys connect de: start time: %d\n", connect_args->start_nacs);
         process_connect(ctx, id, connect_args);
     }
 
@@ -392,7 +390,7 @@ int tcp_rcv_established(struct pt_regs* ctx) {
             __u32 srtt;
             BPF_CORE_READ_INTO(&srtt, tcp_sock, srtt_us);
             data_args->rtt = srtt >> 3;
-            bpf_printk("tcp sock srtt: %d -> %d\n", srtt, data_args->rtt);
+//            bpf_printk("tcp sock srtt: %d -> %d\n", srtt, data_args->rtt);
         } else {
             bpf_printk("tcp sock not found\n");
         }

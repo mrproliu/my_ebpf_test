@@ -28,11 +28,9 @@ char __license[] SEC("license") = "Dual MIT/GPL";
 		val;                                                           \
 	})
 
-
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
 } test_queue SEC(".maps");
-
 
 static __inline void submit_close_connection(struct pt_regs* ctx, __u32 tgid, __u32 fd) {
     __u64 conid = gen_tgid_fd(tgid, fd);

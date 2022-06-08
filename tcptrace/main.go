@@ -14,10 +14,12 @@ import (
 	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
 	"github.com/hashicorp/go-multierror"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"unsafe"
@@ -112,7 +114,36 @@ func parseAddressV6(val [16]uint8) string {
 	return net.IP((*(*[net.IPv6len]byte)(unsafe.Pointer(&val)))[:]).String()
 }
 
+func getAllContainedProcessIdList() ([]int, error) {
+	dir, err := os.ReadDir("/proc")
+	if err != nil {
+		return nil, err
+	}
+	res := make([]int, 0)
+	for _, f := range dir {
+		pid, err := strconv.Atoi(f.Name())
+		if err != nil {
+			continue
+		}
+
+		file, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/cgroup", pid))
+		if err != nil {
+			return nil, err
+		}
+		if strings.Contains(string(file), "/kubepods/burstable/") {
+			res = append(res, pid)
+		}
+	}
+	return res, nil
+}
+
 func main() {
+	pidList, err := getAllContainedProcessIdList()
+	if err != nil {
+		log.Fatalf("read container process error: %v", err)
+		return
+	}
+	fmt.Printf("total found %d container process\n", len(pidList))
 	stopper := make(chan os.Signal, 1)
 	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
 
@@ -168,7 +199,7 @@ func main() {
 
 	////linker.AddTracepoint("syscalls", "sys_enter_writev", objs.SyscallProbeEntryWritev)
 	defer linker.Close()
-	err := linker.HasError()
+	err = linker.HasError()
 	if err != nil {
 		log.Fatalf("opening kprobe: %s", err)
 	}
@@ -286,6 +317,17 @@ func main() {
 			// Parse the perf event entry into an Event structure.
 			if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
 				log.Printf("parsing perf event: %s", err)
+				continue
+			}
+
+			found := false
+			for _, pid := range pidList {
+				if pid == int(event.Pid) {
+					found = true
+					break
+				}
+			}
+			if !found {
 				continue
 			}
 

@@ -132,6 +132,7 @@ func parseNetworkLines(tp string, pid int) ([]string, error) {
 	}
 
 	tp = fmt.Sprintf(pf, pid)
+	fmt.Printf("read from %s\n", tp)
 
 	data, err := ioutil.ReadFile(pf)
 	if err != nil {

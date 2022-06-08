@@ -145,8 +145,8 @@ func main() {
 	linker.AddLink("sys_writev", link.Kprobe, objs.SysWritev)
 	linker.AddLink("sys_writev", link.Kretprobe, objs.SysWritevRet)
 	// close_fd or __close_fd
-	linker.AddLink("__close_fd", link.Kprobe, objs.SysClose)
-	linker.AddLink("__close_fd", link.Kretprobe, objs.SysCloseRet)
+	//linker.AddLink("__close_fd", link.Kprobe, objs.SysClose)
+	//linker.AddLink("__close_fd", link.Kretprobe, objs.SysCloseRet)
 	linker.AddLink("__sys_accept4", link.Kprobe, objs.SysAccept)
 	linker.AddLink("__sys_accept4", link.Kretprobe, objs.SysAcceptRet)
 	//linker.AddTracepoint("syscalls", "sys_exit_connect", objs.SysConnectRet)

@@ -551,8 +551,8 @@ int sys_writev(struct pt_regs* ctx) {
     struct sock_data_args_t data_args = {};
     data_args.func = SOCK_DATA_FUNC_WRITEV;
     data_args.fd = PT_REGS_PARM1(ctx);
-//    data_args.iov = (void *)PT_REGS_PARM2(ctx);
-//    data_args.iovlen = PT_REGS_PARM3(ctx);
+    data_args.iov = (void *)PT_REGS_PARM2(ctx);
+    data_args.iovlen = PT_REGS_PARM3(ctx);
     data_args.start_nacs = bpf_ktime_get_ns();
     bpf_map_update_elem(&writing_args, &id, &data_args, 0);
     struct sock_opts_event t = {};
@@ -564,14 +564,14 @@ int sys_writev(struct pt_regs* ctx) {
 SEC("kretprobe/__sys_writev")
 int sys_writev_ret(struct pt_regs* ctx) {
     __u64 id = bpf_get_current_pid_tgid();
-//    struct sock_data_args_t *data_args;
-//    ssize_t bytes_count = PT_REGS_RC(ctx);
+    struct sock_data_args_t *data_args;
+    ssize_t bytes_count = PT_REGS_RC(ctx);
 
-//    data_args = bpf_map_lookup_elem(&writing_args, &id);
-//    if (data_args && data_args->sock_event) {
-//        process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_EGRESS, true);
-//    }
-//
+    data_args = bpf_map_lookup_elem(&writing_args, &id);
+    if (data_args && data_args->sock_event) {
+        process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_EGRESS, true);
+    }
+
     bpf_map_delete_elem(&writing_args, &id);
     struct sock_opts_event t = {};
     __u64 ret = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t, sizeof(struct sock_opts_event));

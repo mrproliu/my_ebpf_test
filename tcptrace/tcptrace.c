@@ -229,14 +229,14 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
         data->buf_size = data_len;
     } else {
         struct iovec iov_cpy;
-        BPF_CORE_READ_INTO(&iov_cpy, args, iov[0]);
+        bpf_probe_read(&iov_cpy, sizeof(iov_cpy), &args->iov[0]);
         __kernel_size_t len;
         bpf_probe_read(&len, sizeof(len), &iov_cpy.iov_len);
         bytes_count = len > bytes_count ? bytes_count : len;
         data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
 
         const char* buf;
-        bpf_probe_read(&buf, sizeof(const char*), iov_cpy.iov_base);
+        bpf_probe_read(&buf, sizeof(const char*), &iov_cpy.iov_base);
         bpf_probe_read(data->buf, data_len, buf);
     }
     data->exe_time = curr_nacs - args->start_nacs;

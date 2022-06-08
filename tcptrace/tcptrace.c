@@ -192,11 +192,15 @@ int sys_sendto(struct pt_regs* ctx) {
     return 0;
 }
 
-static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count,
-                                        __u32 data_direction) {
+static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, struct sock_data_args_t *args, ssize_t bytes_count,
+                                        __u32 data_direction, const bool vecs) {
     __u64 curr_nacs = bpf_ktime_get_ns();
     __u32 tgid = (__u32)(id >> 32);
-    if (args->buf == NULL) {
+
+    if (!vecs && args->buf == NULL) {
+        return;
+    }
+    if (vecs && (args->iov == NULL || args->iovlen <= 0)) {
         return;
     }
     if (args->fd < 0) {
@@ -206,7 +210,6 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
         return;
     }
 
-    __u32 data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
     struct sock_data_event_t* data = create_sock_data();
     if (data == NULL) {
         return;
@@ -217,13 +220,28 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     data->data_direction = data_direction;
     bpf_get_current_comm(&data->comm, sizeof(data->comm));
 
-    const char* buf;
-    bpf_probe_read(&buf, sizeof(const char*), &args->buf);
-    bpf_probe_read(data->buf, data_len, buf);
-    data->buf_size = data_len;
+    __u32 data_len = 0;
+    if (!vecs) {
+        const char* buf;
+        bpf_probe_read(&buf, sizeof(const char*), &args->buf);
+        bpf_probe_read(data->buf, data_len, buf);
+        data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
+        data->buf_size = data_len;
+    } else {
+        struct iovec iov_cpy;
+        BPF_CORE_READ_INTO(&iov_cpy, args, iov[0]);
+        __kernel_size_t len;
+        bpf_probe_read(&len, sizeof(len), &iov_cpy.iov_len);
+        bytes_count = len > bytes_count ? bytes_count : len;
+        data_len = bytes_count < MAX_DATA_SIZE_BUF ? (bytes_count & MAX_DATA_SIZE_BUF - 1) : MAX_DATA_SIZE_BUF;
+
+        const char* buf;
+        bpf_probe_read(&buf, sizeof(const char*), iov_cpy.iov_base);
+        bpf_probe_read(data->buf, data_len, buf);
+    }
     data->exe_time = curr_nacs - args->start_nacs;
     data->rtt = args->rtt;
-//
+
     char *p = data->buf;
     sock_data_analyze_protocol(p, data_len, data);
     __u64 conid = gen_tgid_fd(tgid, args->fd);
@@ -248,7 +266,7 @@ int sys_sendto_ret(struct pt_regs* ctx) {
 
     data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args) {
-        process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_EGRESS);
+        process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_EGRESS, false);
     }
 
     bpf_map_delete_elem(&writing_args, &id);
@@ -316,7 +334,7 @@ int sys_recvfrom_ret(struct pt_regs* ctx) {
 
     data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args) {
-        process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_INGRESS);
+        process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_INGRESS, false);
     }
 
     bpf_map_delete_elem(&writing_args, &id);
@@ -343,8 +361,8 @@ int sys_read_ret(struct pt_regs* ctx) {
     ssize_t bytes_count = PT_REGS_RC(ctx);
 
     data_args = bpf_map_lookup_elem(&writing_args, &id);
-    if (data_args) {
-        process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_INGRESS);
+    if (data_args && data_args->sock_event) {
+        process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_INGRESS, false);
     }
 
     bpf_map_delete_elem(&writing_args, &id);
@@ -445,10 +463,59 @@ int sys_write_ret(struct pt_regs* ctx) {
     ssize_t bytes_count = PT_REGS_RC(ctx);
 
     data_args = bpf_map_lookup_elem(&writing_args, &id);
-    if (data_args) {
-        process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_EGRESS);
+    if (data_args && data_args->sock_event) {
+        process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_EGRESS, false);
     }
 
     bpf_map_delete_elem(&writing_args, &id);
+    return 0;
+}
+
+SEC("kprobe/__sys_writev")
+int sys_writev(struct pt_regs* ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+
+    struct sock_data_args_t data_args = {};
+    data_args.func = SOCK_DATA_FUNC_WRITEV;
+    data_args.fd = PT_REGS_PARM1(ctx);
+    data_args.iov = (void *)PT_REGS_PARM2(ctx);
+    data_args.iovlen = PT_REGS_PARM3(ctx);
+    data_args.start_nacs = bpf_ktime_get_ns();
+    bpf_map_update_elem(&writing_args, &id, &data_args, 0);
+    return 0;
+}
+
+SEC("kretprobe/__sys_writev")
+int sys_writev_ret(struct pt_regs* ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+    struct sock_data_args_t *data_args;
+    ssize_t bytes_count = PT_REGS_RC(ctx);
+
+    data_args = bpf_map_lookup_elem(&writing_args, &id);
+    if (data_args && data_args->sock_event) {
+        process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_EGRESS, true);
+    }
+
+    bpf_map_delete_elem(&writing_args, &id);
+    return 0;
+}
+
+SEC("kprobe/security_socket_sendmsg")
+int security_socket_sendmsg(struct pt_regs* ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+    struct sock_data_args_t *data_args = bpf_map_lookup_elem(&writing_args, &id);
+    if (data_args != NULL) {
+        data_args->sock_event = true;
+    }
+    return 0;
+}
+
+SEC("kprobe/security_socket_recvmsg")
+int security_socket_recvmsg(struct pt_regs* ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+    struct sock_data_args_t *data_args = bpf_map_lookup_elem(&writing_args, &id);
+    if (data_args != NULL) {
+        data_args->sock_event = true;
+    }
     return 0;
 }

@@ -2,6 +2,11 @@
 
 #define MAX_DATA_SIZE_BUF 1024 * 3
 
+typedef enum
+{
+    true=1, false=0
+}bool;
+
 // syscall:connect
 struct connect_args_t {
     __u32 fd;
@@ -83,10 +88,15 @@ static __inline __u64 gen_tgid_fd(__u32 tgid, __u32 fd) {
 #define SOCK_DATA_FUNC_RECVFROM 2
 #define SOCK_DATA_FUNC_READ 3
 #define SOCK_DATA_FUNC_WRITE 4
+#define SOCK_DATA_FUNC_WRITEV 5
 struct sock_data_args_t {
     __u32 func;
     __u32 fd;
     const char* buf;
+    // Used to filter out read/write and readv/writev calls that are not to sockets.
+    bool sock_event;
+    const struct iovec* iov;
+    size_t iovlen;
     __u64 start_nacs;
     __u32 rtt;
 };

@@ -269,6 +269,15 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
         data->downstream_port = con->downstream_port;
     }
     bpf_printk("data2: from: %d, data_direction: %d\n", args->func, data_direction);
+    if (args->func == SOCK_DATA_FUNC_WRITEV && data_direction == 1) {
+       data = create_sock_data();
+       if (data == NULL) {
+           return;
+       }
+
+       data->sockfd = args->fd;
+       data->pid = tgid;
+    }
     __u64 ret = bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
     if (ret == -E2BIG) {
         bpf_printk("-E2BIG;\n");

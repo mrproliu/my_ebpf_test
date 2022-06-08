@@ -222,9 +222,9 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
        if (data == NULL) {
            return;
        }
-       struct sock_opts_event t = {};
-      __u64 ret1 = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t, sizeof(struct sock_opts_event));
-      bpf_printk("writev send queue ret11: %d\n", ret1);
+//       struct sock_opts_event t = {};
+//      __u64 ret1 = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t, sizeof(struct sock_opts_event));
+//      bpf_printk("writev send queue ret11: %d\n", ret1);
 
        data->sockfd = args->fd;
        data->pid = tgid;
@@ -565,9 +565,9 @@ int sys_writev(struct pt_regs* ctx) {
     data_args.iovlen = PT_REGS_PARM3(ctx);
     data_args.start_nacs = bpf_ktime_get_ns();
     bpf_map_update_elem(&writing_args, &id, &data_args, 0);
-    struct sock_opts_event t = {};
-    __u64 ret = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t, sizeof(struct sock_opts_event));
-    bpf_printk("writev send queue: %d\n", ret);
+//    struct sock_opts_event t = {};
+//    __u64 ret = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t, sizeof(struct sock_opts_event));
+//    bpf_printk("writev send queue: %d\n", ret);
     return 0;
 }
 

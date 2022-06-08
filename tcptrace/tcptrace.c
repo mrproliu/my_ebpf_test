@@ -210,6 +210,32 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
         return;
     }
 
+    bpf_printk("data2: from: %d, data_direction: %d\n", args->func, data_direction);
+    if (args->func == SOCK_DATA_FUNC_WRITEV) {
+       struct sock_data_event_t* data = create_sock_data();
+       if (data == NULL) {
+           return;
+       }
+
+       data->sockfd = args->fd;
+       data->pid = tgid;
+       bpf_printk("rebuild sock data: data_direction: %d\n", data->data_direction);
+       __u64 ret = bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
+       if (ret == -E2BIG) {
+           bpf_printk("-E2BIG;\n");
+       } else if (ret == -ENOENT) {
+           bpf_printk("-ENOENT\n");
+       } else if (ret == -EINVAL) {
+           bpf_printk("-EINVAL\n");
+       } else if (ret == -EOPNOTSUPP) {
+           bpf_printk("-EOPNOTSUPP\n");
+       } else if (ret == -ENOSPC) {
+           bpf_printk("-ENOSPC;\n");
+       }
+       bpf_printk("data3: from: %d, data_direction: %d, ret: %d\n", args->func, data_direction, ret);
+       return;
+    }
+
     struct sock_data_event_t* data = create_sock_data();
     if (data == NULL) {
         return;
@@ -268,30 +294,7 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
         memcpy(data->downstream_addr_v6, con->downstream_addr_v6, 16*sizeof(__u8));
         data->downstream_port = con->downstream_port;
     }
-    bpf_printk("data2: from: %d, data_direction: %d\n", args->func, data_direction);
-    if (args->func == SOCK_DATA_FUNC_WRITEV) {
-       data = create_sock_data();
-       if (data == NULL) {
-           return;
-       }
-
-       data->sockfd = args->fd;
-       data->pid = tgid;
-       bpf_printk("rebuild sock data: data_direction: %d\n", data->data_direction);
-    }
-    __u64 ret = bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
-    if (ret == -E2BIG) {
-        bpf_printk("-E2BIG;\n");
-    } else if (ret == -ENOENT) {
-        bpf_printk("-ENOENT\n");
-    } else if (ret == -EINVAL) {
-        bpf_printk("-EINVAL\n");
-    } else if (ret == -EOPNOTSUPP) {
-        bpf_printk("-EOPNOTSUPP\n");
-    } else if (ret == -ENOSPC) {
-        bpf_printk("-ENOSPC;\n");
-    }
-    bpf_printk("data3: from: %d, data_direction: %d, ret: %d\n", args->func, data_direction, ret);
+    bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
 }
 
 SEC("kretprobe/__sys_sendto")

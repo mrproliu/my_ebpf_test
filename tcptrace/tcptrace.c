@@ -242,7 +242,7 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
 //        const char* buf;
 //        bpf_probe_read(&buf, sizeof(const char*), &iov_cpy.iov_base);
 //        bpf_probe_read(data->buf, data_len, &iov_cpy.iov_base);
-        data->buf_size = data_len;
+//        data->buf_size = data_len;
 
 //        if (data->buf_size > 10) {
 //            bpf_printk("contains data from vs: size: %d: %s\n", data->buf_size, data->buf);

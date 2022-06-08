@@ -18,6 +18,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"unsafe"
 )
@@ -212,11 +213,6 @@ func main() {
 				continue
 			}
 
-			// for gcloud terminal, remove output
-			if fmt.Sprintf("%s", event.Comm) == "sshd" {
-				continue
-			}
-
 			var downstreamAddr, upstreamAddr string
 			if event.DownStreamAddrV4 != 0 {
 				downstreamAddr = parseAddressV4(event.DownStreamAddrV4)
@@ -290,6 +286,11 @@ func main() {
 			// Parse the perf event entry into an Event structure.
 			if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
 				log.Printf("parsing perf event: %s", err)
+				continue
+			}
+
+			// for gcloud terminal, remove output
+			if strings.Contains(fmt.Sprintf("%s", event.Comm), "sshd") {
 				continue
 			}
 

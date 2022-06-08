@@ -576,9 +576,9 @@ func getConnectionItem(line string) *ConnectionItem {
 
 	// ignore local listenning records
 	destIP, destPort := parseAddr(source[2])
-	if destIP == "0.0.0.0" {
-		return nil
-	}
+	//if destIP == "0.0.0.0" {
+	//	return nil
+	//}
 
 	// source ip and port
 	ip, port := parseAddr(source[1])

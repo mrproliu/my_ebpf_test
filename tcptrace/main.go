@@ -588,9 +588,7 @@ func getConnectionItem(line string) *ConnectionItem {
 	raddr := destIP + ":" + destPort + "->" + ip + ":" + port
 
 	inode := source[9]
-	if inode == "" {
-		fmt.Printf("lint: %s, source: %v\n", line, source)
-	}
+	fmt.Printf("lint: %s, source: %v\n", line, source)
 
 	cc := &ConnectionItem{
 		Addr:        addr,

@@ -200,9 +200,9 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
     if (!vecs && args->buf == NULL) {
         return;
     }
-    if (vecs && (args->iov == NULL || args->iovlen <= 0)) {
-        return;
-    }
+//    if (vecs && (args->iov == NULL || args->iovlen <= 0)) {
+//        return;
+//    }
     if (args->fd < 0) {
         return;
     }
@@ -210,7 +210,7 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
         return;
     }
 
-    if (args->func == SOCK_DATA_FUNC_WRITEV) {
+    if (vecs) {
         bpf_printk("data2: from: %d, data_direction: %d\n", args->func, data_direction);
        struct sock_data_event_t* data = create_sock_data();
        if (data == NULL) {
@@ -547,8 +547,8 @@ int sys_writev(struct pt_regs* ctx) {
     struct sock_data_args_t data_args = {};
     data_args.func = SOCK_DATA_FUNC_WRITEV;
     data_args.fd = PT_REGS_PARM1(ctx);
-    data_args.iov = (void *)PT_REGS_PARM2(ctx);
-    data_args.iovlen = PT_REGS_PARM3(ctx);
+//    data_args.iov = (void *)PT_REGS_PARM2(ctx);
+//    data_args.iovlen = PT_REGS_PARM3(ctx);
     data_args.start_nacs = bpf_ktime_get_ns();
     bpf_map_update_elem(&writing_args, &id, &data_args, 0);
     return 0;

@@ -210,8 +210,8 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
         return;
     }
 
-    bpf_printk("data2: from: %d, data_direction: %d\n", args->func, data_direction);
     if (args->func == SOCK_DATA_FUNC_WRITEV) {
+        bpf_printk("data2: from: %d, data_direction: %d\n", args->func, data_direction);
        struct sock_data_event_t* data = create_sock_data();
        if (data == NULL) {
            return;
@@ -219,6 +219,7 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
 
        data->sockfd = args->fd;
        data->pid = tgid;
+       bpf_get_current_comm(&data->comm, sizeof(data->comm));
        bpf_printk("rebuild sock data: data_direction: %d\n", data->data_direction);
        __u64 ret = bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, data, sizeof(struct sock_data_event_t));
        if (ret == -E2BIG) {

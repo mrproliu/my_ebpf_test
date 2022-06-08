@@ -284,7 +284,7 @@ func main() {
 				} else {
 					upstreamAddr = parseAddressV6(event.UpstreamAddrV6)
 				}
-				fmt.Printf("%s:%d -> %s:%d\n", downstreamAddr, parsePort(uint16(event.DownStreamPort)), upstreamAddr, parsePort(parsePort(uint16(event.UpstreamPort))))
+				fmt.Printf("family: %d, %s:%d -> %s:%d\n", event.SocketFamily, downstreamAddr, parsePort(uint16(event.DownStreamPort)), upstreamAddr, parsePort(parsePort(uint16(event.UpstreamPort))))
 			}
 			if event.MessageType == 1 {
 				request, err := http.ReadRequest(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])))

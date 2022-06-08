@@ -229,7 +229,7 @@ static __inline void process_write_data(struct pt_regs* ctx, __u64 id, struct so
     __u64 conid = gen_tgid_fd(tgid, args->fd);
     struct active_connection_t* con = bpf_map_lookup_elem(&active_connection_map, &conid);
     if (con != NULL) {
-        data->socket_family = con->upstream_addr_v4;
+        data->socket_family = con->socket_family;
         data->upstream_addr_v4 = con->upstream_addr_v4;
         memcpy(data->upstream_addr_v6, con->upstream_addr_v6, 16*sizeof(__u8));
         data->upstream_port = con->upstream_port;

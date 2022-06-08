@@ -415,6 +415,9 @@ func main() {
 				if err != nil {
 					fmt.Errorf("------load remote sock name error: %v\n", err)
 				}
+				if sockaddr == nil || peeraddr == nil {
+					fmt.Errorf("---sock addr or remote addr is null: %d", int(event.SocketFd))
+				}
 				remoteAddr, remotePort := getAddr(peeraddr)
 				if event.DataDirection == 1 {
 					fmt.Printf("---load from syscall, %s:%d -> %s:%d\n", remoteAddr, remotePort, localAddr, localPort)

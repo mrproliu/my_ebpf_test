@@ -150,7 +150,7 @@ int sys_connect(struct pt_regs *ctx) {
     connect_args.addr = (void *)PT_REGS_PARM2(ctx);
     connect_args.start_nacs = bpf_ktime_get_ns();
     bpf_map_update_elem(&conecting_args, &id, &connect_args, 0);
-    bpf_printk("enter sys connect--: %d, curtime: %d\n", id, connect_args.start_nacs);
+//    bpf_printk("enter sys connect--: %d, curtime: %d\n", id, connect_args.start_nacs);
 	return 0;
 }
 
@@ -176,7 +176,7 @@ int tcp_connect(struct pt_regs *ctx) {
     connect_args = bpf_map_lookup_elem(&conecting_args, &id);
     if (connect_args) {
         connect_args->sock = (void *)PT_REGS_PARM1(ctx);
-        bpf_printk("detected tcp connect hook\n");
+//        bpf_printk("detected tcp connect hook\n");
     }
     return 0;
 }

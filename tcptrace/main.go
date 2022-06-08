@@ -261,9 +261,20 @@ func main() {
 				log.Printf("parsing perf event: %s", err)
 				continue
 			}
+
+			var direction string
+			switch event.DataDirection {
+			case 1:
+				direction = "RECEIVE"
+			case 2:
+				direction = "WRITE"
+			default:
+				direction = "UNKNOWN"
+			}
+
 			if strings.Contains(fmt.Sprintf("%s", event.Comm), "nginx") {
 				//fmt.Printf("contians nginx: %v\n", event)
-				fmt.Printf("nginx: ")
+				fmt.Printf("nginx: %s ", direction)
 
 				request, err := http.ReadRequest(bufio.NewReader(bytes.NewBuffer(event.Buffer[:])))
 				if err == nil {
@@ -279,16 +290,6 @@ func main() {
 				}
 
 				fmt.Printf("\n")
-			}
-
-			var direction string
-			switch event.DataDirection {
-			case 1:
-				direction = "RECEIVE"
-			case 2:
-				direction = "WRITE"
-			default:
-				direction = "UNKNOWN"
 			}
 
 			var message string

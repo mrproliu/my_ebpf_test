@@ -363,8 +363,6 @@ int sys_read_ret(struct pt_regs* ctx) {
     data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args && data_args->sock_event) {
         process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_INGRESS, false);
-    } else {
-        bpf_printk("data args is null or sock event is failure\n");
     }
 
     bpf_map_delete_elem(&writing_args, &id);

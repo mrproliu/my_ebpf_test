@@ -435,7 +435,7 @@ func main() {
 				}
 
 				if !found {
-					fmt.Printf("---could not found the socket fd, current inode: %s, exists inode: %v", inode, exinodes)
+					fmt.Printf("---could not found the socket fd, current inode: %s, exists inode: %v\n", inode, exinodes)
 				}
 
 			}

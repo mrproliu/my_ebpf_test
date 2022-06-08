@@ -146,8 +146,8 @@ func getAddr(addr syscall.Sockaddr) (ip string, port int) {
 		port = inet4.Port
 	case *syscall.SockaddrInet6:
 		ip = "v6"
-	default:
-		ip = "not tcp"
+	case *syscall.SockaddrUnix:
+		ip = "unix"
 	}
 	return ip, port
 }

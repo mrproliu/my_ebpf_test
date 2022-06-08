@@ -19,6 +19,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"regexp"
 	"strconv"
 	"strings"
 	"syscall"
@@ -570,7 +571,8 @@ func netstat(pid int) ([]*ConnectionItem, error) {
 
 func getConnectionItem(line string) *ConnectionItem {
 	// local ip and port
-	source := strings.Split(strings.TrimSpace(line), " ")
+	r := regexp.MustCompile("\\s*")
+	source := r.Split(strings.TrimSpace(line), -1)
 
 	// ignore local listenning records
 	destIP, destPort := parseAddr(source[2])
@@ -587,7 +589,7 @@ func getConnectionItem(line string) *ConnectionItem {
 
 	inode := source[9]
 	if inode == "" {
-		fmt.Printf("lint: %d, source: %v\n", line, source)
+		fmt.Printf("lint: %s, source: %v\n", line, source)
 	}
 
 	cc := &ConnectionItem{

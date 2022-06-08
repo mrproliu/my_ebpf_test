@@ -74,17 +74,17 @@ func main() {
 	}
 
 	fmt.Printf("-----------------------------\n")
-	tcp := Tcp()
+	tcp := Tcp(pid)
 	for _, t := range tcp {
 		fmt.Printf("%s: %s:%s -> %s:%s\n", t.Inode, t.SrcIP, t.SrcPort, t.DestIP, t.DestPort)
 	}
 }
 
 const (
-	procTCPFile  = "/proc/net/tcp"
-	procUDPFile  = "/proc/net/udp"
-	procTCP6File = "/proc/net/tcp6"
-	procUDP6File = "/proc/net/udp6"
+	procTCPFile  = "/proc/%d/net/tcp"
+	procUDPFile  = "/proc/%d/net/udp"
+	procTCP6File = "/proc/%d/net/tcp6"
+	procUDP6File = "/proc/%d/net/udp6"
 
 	EstablishedSymbol = "01"
 	ListenSymbol      = "0A"
@@ -115,7 +115,7 @@ func (ci *ConnectionItem) GetAddr() string {
 	return ci.Addr
 }
 
-func parseNetworkLines(tp string) ([]string, error) {
+func parseNetworkLines(tp string, pid int) ([]string, error) {
 	var pf string
 
 	switch tp {
@@ -130,6 +130,8 @@ func parseNetworkLines(tp string) ([]string, error) {
 	default:
 		pf = procTCPFile
 	}
+
+	tp = fmt.Sprintf(pf, pid)
 
 	data, err := ioutil.ReadFile(pf)
 	if err != nil {
@@ -200,12 +202,12 @@ func removeEmpty(array []string) []string {
 
 type filterFunc func()
 
-func netstat(t string) ([]*ConnectionItem, error) {
+func netstat(t string, pid int) ([]*ConnectionItem, error) {
 	var (
 		conns []*ConnectionItem
 	)
 
-	data, err := parseNetworkLines(t)
+	data, err := parseNetworkLines(t, pid)
 	if err != nil {
 		return nil, err
 	}
@@ -291,26 +293,8 @@ func getConnectionItem(line string) *ConnectionItem {
 }
 
 // Tcp func Get a slice of Process type with TCP data
-func Tcp() []*ConnectionItem {
-	data, _ := netstat("tcp")
-	return data
-}
-
-// Udp func Get a slice of Process type with UDP data
-func Udp() []*ConnectionItem {
-	data, _ := netstat("udp")
-	return data
-}
-
-// Tcp6 func Get a slice of Process type with TCP6 data
-func Tcp6() []*ConnectionItem {
-	data, _ := netstat("tcp6")
-	return data
-}
-
-// Udp6 func Get a slice of Process type with UDP6 data
-func Udp6() []*ConnectionItem {
-	data, _ := netstat("udp6")
+func Tcp(pid int) []*ConnectionItem {
+	data, _ := netstat("tcp", pid)
 	return data
 }
 

@@ -212,7 +212,7 @@ func main() {
 				continue
 			}
 
-			// for gcloud, remove output
+			// for gcloud terminal, remove output
 			if fmt.Sprintf("%s", event.Comm) == "sshd" {
 				continue
 			}

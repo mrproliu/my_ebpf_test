@@ -298,24 +298,25 @@ func main() {
 				direction = "UNKNOWN"
 			}
 
-			var message string
-			switch event.MessageType {
-			case 1:
-				message = "REQUEST"
-			case 2:
-				message = "RESPONSE"
-			default:
-				message = "UNKNOWN"
-			}
-
-			var protocol string
-			switch event.ProtocolType {
-			case 1:
-				protocol = "HTTP"
-			default:
-				protocol = "UNKNOWN"
-			}
-			fmt.Printf("%s: %d(%s), protcol: %s, message: %s, socket fd: %d, size: %d, exe time: %fms, RTT: %d\n", direction, event.Pid, event.Comm, protocol, message, event.SocketFd, event.BufferSize, float64(event.ExeTime)/1e6, event.Rtt)
+			//var message string
+			//switch event.MessageType {
+			//case 1:
+			//	message = "REQUEST"
+			//case 2:
+			//	message = "RESPONSE"
+			//default:
+			//	message = "UNKNOWN"
+			//}
+			//
+			//var protocol string
+			//switch event.ProtocolType {
+			//case 1:
+			//	protocol = "HTTP"
+			//default:
+			//	protocol = "UNKNOWN"
+			//}
+			//fmt.Printf("%s: %d(%s), protcol: %s, message: %s, socket fd: %d, size: %d, exe time: %fms, RTT: %d\n", direction, event.Pid, event.Comm, protocol, message, event.SocketFd, event.BufferSize, float64(event.ExeTime)/1e6, event.Rtt)
+			fmt.Printf("%s: %d(%s), socket fd: %d, size: %d, exe time: %fms, RTT: %d\n", direction, event.Pid, event.Comm, event.SocketFd, event.BufferSize, float64(event.ExeTime)/1e6, event.Rtt)
 			if event.SocketFamily != 0 {
 				var downstreamAddr, upstreamAddr string
 				if event.SocketFamily == syscall.AF_INET {

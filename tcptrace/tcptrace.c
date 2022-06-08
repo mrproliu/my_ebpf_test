@@ -215,27 +215,6 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
     if (bytes_count <= 0) {
         return;
     }
-//
-//    if (vecs) {
-//        bpf_printk("data2: from: %d, data_direction: %d\n", args->func, data_direction);
-//       struct sock_data_event_t data = {};
-////       if (data == NULL) {
-////           return;
-////       }
-//
-//       data.sockfd = args->fd;
-//       data.pid = tgid;
-//       bpf_get_current_comm(&data.comm, sizeof(data.comm));
-//       bpf_printk("rebuild sock data: data_direction: %d\n", data.data_direction);
-//       __u64 ret = bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, &data, sizeof(struct sock_data_event_t));
-//       bpf_printk("data3: from: %d, data_direction: %d, ret: %d\n", args->func, data_direction, ret);
-//
-//       struct sock_opts_event t1 = {};
-//       bpf_get_current_comm(&t1.comm, sizeof(t1.comm));
-//       __u64 ret2 = bpf_perf_event_output(ctx, &test_queue, BPF_F_CURRENT_CPU, &t1, sizeof(struct sock_opts_event));
-//       bpf_printk("writev send queue ret22: %d\n", ret2);
-//       return;
-//    }
 
     struct sock_data_event_t data = {};
 //    if (data == NULL) {

@@ -424,3 +424,31 @@ int sock_alloc_ret(struct pt_regs *ctx) {
     }
     return 0;
 }
+
+SEC("kprobe/__sys_write")
+int sys_write(struct pt_regs* ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+
+    struct sock_data_args_t data_args = {};
+    data_args.func = SOCK_DATA_FUNC_WRITE;
+    data_args.fd = PT_REGS_PARM1(ctx);
+    data_args.buf = (void *)PT_REGS_PARM2(ctx);
+    data_args.start_nacs = bpf_ktime_get_ns();
+    bpf_map_update_elem(&writing_args, &id, &data_args, 0);
+    return 0;
+}
+
+SEC("kretprobe/__sys_write")
+int sys_write_ret(struct pt_regs* ctx) {
+    __u64 id = bpf_get_current_pid_tgid();
+    struct sock_data_args_t *data_args;
+    ssize_t bytes_count = PT_REGS_RC(ctx);
+
+    data_args = bpf_map_lookup_elem(&writing_args, &id);
+    if (data_args) {
+        process_write_data(ctx, id, data_args, bytes_count, SOCK_DATA_DIRECTION_EGRESS);
+    }
+
+    bpf_map_delete_elem(&writing_args, &id);
+    return 0;
+}

@@ -67,6 +67,8 @@ type bpfProgramSpecs struct {
 	SysRecvfromRet    *ebpf.ProgramSpec `ebpf:"sys_recvfrom_ret"`
 	SysSendto         *ebpf.ProgramSpec `ebpf:"sys_sendto"`
 	SysSendtoRet      *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
+	SysWrite          *ebpf.ProgramSpec `ebpf:"sys_write"`
+	SysWriteRet       *ebpf.ProgramSpec `ebpf:"sys_write_ret"`
 	TcpConnect        *ebpf.ProgramSpec `ebpf:"tcp_connect"`
 	TcpRcvEstablished *ebpf.ProgramSpec `ebpf:"tcp_rcv_established"`
 }
@@ -144,6 +146,8 @@ type bpfPrograms struct {
 	SysRecvfromRet    *ebpf.Program `ebpf:"sys_recvfrom_ret"`
 	SysSendto         *ebpf.Program `ebpf:"sys_sendto"`
 	SysSendtoRet      *ebpf.Program `ebpf:"sys_sendto_ret"`
+	SysWrite          *ebpf.Program `ebpf:"sys_write"`
+	SysWriteRet       *ebpf.Program `ebpf:"sys_write_ret"`
 	TcpConnect        *ebpf.Program `ebpf:"tcp_connect"`
 	TcpRcvEstablished *ebpf.Program `ebpf:"tcp_rcv_established"`
 }
@@ -163,6 +167,8 @@ func (p *bpfPrograms) Close() error {
 		p.SysRecvfromRet,
 		p.SysSendto,
 		p.SysSendtoRet,
+		p.SysWrite,
+		p.SysWriteRet,
 		p.TcpConnect,
 		p.TcpRcvEstablished,
 	)

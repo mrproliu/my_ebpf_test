@@ -571,7 +571,7 @@ func netstat(pid int) ([]*ConnectionItem, error) {
 
 func getConnectionItem(line string) *ConnectionItem {
 	// local ip and port
-	r := regexp.MustCompile("\\s*")
+	r := regexp.MustCompile("\\s+")
 	source := r.Split(strings.TrimSpace(line), -1)
 
 	// ignore local listenning records

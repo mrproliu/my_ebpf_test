@@ -420,7 +420,9 @@ func main() {
 
 				inode := strings.TrimSuffix(strings.TrimPrefix(dest, "socket:["), "]")
 				found := false
+				exinodes := make([]string, 0)
 				for _, c := range connections {
+					exinodes = append(exinodes, c.Inode)
 					if c.Inode == inode {
 						if event.DataDirection == 1 {
 							fmt.Printf("---load from linux fs, %s\n", c.Addr)
@@ -432,7 +434,7 @@ func main() {
 				}
 
 				if !found {
-					fmt.Printf("---could not found the socket fd in: %v", connections)
+					fmt.Printf("---could not found the socket fd, current inode: %s, exists inode: %v", inode, exinodes)
 				}
 
 			}

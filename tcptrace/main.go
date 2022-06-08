@@ -426,9 +426,9 @@ func main() {
 					exinodes = append(exinodes, c.Inode)
 					if c.Inode == inode {
 						if event.DataDirection == 1 {
-							fmt.Printf("---load from linux fs, %s\n", c.Addr)
-						} else {
 							fmt.Printf("---load from linux fs, %s\n", c.ReverseAddr)
+						} else {
+							fmt.Printf("---load from linux fs, %s\n", c.Addr)
 						}
 						found = true
 					}

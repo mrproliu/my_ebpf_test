@@ -226,6 +226,7 @@ static __always_inline  void process_write_data(struct pt_regs* ctx, __u64 id, s
     data.data_direction = data_direction;
     bpf_get_current_comm(&data.comm, sizeof(data.comm));
 
+
     __u32 data_len = 0;
     if (!vecs) {
         const char* buf;

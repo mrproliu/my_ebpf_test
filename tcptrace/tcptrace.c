@@ -503,24 +503,24 @@ int sys_write_ret(struct trace_event_raw_sys_exit *ctx) {
 }
 
 
-SEC("kprobe/__sys_send")
-int sys_send(struct pt_regs* ctx) {
+SEC("tracepoint/syscalls/sys_enter_send")
+int sys_send(struct trace_event_raw_sys_enter *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
 
     struct sock_data_args_t data_args = {};
     data_args.func = SOCK_DATA_FUNC_SEND;
-    data_args.fd = PT_REGS_PARM1(ctx);
-    data_args.buf = (void *)PT_REGS_PARM2(ctx);
+    data_args.fd = ctx->args[1];
+    data_args.buf = (void *)ctx->args[2];
     data_args.start_nacs = bpf_ktime_get_ns();
     bpf_map_update_elem(&writing_args, &id, &data_args, 0);
     return 0;
 }
 
-SEC("kretprobe/__sys_send")
-int sys_send_ret(struct pt_regs* ctx) {
+SEC("tracepoint/syscalls/sys_exit_send")
+int sys_send_ret(struct trace_event_raw_sys_exit *ctx) {
     __u64 id = bpf_get_current_pid_tgid();
     struct sock_data_args_t *data_args;
-    ssize_t bytes_count = PT_REGS_RC(ctx);
+    ssize_t bytes_count = ctx->ret;
 
     data_args = bpf_map_lookup_elem(&writing_args, &id);
     if (data_args) {

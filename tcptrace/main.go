@@ -61,6 +61,7 @@ type SocketDataEvent struct {
 	DownStreamAddrV4 uint32
 	DownStreamAddrV6 [16]uint8
 	DownStreamPort   uint32
+	TotalBytes       uint64
 }
 
 type LinkFunc func(symbol string, prog *ebpf.Program) (link.Link, error)
@@ -386,7 +387,7 @@ func main() {
 			//	protocol = "UNKNOWN"
 			//}
 			//fmt.Printf("%s: %d(%s), protcol: %s, message: %s, socket fd: %d, size: %d, exe time: %fms, RTT: %d\n", direction, event.Pid, event.Comm, protocol, message, event.SocketFd, event.BufferSize, float64(event.ExeTime)/1e6, event.Rtt)
-			fmt.Printf("%s: %d(%s), socket fd: %d, size: %d, exe time: %fms, RTT: %d\n", direction, event.Pid, event.Comm, event.SocketFd, event.BufferSize, float64(event.ExeTime)/1e6, event.Rtt)
+			fmt.Printf("%s: %d(%s), socket fd: %d, size: %d, exe time: %fms, total size: %d, RTT: %d\n", direction, event.Pid, event.Comm, event.SocketFd, event.BufferSize, float64(event.ExeTime)/1e6, event.TotalBytes, event.Rtt)
 			if event.SocketFamily != 0 {
 				var downstreamAddr, upstreamAddr string
 				if event.SocketFamily == syscall.AF_INET {

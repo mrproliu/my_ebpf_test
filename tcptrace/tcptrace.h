@@ -84,6 +84,7 @@ struct active_connection_t {
     __u32 downstream_addr_v4;
     __u8 downstream_addr_v6[16];
     __u16 downstream_port;
+    __u64 total_bytes;
 };
 struct {
 	__uint(type, BPF_MAP_TYPE_HASH);
@@ -146,6 +147,7 @@ struct sock_data_event_t {
     __u32 downstream_addr_v4;
     __u8 downstream_addr_v6[16];
     __u16 downstream_port;
+    __u64 total_bytes;
 };
 
 struct {

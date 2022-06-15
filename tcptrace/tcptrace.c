@@ -120,7 +120,7 @@ static __always_inline void submit_new_connection(struct pt_regs* ctx, __u32 fro
     opts_event.exe_time = curr_nacs - start_nacs;
 //    bpf_printk("execute time: start: %d, cur: %d, exe: %d\n", start_nacs, curr_nacs, opts_event.exe_time);
 
-    bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));
+//    bpf_perf_event_output(ctx, &socket_opts_events_queue, BPF_F_CURRENT_CPU, &opts_event, sizeof(opts_event));
 
 }
 
@@ -247,10 +247,10 @@ static __always_inline  void process_write_data(void *ctx, __u64 id, struct sock
         data.downstream_port = con->downstream_port;
         data.total_bytes = con->total_bytes;
     }
-    __u64 ret = bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, &data, sizeof(struct sock_data_event_t));
-    if (ret != 0) {
-        bpf_printk("write to queue failure:%d\n", ret);
-    }
+//    __u64 ret = bpf_perf_event_output(ctx, &socket_data_events_queue, BPF_F_CURRENT_CPU, &data, sizeof(struct sock_data_event_t));
+//    if (ret != 0) {
+//        bpf_printk("write to queue failure:%d\n", ret);
+//    }
 }
 
 SEC("tracepoint/syscalls/sys_enter_sendto")

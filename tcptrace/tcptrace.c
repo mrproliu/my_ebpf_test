@@ -236,7 +236,7 @@ static __always_inline  void process_write_data(void *ctx, __u64 id, struct sock
     __u64 conid = gen_tgid_fd(tgid, args->fd);
     struct active_connection_t* con = bpf_map_lookup_elem(&active_connection_map, &conid);
     if (con != NULL) {
-        con->total_bytes += data_len;
+        con->total_bytes += buf_size;
         data.socket_family = con->socket_family;
         data.upstream_addr_v4 = con->upstream_addr_v4;
         memcpy(data.upstream_addr_v6, con->upstream_addr_v6, 16*sizeof(__u8));

@@ -148,6 +148,7 @@ struct sock_data_event_t {
     __u8 downstream_addr_v6[16];
     __u16 downstream_port;
     __u64 total_bytes;
+    __u32 func;
 };
 
 struct {

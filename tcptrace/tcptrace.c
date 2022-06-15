@@ -230,6 +230,7 @@ static __always_inline  void process_write_data(void *ctx, __u64 id, struct sock
     }
     data.exe_time = curr_nacs - args->start_nacs;
     data.rtt = args->rtt;
+    data.func = args->func;
 
 //    char *p = data->buf;
 //    sock_data_analyze_protocol(p, data_len, data);

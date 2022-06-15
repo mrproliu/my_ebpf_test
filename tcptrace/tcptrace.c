@@ -250,7 +250,7 @@ static __always_inline  void process_write_data(void *ctx, __u64 id, struct sock
     }
 }
 
-SEC("tracepoint/syscalls/sys_enter_sendto")
+SEC("kprobe/__sys_sendto")
 int sys_sendto(struct pt_regs* ctx) {
     __u64 id = bpf_get_current_pid_tgid();
 
@@ -265,7 +265,7 @@ int sys_sendto(struct pt_regs* ctx) {
     return 0;
 }
 
-SEC("tracepoint/syscalls/sys_exit_sendto")
+SEC("kretprobe/__sys_sendto")
 int sys_sendto_ret(struct pt_regs* ctx) {
     __u64 id = bpf_get_current_pid_tgid();
     struct sock_data_args_t *data_args;

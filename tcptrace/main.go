@@ -406,7 +406,7 @@ func main() {
 			//	protocol = "UNKNOWN"
 			//}
 			//fmt.Printf("%s: %d(%s), protcol: %s, message: %s, socket fd: %d, size: %d, exe time: %fms, RTT: %d\n", direction, event.Pid, event.Comm, protocol, message, event.SocketFd, event.BufferSize, float64(event.ExeTime)/1e6, event.Rtt)
-			fmt.Printf("%s: %d(%s) by %s, socket fd: %d, size: %d, exe time: %fms, RTT: %d\n", direction, event.Pid, event.Comm, funcName, event.SocketFd, event.BufferSize, float64(event.ExeTime)/1e6, event.TotalBytes, event.Rtt)
+			fmt.Printf("%s: %d(%s) by %s, socket fd: %d, size: %d, exe time: %fms, RTT: %d\n", direction, event.Pid, event.Comm, funcName, event.SocketFd, event.BufferSize, float64(event.ExeTime)/1e6, event.Rtt)
 			if event.SocketFamily != 0 {
 				var downstreamAddr, upstreamAddr string
 				if event.SocketFamily == syscall.AF_INET {

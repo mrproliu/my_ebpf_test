@@ -192,7 +192,7 @@ func main() {
 	linker.AddLink("__sys_accept4", link.Kretprobe, objs.SysAcceptRet)
 	linker.AddTracepoint("syscalls", "sys_enter_write", objs.SysWrite)
 	linker.AddTracepoint("syscalls", "sys_exit_write", objs.SysWriteRet)
-	linker.AddTracepoint("syscalls", "sys_exit_writev", objs.SysWritev)
+	linker.AddTracepoint("syscalls", "sys_enter_writev", objs.SysWritev)
 	linker.AddTracepoint("syscalls", "sys_exit_writev", objs.SysWritevRet)
 	linker.AddLink("sys_send", link.Kprobe, objs.SysSend)
 	linker.AddLink("sys_send", link.Kretprobe, objs.SysSendRet)
@@ -211,8 +211,6 @@ func main() {
 	//linker.AddLink("__close_fd", link.Kprobe, objs.SysClose)
 	//linker.AddLink("__close_fd", link.Kretprobe, objs.SysCloseRet)
 
-	linker.AddTracepoint("syscalls", "sys_enter_writev", objs.TracepointSysEnterWritev)
-	linker.AddTracepoint("syscalls", "sys_exit_writev", objs.TracepointSysExitWritev)
 	linker.AddLink("sock_alloc", link.Kretprobe, objs.SockAllocRet)
 	//linker.AddLink("__inet_stream_connect", link.Kprobe, objs.SockFromFileRet)
 	linker.AddLink("tcp_connect", link.Kprobe, objs.TcpConnect)

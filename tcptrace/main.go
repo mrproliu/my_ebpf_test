@@ -210,8 +210,8 @@ func main() {
 	linker.AddLink("sys_read", link.Kretprobe, objs.SysReadRet)
 
 	// close_fd or __close_fd
-	//linker.AddLink("__close_fd", link.Kprobe, objs.SysClose)
-	//linker.AddLink("__close_fd", link.Kretprobe, objs.SysCloseRet)
+	linker.AddLink("__close_fd", link.Kprobe, objs.SysClose)
+	linker.AddLink("__close_fd", link.Kretprobe, objs.SysCloseRet)
 
 	linker.AddLink("sock_alloc", link.Kretprobe, objs.SockAllocRet)
 	//linker.AddLink("__inet_stream_connect", link.Kprobe, objs.SockFromFileRet)

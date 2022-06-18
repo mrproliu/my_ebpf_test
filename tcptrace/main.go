@@ -343,16 +343,16 @@ func main() {
 				continue
 			}
 
-			found := false
-			for _, pid := range pidList {
-				if pid == int(event.Pid) {
-					found = true
-					break
-				}
-			}
-			if !found {
-				continue
-			}
+			//found := false
+			//for _, pid := range pidList {
+			//	if pid == int(event.Pid) {
+			//		found = true
+			//		break
+			//	}
+			//}
+			//if !found {
+			//	continue
+			//}
 
 			// for gcloud terminal, remove output
 			comm := fmt.Sprintf("%s", event.Comm)

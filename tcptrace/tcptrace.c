@@ -536,6 +536,7 @@ int sys_send_ret(struct pt_regs* ctx) {
     bpf_map_delete_elem(&writing_args, &id);
     return 0;
 }
+
 //
 //SEC("kprobe/__sys_writev")
 //int sys_writev(struct pt_regs* ctx) {

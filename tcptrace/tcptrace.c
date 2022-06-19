@@ -150,6 +150,8 @@ int sys_connect(struct pt_regs *ctx) {
     bpf_map_update_elem(&conecting_args, &id, &connect_args, 0);
 
     __u32 sock_family = _(connect_args.addr->sa_family);
+    __u32 fd1 = PT_REGS_PARM1(ctx);
+    bpf_printk("begin execute connect111111111: tgid: %d, fd: %d=%d", id>>32, connect_args.fd, fd1);
     bpf_printk("sys connect enter: %d", sock_family);
 //    bpf_printk("enter sys connect--: %d, curtime: %d\n", id, connect_args.start_nacs);
 	return 0;

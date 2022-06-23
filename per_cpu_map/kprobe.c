@@ -40,6 +40,7 @@ int kprobe_execve(struct pt_regs *ctx) {
     key->pid = tgid;
     bpf_get_current_comm(&key->name, sizeof(key->name));
     key->random = bpf_get_prandom_u32();
+    bpf_printk("key size: %d:%d:%d", sizeof(key), sizeof(&key), sizeof(*key));
 
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, key, sizeof(key));
     return 0;

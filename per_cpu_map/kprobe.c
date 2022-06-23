@@ -14,6 +14,7 @@ struct key_t {
 struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
 } counts SEC(".maps");
+
 struct {
     __uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
     __type(key, __u32);
@@ -21,13 +22,8 @@ struct {
     __uint(max_entries, 1);
 } per_cpu_key_map SEC(".maps");
 static __inline struct key_t* create_key() {
-    __u32 kZero = 0;
-    struct key_t *event;
-    event = bpf_map_lookup_elem(&per_cpu_key_map, &kZero);
-    if (!event) {
-        return NULL;
-    }
-    return event;
+  u32 kZero = 0;
+  return bpf_map_lookup_elem(&per_cpu_key_map, &kZero);
 }
 
 SEC("kprobe/sys_execve")

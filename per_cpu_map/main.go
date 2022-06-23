@@ -19,6 +19,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
@@ -75,29 +76,35 @@ func main() {
 		rd.Close()
 	}()
 
-	var event Event
-	for {
-		record, err := rd.Read()
-		if err != nil {
-			if errors.Is(err, perf.ErrClosed) {
-				return
+	log.Printf("starting listen events...")
+	timer := time.NewTicker(5 * time.Second)
+	for true {
+		select {
+		case <-timer.C:
+			var event Event
+			for {
+				record, err := rd.Read()
+				if err != nil {
+					if errors.Is(err, perf.ErrClosed) {
+						return
+					}
+					log.Printf("reading from perf event reader: %s", err)
+					continue
+				}
+
+				if record.LostSamples != 0 {
+					log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
+					continue
+				}
+
+				// Parse the perf event entry into an Event structure.
+				if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
+					log.Printf("parsing perf event: %s", err)
+					continue
+				}
+
+				fmt.Printf("pid: %d, random: %d, name: %s\n", event.Pid, event.Random, event.Name)
 			}
-			log.Printf("reading from perf event reader: %s", err)
-			continue
 		}
-
-		if record.LostSamples != 0 {
-			log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
-			continue
-		}
-		log.Printf("raw: %v", record.RawSample)
-
-		// Parse the perf event entry into an Event structure.
-		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
-			log.Printf("parsing perf event: %s", err)
-			continue
-		}
-
-		fmt.Printf("pid: %d, random: %d, name: %s\n", event.Pid, event.Random, event.Name)
 	}
 }

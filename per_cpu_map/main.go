@@ -27,7 +27,7 @@ import (
 type Event struct {
 	Pid    uint32
 	Random uint32
-	//Name   [128]byte
+	Name   [128]byte
 }
 
 func main() {
@@ -90,6 +90,7 @@ func main() {
 			log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
 			continue
 		}
+		log.Printf("raw: %v", record.RawSample)
 
 		// Parse the perf event entry into an Event structure.
 		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
@@ -97,6 +98,6 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("pid: %d, random: %d, name: %s\n", event.Pid, event.Random)
+		fmt.Printf("pid: %d, random: %d, name: %s\n", event.Pid, event.Random, event.Name)
 	}
 }

@@ -22,8 +22,9 @@ struct {
 } per_cpu_key_map SEC(".maps");
 static __inline struct key_t* create_key() {
     __u32 kZero = 0;
-    struct key_t* event = bpf_map_lookup_elem(&per_cpu_key_map, &kZero);
-    if (event == NULL) {
+    struct key_t *event;
+    event = bpf_map_lookup_elem(&per_cpu_key_map, &kZero);
+    if (!event) {
         return NULL;
     }
     return event;
@@ -36,6 +37,10 @@ int kprobe_execve(struct pt_regs *ctx) {
 
 	// create map key
 	struct key_t *key = create_key();
+	if (!key) {
+	    bpf_printk("key is empty...\n");
+	    return 0;
+	}
     key->pid = tgid;
     bpf_get_current_comm(&key->name, sizeof(key->name));
     key->random = bpf_get_prandom_u32();

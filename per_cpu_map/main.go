@@ -26,7 +26,6 @@ import (
 
 type Event struct {
 	Pid    uint32
-	TaskId uint32
 	Random uint32
 	Name   [128]byte
 }
@@ -98,6 +97,6 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("pid: %d, taskid: %d, random: %d, name: %s\n", event.Pid, event.TaskId, event.Random, event.Name)
+		fmt.Printf("pid: %d, random: %d, name: %s\n", event.Pid, event.Random, event.Name)
 	}
 }

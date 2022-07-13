@@ -13,7 +13,5 @@ func hello(w http.ResponseWriter, req *http.Request) {
 
 func main() {
 	http.HandleFunc("/", hello)
-	http.ListenAndServe(":8080", nil)
-	bools := make(chan bool)
-	<-bools
+	http.ListenAndServe(":8111", nil)
 }

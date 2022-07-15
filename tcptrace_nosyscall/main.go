@@ -182,50 +182,52 @@ func main() {
 	}
 	defer rd.Close()
 
-	var event Event
-	for {
-		record, err := rd.Read()
-		if err != nil {
-			if errors.Is(err, perf.ErrClosed) {
-				return
+	go func() {
+		var event Event
+		for {
+			record, err := rd.Read()
+			if err != nil {
+				if errors.Is(err, perf.ErrClosed) {
+					return
+				}
+				log.Printf("reading from perf event reader: %s", err)
+				continue
 			}
-			log.Printf("reading from perf event reader: %s", err)
-			continue
+
+			if record.LostSamples != 0 {
+				log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
+				continue
+			}
+
+			// Parse the perf event entry into an Event structure.
+			if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
+				log.Printf("parsing perf event: %s", err)
+				continue
+			}
+
+			//if int(event.Pid) != pid {
+			//	continue
+			//}
+			ti := time.Now().Format("2006-01-02 15:04:05")
+			fmt.Printf("%s: pid: %d, taskid: %d, name: %s, stack: %d:%d\n", ti, event.Pid, event.TaskId, event.Name, event.KernelStackId, event.UserStackId)
+
+			fmt.Printf("stack id to bytes: %d %d\n", event.KernelStackId, event.UserStackId)
+
+			val := make([]uint64, 100)
+			fmt.Printf("kernel:\n")
+			err = objs.Stacks.Lookup(event.KernelStackId, &val)
+			if err != nil {
+				fmt.Printf("err look up : %d, %v\n", event.KernelStackId, err)
+				continue
+			}
+			symbols := kernelFileProfilingStat.FindSymbols(val, "[MISSING]")
+			for _, s := range symbols {
+				fmt.Printf("%s\n", s)
+			}
+
+			fmt.Printf("---------------\n")
 		}
-
-		if record.LostSamples != 0 {
-			log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
-			continue
-		}
-
-		// Parse the perf event entry into an Event structure.
-		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
-			log.Printf("parsing perf event: %s", err)
-			continue
-		}
-
-		//if int(event.Pid) != pid {
-		//	continue
-		//}
-		ti := time.Now().Format("2006-01-02 15:04:05")
-		fmt.Printf("%s: pid: %d, taskid: %d, name: %s, stack: %d:%d\n", ti, event.Pid, event.TaskId, event.Name, event.KernelStackId, event.UserStackId)
-
-		fmt.Printf("stack id to bytes: %d %d\n", event.KernelStackId, event.UserStackId)
-
-		val := make([]uint64, 100)
-		fmt.Printf("kernel:\n")
-		err = objs.Stacks.Lookup(event.KernelStackId, &val)
-		if err != nil {
-			fmt.Printf("err look up : %d, %v\n", event.KernelStackId, err)
-			continue
-		}
-		symbols := kernelFileProfilingStat.FindSymbols(val, "[MISSING]")
-		for _, s := range symbols {
-			fmt.Printf("%s\n", s)
-		}
-
-		fmt.Printf("---------------\n")
-	}
+	}()
 
 	<-stopper
 	log.Println("Received signal, exiting program..")

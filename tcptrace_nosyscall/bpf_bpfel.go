@@ -57,14 +57,16 @@ type bpfProgramSpecs struct {
 	SecuritySocketRecvmsg *ebpf.ProgramSpec `ebpf:"security_socket_recvmsg"`
 	SecuritySocketSendmsg *ebpf.ProgramSpec `ebpf:"security_socket_sendmsg"`
 	SysSendto             *ebpf.ProgramSpec `ebpf:"sys_sendto"`
+	SysSendtoRet          *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfMapSpecs struct {
-	Counts *ebpf.MapSpec `ebpf:"counts"`
-	Stacks *ebpf.MapSpec `ebpf:"stacks"`
+	Counts         *ebpf.MapSpec `ebpf:"counts"`
+	SocketDataArgs *ebpf.MapSpec `ebpf:"socket_data_args"`
+	Stacks         *ebpf.MapSpec `ebpf:"stacks"`
 }
 
 // bpfObjects contains all objects after they have been loaded into the kernel.
@@ -86,13 +88,15 @@ func (o *bpfObjects) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfMaps struct {
-	Counts *ebpf.Map `ebpf:"counts"`
-	Stacks *ebpf.Map `ebpf:"stacks"`
+	Counts         *ebpf.Map `ebpf:"counts"`
+	SocketDataArgs *ebpf.Map `ebpf:"socket_data_args"`
+	Stacks         *ebpf.Map `ebpf:"stacks"`
 }
 
 func (m *bpfMaps) Close() error {
 	return _BpfClose(
 		m.Counts,
+		m.SocketDataArgs,
 		m.Stacks,
 	)
 }
@@ -104,6 +108,7 @@ type bpfPrograms struct {
 	SecuritySocketRecvmsg *ebpf.Program `ebpf:"security_socket_recvmsg"`
 	SecuritySocketSendmsg *ebpf.Program `ebpf:"security_socket_sendmsg"`
 	SysSendto             *ebpf.Program `ebpf:"sys_sendto"`
+	SysSendtoRet          *ebpf.Program `ebpf:"sys_sendto_ret"`
 }
 
 func (p *bpfPrograms) Close() error {
@@ -111,6 +116,7 @@ func (p *bpfPrograms) Close() error {
 		p.SecuritySocketRecvmsg,
 		p.SecuritySocketSendmsg,
 		p.SysSendto,
+		p.SysSendtoRet,
 	)
 }
 

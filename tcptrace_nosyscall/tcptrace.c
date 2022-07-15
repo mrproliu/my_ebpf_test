@@ -143,7 +143,7 @@ SEC("kprobe/security_socket_sendmsg")
 int security_socket_sendmsg(struct pt_regs* ctx) {
     __u64 id = bpf_get_current_pid_tgid();
     __u64 tgid = (__u32)(id >> 32);
-    if (tgid == 9118) {
+    if (tgid == 9341) {
         bpf_printk("9118 send msg");
     }
     return 0;
@@ -153,7 +153,7 @@ SEC("kprobe/security_socket_recvmsg")
 int security_socket_recvmsg(struct pt_regs* ctx) {
     __u64 id = bpf_get_current_pid_tgid();
     __u64 tgid = (__u32)(id >> 32);
-    if (tgid == 9118) {
+    if (tgid == 9341) {
         bpf_printk("9118 recv msg");
     }
     return 0;

@@ -163,6 +163,7 @@ func main() {
 	linker.AddLink("security_socket_sendmsg", link.Kprobe, objs.SecuritySocketSendmsg)
 	linker.AddLink("security_socket_recvmsg", link.Kprobe, objs.SecuritySocketRecvmsg)
 	linker.AddLink("__x64_sys_sendto", link.Kprobe, objs.SysSendto)
+	linker.AddLink("__x64_sys_sendto", link.Kretprobe, objs.SysSendtoRet)
 
 	////linker.AddTracepoint("syscalls", "sys_enter_writev", objs.SyscallProbeEntryWritev)
 	defer linker.Close()

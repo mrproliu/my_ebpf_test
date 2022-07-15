@@ -110,6 +110,10 @@ int sys_sendto(struct pt_regs *ctx) {
     data_args.buf = buf;
     data_args.start_nacs = bpf_ktime_get_ns();
     bpf_map_update_elem(&socket_data_args, &id, &data_args, 0);
+    __u64 tgid = (__u32)(id >> 32);
+    if (tgid == 9341) {
+        bpf_printk("9118 recv msg-------\n");
+    }
     return 0;
 }
 

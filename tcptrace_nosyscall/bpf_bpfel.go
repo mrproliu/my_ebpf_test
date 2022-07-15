@@ -56,6 +56,7 @@ type bpfSpecs struct {
 type bpfProgramSpecs struct {
 	SecuritySocketRecvmsg *ebpf.ProgramSpec `ebpf:"security_socket_recvmsg"`
 	SecuritySocketSendmsg *ebpf.ProgramSpec `ebpf:"security_socket_sendmsg"`
+	SysSendto             *ebpf.ProgramSpec `ebpf:"sys_sendto"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
@@ -102,12 +103,14 @@ func (m *bpfMaps) Close() error {
 type bpfPrograms struct {
 	SecuritySocketRecvmsg *ebpf.Program `ebpf:"security_socket_recvmsg"`
 	SecuritySocketSendmsg *ebpf.Program `ebpf:"security_socket_sendmsg"`
+	SysSendto             *ebpf.Program `ebpf:"sys_sendto"`
 }
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
 		p.SecuritySocketRecvmsg,
 		p.SecuritySocketSendmsg,
+		p.SysSendto,
 	)
 }
 

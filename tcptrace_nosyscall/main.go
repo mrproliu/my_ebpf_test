@@ -4,11 +4,15 @@
 package main
 
 import (
+	"bytes"
+	"ebpf_test/tools"
 	"ebpf_test/tools/btf"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/link"
+	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
 	"github.com/hashicorp/go-multierror"
 	"io/ioutil"
@@ -20,6 +24,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 	"unsafe"
 )
 
@@ -123,6 +128,14 @@ func getAddr(addr syscall.Sockaddr) (ip string, port int) {
 	return ip, port
 }
 
+type Event struct {
+	Pid           uint32
+	TaskId        uint32
+	UserStackId   uint32
+	KernelStackId uint32
+	Name          [128]byte
+}
+
 func main() {
 	pidList, err := getAllContainedProcessIdList()
 	if err != nil {
@@ -157,6 +170,62 @@ func main() {
 		log.Fatalf("opening kprobe: %s", err)
 	}
 	log.Printf("start probes success...")
+
+	kernelFileProfilingStat, err := tools.KernelFileProfilingStat()
+	if err != nil {
+		log.Fatalf("read symbol error: %v", err)
+	}
+
+	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
+	if err != nil {
+		log.Fatalf("creating perf event reader: %s", err)
+	}
+	defer rd.Close()
+
+	var event Event
+	for {
+		record, err := rd.Read()
+		if err != nil {
+			if errors.Is(err, perf.ErrClosed) {
+				return
+			}
+			log.Printf("reading from perf event reader: %s", err)
+			continue
+		}
+
+		if record.LostSamples != 0 {
+			log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
+			continue
+		}
+
+		// Parse the perf event entry into an Event structure.
+		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
+			log.Printf("parsing perf event: %s", err)
+			continue
+		}
+
+		//if int(event.Pid) != pid {
+		//	continue
+		//}
+		ti := time.Now().Format("2006-01-02 15:04:05")
+		fmt.Printf("%s: pid: %d, taskid: %d, name: %s, stack: %d:%d\n", ti, event.Pid, event.TaskId, event.Name, event.KernelStackId, event.UserStackId)
+
+		fmt.Printf("stack id to bytes: %d %d\n", event.KernelStackId, event.UserStackId)
+
+		val := make([]uint64, 100)
+		fmt.Printf("kernel:\n")
+		err = objs.Stacks.Lookup(event.KernelStackId, &val)
+		if err != nil {
+			fmt.Printf("err look up : %d, %v\n", event.KernelStackId, err)
+			continue
+		}
+		symbols := kernelFileProfilingStat.FindSymbols(val, "[MISSING]")
+		for _, s := range symbols {
+			fmt.Printf("%s\n", s)
+		}
+
+		fmt.Printf("---------------\n")
+	}
 
 	<-stopper
 	log.Println("Received signal, exiting program..")

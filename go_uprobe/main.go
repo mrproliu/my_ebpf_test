@@ -50,22 +50,22 @@ func main() {
 
 	executable, err := link.OpenExecutable(executeFile)
 	if err != nil {
-		log.Fatal("open executable file error: file: %s, error: %s", executable, err)
+		log.Fatalf("open executable file error: file: %s, error: %s", executable, err)
 	}
-	uprobe, err := executable.Uprobe("crypto/tls.(*Conn).Read", objs.GoTlsRead, nil)
-	if err != nil {
-		log.Fatalf("load uprobe error: %v", err)
-	}
-	defer uprobe.Close()
-	//uretprobe, err := executable.Uretprobe("crypto/tls.(*Conn).Read", objs.GoTlsRead, nil)
+	//// uprobe is works well
+	//uprobe, err := executable.Uprobe("crypto/tls.(*Conn).Read", objs.GoTlsRead, nil)
 	//if err != nil {
-	//	log.Fatalf("load uretprobe error: %v", err)
+	//	log.Fatalf("load uprobe error: %v", err)
 	//}
-	//defer uretprobe.Close()
+	//defer uprobe.Close()
+	uretprobe, err := executable.Uretprobe("crypto/tls.(*Conn).Read", objs.GoTlsRead, nil)
+	if err != nil {
+		log.Fatalf("load uretprobe error: %v", err)
+	}
+	defer uretprobe.Close()
 
 	stopper := make(chan os.Signal, 1)
 	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
 	<-stopper
 	log.Println("Received signal, exiting program..")
-
 }

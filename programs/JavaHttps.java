@@ -7,15 +7,16 @@ import java.net.URL;
 
 public class JavaHttps {
     public static void main(String[] args) throws Exception {
-        URL serverUrl = new URL("https://www.baidu.com");
-        HttpURLConnection conn = (HttpURLConnection) serverUrl.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Content-type", "application/json");
-        //必须设置false，否则会自动redirect到重定向后的地址
-        conn.setInstanceFollowRedirects(false);
-        conn.connect();
-        getReturn(conn);
-
+        while (true) {
+            URL serverUrl = new URL("https://www.baidu.com");
+            HttpURLConnection conn = (HttpURLConnection) serverUrl.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Content-type", "application/json");
+            //必须设置false，否则会自动redirect到重定向后的地址
+            conn.setInstanceFollowRedirects(false);
+            conn.connect();
+            getReturn(conn);
+        }
     }
 
     /*请求url获取返回的内容*/

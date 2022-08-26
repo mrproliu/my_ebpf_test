@@ -30,6 +30,7 @@ int bpf_sockmap(struct __sk_buff *buff)
 {
     struct sock* s;
     BPF_CORE_READ_INTO(&s, buff, sk);
+    bpf_printk("sock addr: %p", s);
 
     short unsigned int skc_family = 0;
     BPF_CORE_READ_INTO(&skc_family, s, __sk_common.skc_family);

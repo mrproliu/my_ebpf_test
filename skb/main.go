@@ -5,13 +5,9 @@ package main
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/binary"
 	"errors"
-	"fmt"
 	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/link"
-	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
 	"log"
 	"os"
@@ -30,9 +26,6 @@ type Event struct {
 }
 
 func main() {
-	stopper := make(chan os.Signal, 1)
-	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
-
 	// Allow the current process to lock memory for eBPF resources.
 	if err := rlimit.RemoveMemlock(); err != nil {
 		log.Fatal(err)
@@ -41,29 +34,19 @@ func main() {
 	// Load pre-compiled programs and maps into the kernel.
 	objs := bpfObjects{}
 	if err := loadBpfObjects(&objs, nil); err != nil {
-		log.Fatalf("loading objects: %s", err)
+		log.Fatalf("loading objects: %v", err)
 	}
 	defer objs.Close()
 
-	rd, err := perf.NewReader(objs.Counts, os.Getpagesize())
+	// Get the first-mounted cgroupv2 path.
+	cgroupPath, err := detectCgroupPath()
 	if err != nil {
-		log.Fatalf("creating perf event reader: %s", err)
+		log.Fatal(err)
 	}
 
-	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-stopper
-		log.Println("Received signal, exiting program..")
-
-		rd.Close()
-	}()
-
-	path, err := detectCgroupPath()
-	if err != nil {
-		log.Fatalf("error detect cgroup: %v", err)
-	}
+	// Link the count_egress_packets program to the cgroup.
 	l, err := link.AttachCgroup(link.CgroupOptions{
-		Path:    path,
+		Path:    cgroupPath,
 		Attach:  ebpf.AttachCGroupInetEgress,
 		Program: objs.BpfSockmap,
 	})
@@ -72,30 +55,10 @@ func main() {
 	}
 	defer l.Close()
 
-	var event Event
-	for {
-		record, err := rd.Read()
-		if err != nil {
-			if errors.Is(err, perf.ErrClosed) {
-				return
-			}
-			log.Printf("reading from perf event reader: %s", err)
-			continue
-		}
+	log.Println("Counting packets...")
 
-		if record.LostSamples != 0 {
-			log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
-			continue
-		}
-
-		// Parse the perf event entry into an Event structure.
-		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
-			log.Printf("parsing perf event: %s", err)
-			continue
-		}
-
-		fmt.Printf("pid: %d, taskid: %d, name: %s, stack: %d:%d\n", event.Pid, event.TaskId, event.Name)
-	}
+	stopper := make(chan os.Signal, 1)
+	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
 }
 
 // detectCgroupPath returns the first-found mount point of type cgroup2

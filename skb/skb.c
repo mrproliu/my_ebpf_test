@@ -25,8 +25,8 @@ struct {
 	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
 } counts SEC(".maps");
 
-SEC("sockops")
-int bpf_sockmap(struct sk_buff *buff)
+SEC("cgroup_skb/egress")
+int bpf_sockmap(struct __sk_buff *buff)
 {
     struct sock* s;
     BPF_CORE_READ_INTO(&s, buff, sk);
@@ -53,5 +53,5 @@ int bpf_sockmap(struct sk_buff *buff)
 //        BPF_CORE_READ_INTO(&con.remote_addr_v6, s, __sk_common.skc_v6_daddr.in6_u.u6_addr8);
    }
 	bpf_printk("local port: %d, remote_port: %d\n", local_port, remote_port);
-	return 0;
+	return 1;
 }

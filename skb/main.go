@@ -47,7 +47,7 @@ func main() {
 	// Link the count_egress_packets program to the cgroup.
 	l, err := link.AttachCgroup(link.CgroupOptions{
 		Path:    cgroupPath,
-		Attach:  ebpf.AttachCGroupInetEgress,
+		Attach:  ebpf.AttachCGroupInetIngress,
 		Program: objs.BpfSockmap,
 	})
 	if err != nil {

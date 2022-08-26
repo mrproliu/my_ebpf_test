@@ -59,6 +59,7 @@ func main() {
 
 	stopper := make(chan os.Signal, 1)
 	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
+	<-stopper
 }
 
 // detectCgroupPath returns the first-found mount point of type cgroup2

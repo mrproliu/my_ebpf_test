@@ -52,6 +52,6 @@ int bpf_sockmap(struct __sk_buff *buff)
         remote_port = bpf_ntohs(port);
 //        BPF_CORE_READ_INTO(&con.remote_addr_v6, s, __sk_common.skc_v6_daddr.in6_u.u6_addr8);
    }
-	bpf_printk("local port: %d, remote_port: %d\n", local_port, remote_port);
+	bpf_printk("family: %d, local port: %d, remote_port: %d\n", skc_family, local_port, remote_port);
 	return 1;
 }

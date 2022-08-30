@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"test/service"
+	"time"
 
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -80,6 +81,7 @@ func main() {
 			log.Fatal(err)
 			return
 		}
+		time.Sleep(time.Second)
 	}
 
 	//http.HandleFunc("/singleCall", singleCall)

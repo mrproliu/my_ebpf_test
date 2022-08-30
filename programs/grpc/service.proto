@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option go_package="./service;";
+
+// The greeting service definition.
+service Service {
+  // Sends a greeting
+  rpc SingleCall(CallRequest) returns (CallReply) {}
+}
+
+// The request message containing the user's name.
+message CallRequest {
+  string name = 1;
+}
+
+// The response message containing the greetings
+message CallReply {
+  string message = 1;
+}

@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type ServiceClient interface {
 	// Sends a greeting
 	SingleCall(ctx context.Context, in *CallRequest, opts ...grpc.CallOption) (*CallReply, error)
+	StreamCall(ctx context.Context, opts ...grpc.CallOption) (Service_StreamCallClient, error)
 }
 
 type serviceClient struct {
@@ -39,12 +40,47 @@ func (c *serviceClient) SingleCall(ctx context.Context, in *CallRequest, opts ..
 	return out, nil
 }
 
+func (c *serviceClient) StreamCall(ctx context.Context, opts ...grpc.CallOption) (Service_StreamCallClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[0], "/Service/StreamCall", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceStreamCallClient{stream}
+	return x, nil
+}
+
+type Service_StreamCallClient interface {
+	Send(*StreamRequest) error
+	CloseAndRecv() (*StreamReply, error)
+	grpc.ClientStream
+}
+
+type serviceStreamCallClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceStreamCallClient) Send(m *StreamRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *serviceStreamCallClient) CloseAndRecv() (*StreamReply, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(StreamReply)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ServiceServer is the server API for Service service.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
 type ServiceServer interface {
 	// Sends a greeting
 	SingleCall(context.Context, *CallRequest) (*CallReply, error)
+	StreamCall(Service_StreamCallServer) error
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -54,6 +90,9 @@ type UnimplementedServiceServer struct {
 
 func (UnimplementedServiceServer) SingleCall(context.Context, *CallRequest) (*CallReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SingleCall not implemented")
+}
+func (UnimplementedServiceServer) StreamCall(Service_StreamCallServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamCall not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -86,6 +125,32 @@ func _Service_SingleCall_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Service_StreamCall_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ServiceServer).StreamCall(&serviceStreamCallServer{stream})
+}
+
+type Service_StreamCallServer interface {
+	SendAndClose(*StreamReply) error
+	Recv() (*StreamRequest, error)
+	grpc.ServerStream
+}
+
+type serviceStreamCallServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceStreamCallServer) SendAndClose(m *StreamReply) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *serviceStreamCallServer) Recv() (*StreamRequest, error) {
+	m := new(StreamRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // Service_ServiceDesc is the grpc.ServiceDesc for Service service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -98,6 +163,12 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Service_SingleCall_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "StreamCall",
+			Handler:       _Service_StreamCall_Handler,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "service.proto",
 }

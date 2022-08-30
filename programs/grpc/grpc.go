@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -51,6 +52,19 @@ func (p *Provider) SingleCall(context.Context, *service.CallRequest) (*service.C
 	return &service.CallReply{Message: "response success"}, nil
 }
 
+func (p *Provider) StreamCall(s service.Service_StreamCallServer) error {
+	for true {
+		_, err := s.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func main() {
 	server := grpc.NewServer()
 	service.RegisterServiceServer(server, &Provider{})
@@ -65,18 +79,23 @@ func main() {
 		}
 	}()
 
-	for true {
-		if gRPCConn == nil {
-			dial, err := grpc.Dial(fmt.Sprintf("localhost:%d", gRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
-			if err != nil {
-				log.Fatal(err)
-				return
-			}
-			gRPCConn = dial
+	if gRPCConn == nil {
+		dial, err := grpc.Dial(fmt.Sprintf("localhost:%d", gRPCPort), grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Fatal(err)
+			return
 		}
+		gRPCConn = dial
+	}
 
-		client := service.NewServiceClient(gRPCConn)
-		_, err := client.SingleCall(context.Background(), &service.CallRequest{})
+	client := service.NewServiceClient(gRPCConn)
+	//_, err := client.SingleCall(context.Background(), &service.CallRequest{})
+	call, err := client.StreamCall(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+	for true {
+		err := call.Send(&service.StreamRequest{})
 		if err != nil {
 			log.Fatal(err)
 			return

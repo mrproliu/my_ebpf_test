@@ -6,14 +6,20 @@ option go_package="./service;";
 service Service {
   // Sends a greeting
   rpc SingleCall(CallRequest) returns (CallReply) {}
+  rpc StreamCall (stream StreamRequest) returns (StreamReply) {
+  }
 }
 
-// The request message containing the user's name.
 message CallRequest {
   string name = 1;
 }
+message StreamRequest {
+  string name = 1;
+}
 
-// The response message containing the greetings
 message CallReply {
+  string message = 1;
+}
+message StreamReply {
   string message = 1;
 }

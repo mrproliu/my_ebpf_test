@@ -56,6 +56,7 @@ func (p *Provider) StreamCall(s service.Service_StreamCallServer) error {
 	for true {
 		_, err := s.Recv()
 		if err == io.EOF {
+			s.SendAndClose(&service.StreamReply{})
 			return nil
 		}
 		if err != nil {
@@ -94,7 +95,17 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	i := 0
 	for true {
+		i++
+		if i == 10 {
+			_, _ = call.CloseAndRecv()
+			i = 0
+			call, err = client.StreamCall(context.Background())
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
 		err := call.Send(&service.StreamRequest{})
 		if err != nil {
 			log.Fatal(err)

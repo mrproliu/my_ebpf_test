@@ -121,7 +121,7 @@ func kprobe(symbol string, enter, exit *ebpf.Program) (link.Link, link.Link) {
 	if err != nil {
 		log.Fatalf("attach enter failure, symbol: %s, error: %v", symbol, err)
 	}
-	r2, err := link.Kretprobe(symbol, enter)
+	r2, err := link.Kretprobe(symbol, exit)
 	if err != nil {
 		log.Fatalf("attach exit failure, symbol: %s, error: %v", symbol, err)
 	}

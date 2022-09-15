@@ -35,7 +35,7 @@ func main() {
 	}
 	defer objs.Close()
 
-	writeVEnter, writeVExit := kprobe("sys_writev", objs.SysWritev, objs.SysWritevRet)
+	writeVEnter, writeVExit := kprobe("sys_write", objs.SysWritev, objs.SysWritevRet)
 	defer writeVEnter.Close()
 	defer writeVExit.Close()
 

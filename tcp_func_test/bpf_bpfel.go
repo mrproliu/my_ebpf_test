@@ -54,9 +54,10 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
-	BpfSockmap   *ebpf.ProgramSpec `ebpf:"bpf_sockmap"`
-	SysWritev    *ebpf.ProgramSpec `ebpf:"sys_writev"`
-	SysWritevRet *ebpf.ProgramSpec `ebpf:"sys_writev_ret"`
+	SysSendto     *ebpf.ProgramSpec `ebpf:"sys_sendto"`
+	SysSendtoRet  *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
+	TcpSendmsg    *ebpf.ProgramSpec `ebpf:"tcp_sendmsg"`
+	TcpSendmsgRet *ebpf.ProgramSpec `ebpf:"tcp_sendmsg_ret"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
@@ -101,16 +102,18 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
-	BpfSockmap   *ebpf.Program `ebpf:"bpf_sockmap"`
-	SysWritev    *ebpf.Program `ebpf:"sys_writev"`
-	SysWritevRet *ebpf.Program `ebpf:"sys_writev_ret"`
+	SysSendto     *ebpf.Program `ebpf:"sys_sendto"`
+	SysSendtoRet  *ebpf.Program `ebpf:"sys_sendto_ret"`
+	TcpSendmsg    *ebpf.Program `ebpf:"tcp_sendmsg"`
+	TcpSendmsgRet *ebpf.Program `ebpf:"tcp_sendmsg_ret"`
 }
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
-		p.BpfSockmap,
-		p.SysWritev,
-		p.SysWritevRet,
+		p.SysSendto,
+		p.SysSendtoRet,
+		p.TcpSendmsg,
+		p.TcpSendmsgRet,
 	)
 }
 

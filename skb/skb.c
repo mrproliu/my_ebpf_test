@@ -43,7 +43,7 @@ int bpf_sockmap(struct __sk_buff *buff)
 //    BPF_CORE_READ_INTO(&port, buff, remote_port);
 //    remote_port = bpf_ntohs(port);
     __u32 remote_port = buff->remote_port;
-    remote_port = bpf_ntohs(buff->remote_port);
+    remote_port = __bpf_ntohs(buff->remote_port);
 	bpf_printk("family: %d, local port: %d, remote_port: %d\n", buff->family, buff->local_port, remote_port);
 	return 1;
 }

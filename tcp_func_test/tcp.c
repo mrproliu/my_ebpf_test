@@ -55,6 +55,18 @@ int tcp_sendmsg_ret(struct pt_regs* ctx) {
     return 0;
 }
 
+SEC("kprobe/tcp_push")
+int tcp_push(struct pt_regs* ctx) {
+    bpf_printk("sys tcp_push enter");
+    return 0;
+}
+
+SEC("kretprobe/tcp_push")
+int tcp_push_ret(struct pt_regs* ctx) {
+    bpf_printk("sys tcp_push exit");
+    return 0;
+}
+
 //SEC("cgroup_skb/egress")
 //int bpf_sockmap(struct pt_regs *ctx)
 //{

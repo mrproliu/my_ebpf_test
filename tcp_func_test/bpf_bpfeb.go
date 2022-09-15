@@ -56,6 +56,8 @@ type bpfSpecs struct {
 type bpfProgramSpecs struct {
 	SysSendto     *ebpf.ProgramSpec `ebpf:"sys_sendto"`
 	SysSendtoRet  *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
+	TcpPush       *ebpf.ProgramSpec `ebpf:"tcp_push"`
+	TcpPushRet    *ebpf.ProgramSpec `ebpf:"tcp_push_ret"`
 	TcpSendmsg    *ebpf.ProgramSpec `ebpf:"tcp_sendmsg"`
 	TcpSendmsgRet *ebpf.ProgramSpec `ebpf:"tcp_sendmsg_ret"`
 }
@@ -104,6 +106,8 @@ func (m *bpfMaps) Close() error {
 type bpfPrograms struct {
 	SysSendto     *ebpf.Program `ebpf:"sys_sendto"`
 	SysSendtoRet  *ebpf.Program `ebpf:"sys_sendto_ret"`
+	TcpPush       *ebpf.Program `ebpf:"tcp_push"`
+	TcpPushRet    *ebpf.Program `ebpf:"tcp_push_ret"`
 	TcpSendmsg    *ebpf.Program `ebpf:"tcp_sendmsg"`
 	TcpSendmsgRet *ebpf.Program `ebpf:"tcp_sendmsg_ret"`
 }
@@ -112,6 +116,8 @@ func (p *bpfPrograms) Close() error {
 	return _BpfClose(
 		p.SysSendto,
 		p.SysSendtoRet,
+		p.TcpPush,
+		p.TcpPushRet,
 		p.TcpSendmsg,
 		p.TcpSendmsgRet,
 	)

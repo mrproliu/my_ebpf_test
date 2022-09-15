@@ -64,7 +64,7 @@ int bpf_sockmap(struct __sk_buff *ctx)
 
     // create map key
     struct key_t key = {};
-    bpf_get_current_comm(&key.name, sizeof(key.name));
+//    bpf_get_current_comm(&key.name, sizeof(key.name));
 
     // get stacks
     key.kernel_stack_id = bpf_get_stackid(ctx, &stacks, 0);

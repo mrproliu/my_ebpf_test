@@ -45,7 +45,7 @@ int sys_writev_ret(struct pt_regs* ctx) {
 
 
 SEC("cgroup_skb/egress")
-int bpf_sockmap(struct __sk_buff *ctx)
+int bpf_sockmap(struct pt_regs *ctx)
 {
 //    struct sock* s;
 //    BPF_CORE_READ_INTO(&s, buff, sk);

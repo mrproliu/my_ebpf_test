@@ -9,7 +9,7 @@ import (
 // nolint
 func doRequest() {
 	for true {
-		t, err := http.Get("http://www.google.com")
+		t, err := http.Get("http://www.baidu.com")
 		if err != nil {
 			log.Fatalln(err)
 		}

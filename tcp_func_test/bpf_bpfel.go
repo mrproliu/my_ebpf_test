@@ -28,9 +28,9 @@ func loadBpf() (*ebpf.CollectionSpec, error) {
 //
 // The following types are suitable as obj argument:
 //
-//     *bpfObjects
-//     *bpfPrograms
-//     *bpfMaps
+//	*bpfObjects
+//	*bpfPrograms
+//	*bpfMaps
 //
 // See ebpf.CollectionSpec.LoadAndAssign documentation for details.
 func loadBpfObjects(obj interface{}, opts *ebpf.CollectionOptions) error {
@@ -54,12 +54,14 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
-	SysSendto     *ebpf.ProgramSpec `ebpf:"sys_sendto"`
-	SysSendtoRet  *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
-	TcpPush       *ebpf.ProgramSpec `ebpf:"tcp_push"`
-	TcpPushRet    *ebpf.ProgramSpec `ebpf:"tcp_push_ret"`
-	TcpSendmsg    *ebpf.ProgramSpec `ebpf:"tcp_sendmsg"`
-	TcpSendmsgRet *ebpf.ProgramSpec `ebpf:"tcp_sendmsg_ret"`
+	IpQueueXmit    *ebpf.ProgramSpec `ebpf:"ip_queue_xmit"`
+	IpQueueXmitRet *ebpf.ProgramSpec `ebpf:"ip_queue_xmit_ret"`
+	SysSendto      *ebpf.ProgramSpec `ebpf:"sys_sendto"`
+	SysSendtoRet   *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
+	TcpPush        *ebpf.ProgramSpec `ebpf:"tcp_push"`
+	TcpPushRet     *ebpf.ProgramSpec `ebpf:"tcp_push_ret"`
+	TcpSendmsg     *ebpf.ProgramSpec `ebpf:"tcp_sendmsg"`
+	TcpSendmsgRet  *ebpf.ProgramSpec `ebpf:"tcp_sendmsg_ret"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
@@ -104,16 +106,20 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
-	SysSendto     *ebpf.Program `ebpf:"sys_sendto"`
-	SysSendtoRet  *ebpf.Program `ebpf:"sys_sendto_ret"`
-	TcpPush       *ebpf.Program `ebpf:"tcp_push"`
-	TcpPushRet    *ebpf.Program `ebpf:"tcp_push_ret"`
-	TcpSendmsg    *ebpf.Program `ebpf:"tcp_sendmsg"`
-	TcpSendmsgRet *ebpf.Program `ebpf:"tcp_sendmsg_ret"`
+	IpQueueXmit    *ebpf.Program `ebpf:"ip_queue_xmit"`
+	IpQueueXmitRet *ebpf.Program `ebpf:"ip_queue_xmit_ret"`
+	SysSendto      *ebpf.Program `ebpf:"sys_sendto"`
+	SysSendtoRet   *ebpf.Program `ebpf:"sys_sendto_ret"`
+	TcpPush        *ebpf.Program `ebpf:"tcp_push"`
+	TcpPushRet     *ebpf.Program `ebpf:"tcp_push_ret"`
+	TcpSendmsg     *ebpf.Program `ebpf:"tcp_sendmsg"`
+	TcpSendmsgRet  *ebpf.Program `ebpf:"tcp_sendmsg_ret"`
 }
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
+		p.IpQueueXmit,
+		p.IpQueueXmitRet,
 		p.SysSendto,
 		p.SysSendtoRet,
 		p.TcpPush,
@@ -133,5 +139,6 @@ func _BpfClose(closers ...io.Closer) error {
 }
 
 // Do not access this directly.
+//
 //go:embed bpf_bpfel.o
 var _BpfBytes []byte

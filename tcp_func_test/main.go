@@ -40,12 +40,15 @@ func main() {
 	writeVEnter, writeVExit := kprobe("sys_sendto", objs.SysSendto, objs.SysSendtoRet)
 	tcpSendMsg, tcpSendMsgExit := kprobe("tcp_sendmsg", objs.TcpSendmsg, objs.TcpSendmsgRet)
 	tcpPush, tcpPushExit := kprobe("tcp_push", objs.TcpPush, objs.TcpPushRet)
+	ipQueueEmit, ipQueueEmitExit := kprobe("ip_queue_xmit", objs.IpQueueXmit, objs.IpQueueXmitRet)
 	defer writeVEnter.Close()
 	defer writeVExit.Close()
 	defer tcpSendMsg.Close()
 	defer tcpSendMsgExit.Close()
 	defer tcpPush.Close()
 	defer tcpPushExit.Close()
+	defer ipQueueEmit.Close()
+	defer ipQueueEmitExit.Close()
 
 	//// Get the first-mounted cgroupv2 path.
 	//cgroupPath, err := detectCgroupPath()

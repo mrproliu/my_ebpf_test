@@ -67,6 +67,18 @@ int tcp_push_ret(struct pt_regs* ctx) {
     return 0;
 }
 
+SEC("kprobe/ip_queue_xmit")
+int ip_queue_xmit(struct pt_regs* ctx) {
+    bpf_printk("sys ip_queue_xmit enter");
+    return 0;
+}
+
+SEC("kretprobe/ip_queue_xmit")
+int ip_queue_xmit_ret(struct pt_regs* ctx) {
+    bpf_printk("sys ip_queue_xmit exit");
+    return 0;
+}
+
 //SEC("cgroup_skb/egress")
 //int bpf_sockmap(struct pt_regs *ctx)
 //{

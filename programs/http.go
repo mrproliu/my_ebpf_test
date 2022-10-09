@@ -8,7 +8,7 @@ import (
 // nolint
 func doRequest() {
 	for true {
-		t, err := http.Get("http://localhost")
+		t, err := http.Get("http://www.baidu.com")
 		if err != nil {
 			continue
 			//log.Fatalln(err)

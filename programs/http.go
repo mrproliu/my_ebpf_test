@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"time"
 )
@@ -9,9 +8,10 @@ import (
 // nolint
 func doRequest() {
 	for true {
-		t, err := http.Get("http://www.baidu.com")
+		t, err := http.Get("http://localhost")
 		if err != nil {
-			log.Fatalln(err)
+			continue
+			//log.Fatalln(err)
 		}
 		t.Body.Close()
 		time.Sleep(1 * time.Second)

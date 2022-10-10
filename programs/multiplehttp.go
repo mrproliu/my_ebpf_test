@@ -15,4 +15,6 @@ func main() {
 			}
 		}()
 	}
+	s := make(chan bool, 1)
+	<-s
 }

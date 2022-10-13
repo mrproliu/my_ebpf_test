@@ -16,6 +16,6 @@ func main() {
 		_, _ = ioutil.ReadAll(get.Body)
 		get.Body.Close()
 
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Second * 3)
 	}
 }

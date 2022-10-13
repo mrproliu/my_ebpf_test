@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -13,7 +13,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		_, _ = ioutil.ReadAll(get.Body)
+		_, _ = io.ReadAll(get.Body)
 		get.Body.Close()
 
 		time.Sleep(time.Second * 3)

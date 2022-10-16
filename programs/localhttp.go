@@ -54,6 +54,7 @@ func main() {
 					default:
 						localhttpRequest(counter)
 						counter = atomic.AddInt64(&counter, 1)
+						time.Sleep(time.Second * 10)
 					}
 				}
 			}()

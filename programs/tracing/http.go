@@ -35,7 +35,7 @@ var zipkinTracer *zipkin.Tracer
 
 func main() {
 	// init skywalking tracer
-	r, err := reporter.NewGRPCReporter("192.168.50.193:11800")
+	r, err := reporter.NewGRPCReporter("localhost:11800")
 	if err != nil {
 		log.Fatalf("new reporter error %v \n", err)
 	}

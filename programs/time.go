@@ -8,8 +8,8 @@ import (
 func main() {
 	for {
 		now := time.Now()
-		fmt.Printf("current second: %d, nano: %d", now.Unix(), now.Nanosecond())
+		fmt.Printf("current second: %d, nano: %d\n", now.Unix(), now.Nanosecond())
 
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * 5)
 	}
 }

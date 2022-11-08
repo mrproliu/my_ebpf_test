@@ -95,9 +95,14 @@ func main() {
 				continue
 			}
 
+			info := &syscall.Sysinfo_t{}
+			err = syscall.Sysinfo(info)
+			if err != nil {
+				log.Fatal(err)
+			}
 			timeCopy := time.Unix(BootTime.Unix(), int64(BootTime.Nanosecond()))
 			result := timeCopy.Add(time.Duration(event))
-			fmt.Printf("current second: %d, nano: %d\n", result.Unix(), result.Nanosecond())
+			fmt.Printf("current second: %d, nano: %d, uptime: %d\n", result.Unix(), result.Nanosecond(), info.Uptime)
 		}
 	}()
 

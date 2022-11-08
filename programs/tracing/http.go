@@ -44,7 +44,7 @@ func main() {
 	//}
 
 	// init zipkin tracer
-	zipkinReporter := zipkin_reporter.NewReporter("http://localhost:9411")
+	zipkinReporter := zipkin_reporter.NewReporter("http://localhost:9411/api/v2/spans")
 	// create our local service endpoint
 	endpoint, err := zipkin.NewEndpoint("zipkin-service", "localhost:0")
 	if err != nil {

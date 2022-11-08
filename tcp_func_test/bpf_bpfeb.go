@@ -54,22 +54,39 @@ type bpfSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfProgramSpecs struct {
-	IpQueueXmit    *ebpf.ProgramSpec `ebpf:"ip_queue_xmit"`
-	IpQueueXmitRet *ebpf.ProgramSpec `ebpf:"ip_queue_xmit_ret"`
-	SysSendto      *ebpf.ProgramSpec `ebpf:"sys_sendto"`
-	SysSendtoRet   *ebpf.ProgramSpec `ebpf:"sys_sendto_ret"`
-	TcpPush        *ebpf.ProgramSpec `ebpf:"tcp_push"`
-	TcpPushRet     *ebpf.ProgramSpec `ebpf:"tcp_push_ret"`
-	TcpSendmsg     *ebpf.ProgramSpec `ebpf:"tcp_sendmsg"`
-	TcpSendmsgRet  *ebpf.ProgramSpec `ebpf:"tcp_sendmsg_ret"`
+	IpLocalDeliverFinish    *ebpf.ProgramSpec `ebpf:"ip_local_deliver_finish"`
+	IpLocalDeliverFinishRet *ebpf.ProgramSpec `ebpf:"ip_local_deliver_finish_ret"`
+	IpOutput                *ebpf.ProgramSpec `ebpf:"ip_output"`
+	IpRcv                   *ebpf.ProgramSpec `ebpf:"ip_rcv"`
+	IpRcvFinish             *ebpf.ProgramSpec `ebpf:"ip_rcv_finish"`
+	IpRcvFinishRet          *ebpf.ProgramSpec `ebpf:"ip_rcv_finish_ret"`
+	IpRcvRet                *ebpf.ProgramSpec `ebpf:"ip_rcv_ret"`
+	Read                    *ebpf.ProgramSpec `ebpf:"read"`
+	ReadRet                 *ebpf.ProgramSpec `ebpf:"read_ret"`
+	SkbCopyDatagramMsg      *ebpf.ProgramSpec `ebpf:"skb_copy_datagram_msg"`
+	SkbCopyDatagramMsgRet   *ebpf.ProgramSpec `ebpf:"skb_copy_datagram_msg_ret"`
+	SysRecvmsg              *ebpf.ProgramSpec `ebpf:"sys_recvmsg"`
+	SysRecvmsgRet           *ebpf.ProgramSpec `ebpf:"sys_recvmsg_ret"`
+	SysWrite                *ebpf.ProgramSpec `ebpf:"sys_write"`
+	SysWriteRet             *ebpf.ProgramSpec `ebpf:"sys_write_ret"`
+	TcpPush                 *ebpf.ProgramSpec `ebpf:"tcp_push"`
+	TcpPushRet              *ebpf.ProgramSpec `ebpf:"tcp_push_ret"`
+	TcpRecvmsg              *ebpf.ProgramSpec `ebpf:"tcp_recvmsg"`
+	TcpRecvmsgRet           *ebpf.ProgramSpec `ebpf:"tcp_recvmsg_ret"`
+	TcpSendmsg              *ebpf.ProgramSpec `ebpf:"tcp_sendmsg"`
+	TcpSendmsgRet           *ebpf.ProgramSpec `ebpf:"tcp_sendmsg_ret"`
+	TcpV4Rcv                *ebpf.ProgramSpec `ebpf:"tcp_v4_rcv"`
+	TcpV4RcvRet             *ebpf.ProgramSpec `ebpf:"tcp_v4_rcv_ret"`
 }
 
 // bpfMapSpecs contains maps before they are loaded into the kernel.
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfMapSpecs struct {
-	Counts *ebpf.MapSpec `ebpf:"counts"`
-	Stacks *ebpf.MapSpec `ebpf:"stacks"`
+	ActiveConnectionMap *ebpf.MapSpec `ebpf:"active_connection_map"`
+	BuffTmp             *ebpf.MapSpec `ebpf:"buff_tmp"`
+	Counts              *ebpf.MapSpec `ebpf:"counts"`
+	Stacks              *ebpf.MapSpec `ebpf:"stacks"`
 }
 
 // bpfObjects contains all objects after they have been loaded into the kernel.
@@ -91,12 +108,16 @@ func (o *bpfObjects) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfMaps struct {
-	Counts *ebpf.Map `ebpf:"counts"`
-	Stacks *ebpf.Map `ebpf:"stacks"`
+	ActiveConnectionMap *ebpf.Map `ebpf:"active_connection_map"`
+	BuffTmp             *ebpf.Map `ebpf:"buff_tmp"`
+	Counts              *ebpf.Map `ebpf:"counts"`
+	Stacks              *ebpf.Map `ebpf:"stacks"`
 }
 
 func (m *bpfMaps) Close() error {
 	return _BpfClose(
+		m.ActiveConnectionMap,
+		m.BuffTmp,
 		m.Counts,
 		m.Stacks,
 	)
@@ -106,26 +127,56 @@ func (m *bpfMaps) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfPrograms struct {
-	IpQueueXmit    *ebpf.Program `ebpf:"ip_queue_xmit"`
-	IpQueueXmitRet *ebpf.Program `ebpf:"ip_queue_xmit_ret"`
-	SysSendto      *ebpf.Program `ebpf:"sys_sendto"`
-	SysSendtoRet   *ebpf.Program `ebpf:"sys_sendto_ret"`
-	TcpPush        *ebpf.Program `ebpf:"tcp_push"`
-	TcpPushRet     *ebpf.Program `ebpf:"tcp_push_ret"`
-	TcpSendmsg     *ebpf.Program `ebpf:"tcp_sendmsg"`
-	TcpSendmsgRet  *ebpf.Program `ebpf:"tcp_sendmsg_ret"`
+	IpLocalDeliverFinish    *ebpf.Program `ebpf:"ip_local_deliver_finish"`
+	IpLocalDeliverFinishRet *ebpf.Program `ebpf:"ip_local_deliver_finish_ret"`
+	IpOutput                *ebpf.Program `ebpf:"ip_output"`
+	IpRcv                   *ebpf.Program `ebpf:"ip_rcv"`
+	IpRcvFinish             *ebpf.Program `ebpf:"ip_rcv_finish"`
+	IpRcvFinishRet          *ebpf.Program `ebpf:"ip_rcv_finish_ret"`
+	IpRcvRet                *ebpf.Program `ebpf:"ip_rcv_ret"`
+	Read                    *ebpf.Program `ebpf:"read"`
+	ReadRet                 *ebpf.Program `ebpf:"read_ret"`
+	SkbCopyDatagramMsg      *ebpf.Program `ebpf:"skb_copy_datagram_msg"`
+	SkbCopyDatagramMsgRet   *ebpf.Program `ebpf:"skb_copy_datagram_msg_ret"`
+	SysRecvmsg              *ebpf.Program `ebpf:"sys_recvmsg"`
+	SysRecvmsgRet           *ebpf.Program `ebpf:"sys_recvmsg_ret"`
+	SysWrite                *ebpf.Program `ebpf:"sys_write"`
+	SysWriteRet             *ebpf.Program `ebpf:"sys_write_ret"`
+	TcpPush                 *ebpf.Program `ebpf:"tcp_push"`
+	TcpPushRet              *ebpf.Program `ebpf:"tcp_push_ret"`
+	TcpRecvmsg              *ebpf.Program `ebpf:"tcp_recvmsg"`
+	TcpRecvmsgRet           *ebpf.Program `ebpf:"tcp_recvmsg_ret"`
+	TcpSendmsg              *ebpf.Program `ebpf:"tcp_sendmsg"`
+	TcpSendmsgRet           *ebpf.Program `ebpf:"tcp_sendmsg_ret"`
+	TcpV4Rcv                *ebpf.Program `ebpf:"tcp_v4_rcv"`
+	TcpV4RcvRet             *ebpf.Program `ebpf:"tcp_v4_rcv_ret"`
 }
 
 func (p *bpfPrograms) Close() error {
 	return _BpfClose(
-		p.IpQueueXmit,
-		p.IpQueueXmitRet,
-		p.SysSendto,
-		p.SysSendtoRet,
+		p.IpLocalDeliverFinish,
+		p.IpLocalDeliverFinishRet,
+		p.IpOutput,
+		p.IpRcv,
+		p.IpRcvFinish,
+		p.IpRcvFinishRet,
+		p.IpRcvRet,
+		p.Read,
+		p.ReadRet,
+		p.SkbCopyDatagramMsg,
+		p.SkbCopyDatagramMsgRet,
+		p.SysRecvmsg,
+		p.SysRecvmsgRet,
+		p.SysWrite,
+		p.SysWriteRet,
 		p.TcpPush,
 		p.TcpPushRet,
+		p.TcpRecvmsg,
+		p.TcpRecvmsgRet,
 		p.TcpSendmsg,
 		p.TcpSendmsgRet,
+		p.TcpV4Rcv,
+		p.TcpV4RcvRet,
 	)
 }
 

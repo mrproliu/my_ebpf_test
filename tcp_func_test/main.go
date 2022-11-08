@@ -17,7 +17,7 @@ import (
 )
 
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
-//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf tcp.c -- -I../headers
+//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf tcp.c -- -I../headers -D__TARGET_ARCH_x86
 
 type Event struct {
 	Name          [50]byte
@@ -37,18 +37,44 @@ func main() {
 	}
 	defer objs.Close()
 
-	writeVEnter, writeVExit := kprobe("sys_sendto", objs.SysSendto, objs.SysSendtoRet)
+	sysSendMsg, sysSendMsgRet := kprobe("sys_write", objs.SysWrite, objs.SysWriteRet)
+	sysRecvMsg, sysRecvMsgRet := kprobe("sys_recvmsg", objs.SysRecvmsg, objs.SysRecvmsgRet)
+
 	tcpSendMsg, tcpSendMsgExit := kprobe("tcp_sendmsg", objs.TcpSendmsg, objs.TcpSendmsgRet)
+	tcpRecvMsg, tcpRecvMsgExit := kprobe("tcp_recvmsg", objs.TcpRecvmsg, objs.TcpRecvmsgRet)
 	tcpPush, tcpPushExit := kprobe("tcp_push", objs.TcpPush, objs.TcpPushRet)
-	ipQueueEmit, ipQueueEmitExit := kprobe("ip_queue_xmit", objs.IpQueueXmit, objs.IpQueueXmitRet)
-	defer writeVEnter.Close()
-	defer writeVExit.Close()
+	ipLocal, _ := kprobe("ip_finish_output", objs.IpOutput, nil)
+
+	ipRcv, ipRcvRet := kprobe("ip_rcv", objs.IpRcv, objs.IpRcvRet)
+	ipRcvFinish, ipRcvFinishRet := kprobe("ip_rcv_finish", objs.IpRcvFinish, objs.IpRcvFinishRet)
+	read, readRet := kprobe("sys_read", objs.Read, objs.ReadRet)
+	ipLocalDeliver, ipLocalDeliverRet := kprobe("ip_local_deliver_finish", objs.IpLocalDeliverFinish, objs.IpLocalDeliverFinishRet)
+	skbCopyDatagramMsg, skbCopyDatagramMsgRet := kprobe("skb_copy_datagram_iter", objs.SkbCopyDatagramMsg, objs.SkbCopyDatagramMsgRet)
+	tcpV4Rcv, tcpV4RcvRet := kprobe("tcp_v4_rcv", objs.TcpV4Rcv, objs.TcpV4RcvRet)
+	defer sysSendMsg.Close()
+	defer sysSendMsgRet.Close()
+	defer sysRecvMsg.Close()
+	defer sysRecvMsgRet.Close()
 	defer tcpSendMsg.Close()
 	defer tcpSendMsgExit.Close()
+	defer tcpRecvMsg.Close()
+	defer tcpRecvMsgExit.Close()
 	defer tcpPush.Close()
 	defer tcpPushExit.Close()
-	defer ipQueueEmit.Close()
-	defer ipQueueEmitExit.Close()
+	defer ipLocal.Close()
+
+	defer ipRcv.Close()
+	defer ipRcvRet.Close()
+	defer ipRcvFinish.Close()
+	defer ipRcvFinishRet.Close()
+	defer read.Close()
+	defer readRet.Close()
+	defer ipLocalDeliver.Close()
+	defer ipLocalDeliverRet.Close()
+	defer skbCopyDatagramMsg.Close()
+	defer skbCopyDatagramMsgRet.Close()
+	defer tcpV4Rcv.Close()
+	defer tcpV4RcvRet.Close()
 
 	//// Get the first-mounted cgroupv2 path.
 	//cgroupPath, err := detectCgroupPath()
@@ -123,13 +149,19 @@ func main() {
 }
 
 func kprobe(symbol string, enter, exit *ebpf.Program) (link.Link, link.Link) {
-	r1, err := link.Kprobe(symbol, enter)
-	if err != nil {
-		log.Fatalf("attach enter failure, symbol: %s, error: %v", symbol, err)
+	var r1, r2 link.Link
+	var err error
+	if enter != nil {
+		r1, err = link.Kprobe(symbol, enter)
+		if err != nil {
+			log.Fatalf("attach enter failure, symbol: %s, error: %v", symbol, err)
+		}
 	}
-	r2, err := link.Kretprobe(symbol, exit)
-	if err != nil {
-		log.Fatalf("attach exit failure, symbol: %s, error: %v", symbol, err)
+	if exit != nil {
+		r2, err = link.Kretprobe(symbol, exit)
+		if err != nil {
+			log.Fatalf("attach exit failure, symbol: %s, error: %v", symbol, err)
+		}
 	}
 	return r1, r2
 }

@@ -11,15 +11,27 @@ import (
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/perf"
 	"github.com/cilium/ebpf/rlimit"
+	"github.com/shirou/gopsutil/host"
 	"log"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 )
 
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc $BPF_CLANG -cflags $BPF_CFLAGS bpf time.c -- -I../headers
+
+var BootTime time.Time
+
+func init() {
+	boot, err := host.BootTime()
+	if err != nil {
+		panic(fmt.Errorf("init boot time error: %v", err))
+	}
+	BootTime = time.Unix(int64(boot), 0)
+}
 
 func main() {
 	if len(os.Args) <= 1 {
@@ -84,6 +96,8 @@ func main() {
 			continue
 		}
 
-		fmt.Printf("---------------%d\n", event)
+		timeCopy := time.Unix(BootTime.Unix(), int64(BootTime.Nanosecond()))
+		result := timeCopy.Add(time.Duration(event))
+		fmt.Printf("current second: %d, nano: %d\n", result.Unix(), result.Nanosecond())
 	}
 }

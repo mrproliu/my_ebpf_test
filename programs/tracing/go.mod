@@ -3,10 +3,13 @@ module test
 go 1.17
 
 require (
-	github.com/SkyAPM/go2sky v1.5.0 // indirect
+	github.com/SkyAPM/go2sky v1.5.0
+	github.com/openzipkin/zipkin-go v0.4.1
+)
+
+require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/openzipkin/zipkin-go v0.4.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	golang.org/x/net v0.1.0 // indirect
 	golang.org/x/sys v0.1.0 // indirect

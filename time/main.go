@@ -40,7 +40,7 @@ func main() {
 	}
 
 	// Load pre-compiled programs and maps into the kernel.
-	objects := bpfObjects{}
+	objects := &bpfObjects{}
 	if err := loadBpfObjects(objects, nil); err != nil {
 		log.Fatalf("loading objects: %s", err)
 	}

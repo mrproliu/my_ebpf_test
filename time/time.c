@@ -18,7 +18,7 @@ struct {
     __uint(max_entries, 10000);
 } stacks SEC(".maps");
 
-SEC("perf_event")
+SEC("uprobe/perf_event")
 int do_perf_event(struct pt_regs *ctx) {
     __u64 time = bpf_ktime_get_ns();
     bpf_perf_event_output(ctx, &counts, BPF_F_CURRENT_CPU, &time, sizeof(time));

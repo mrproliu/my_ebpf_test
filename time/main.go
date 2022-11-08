@@ -43,8 +43,6 @@ func main() {
 		log.Fatal("could not reconized the pid: %s", os.Args[1])
 		return
 	}
-	stopper := make(chan os.Signal, 1)
-	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
 
 	// Allow the current process to lock memory for eBPF resources.
 	if err := rlimit.RemoveMemlock(); err != nil {
@@ -74,30 +72,36 @@ func main() {
 
 	log.Printf("Listening for events..")
 
-	var event uint64
-	for {
-		record, err := rd.Read()
-		if err != nil {
-			if errors.Is(err, perf.ErrClosed) {
-				return
+	go func() {
+		var event uint64
+		for {
+			record, err := rd.Read()
+			if err != nil {
+				if errors.Is(err, perf.ErrClosed) {
+					return
+				}
+				log.Printf("reading from perf event reader: %s", err)
+				continue
 			}
-			log.Printf("reading from perf event reader: %s", err)
-			continue
-		}
 
-		if record.LostSamples != 0 {
-			log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
-			continue
-		}
+			if record.LostSamples != 0 {
+				log.Printf("perf event ring buffer full, dropped %d samples", record.LostSamples)
+				continue
+			}
 
-		// Parse the perf event entry into an Event structure.
-		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
-			log.Printf("parsing perf event: %s", err)
-			continue
-		}
+			// Parse the perf event entry into an Event structure.
+			if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
+				log.Printf("parsing perf event: %s", err)
+				continue
+			}
 
-		timeCopy := time.Unix(BootTime.Unix(), int64(BootTime.Nanosecond()))
-		result := timeCopy.Add(time.Duration(event))
-		fmt.Printf("current second: %d, nano: %d\n", result.Unix(), result.Nanosecond())
-	}
+			timeCopy := time.Unix(BootTime.Unix(), int64(BootTime.Nanosecond()))
+			result := timeCopy.Add(time.Duration(event))
+			fmt.Printf("current second: %d, nano: %d\n", result.Unix(), result.Nanosecond())
+		}
+	}()
+
+	stopper := make(chan os.Signal, 1)
+	signal.Notify(stopper, os.Interrupt, syscall.SIGTERM)
+	<-stopper
 }

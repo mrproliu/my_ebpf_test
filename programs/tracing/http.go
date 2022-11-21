@@ -58,7 +58,7 @@ func main() {
 
 	// zipkin
 	for true {
-		addr := "http://www.baidu.com"
+		addr := "http://www.google.com"
 		request, err := http.NewRequest("GET", addr, nil)
 		client, err := zipkinhttp.NewClient(zipkinTracer, zipkinhttp.ClientTrace(true))
 		if err != nil {

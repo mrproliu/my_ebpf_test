@@ -42,9 +42,9 @@ func main() {
 	defer r.Close()
 	skyWalkingTracer, err = go2sky.NewTracer("example", go2sky.WithReporter(r))
 	if err != nil {
-	//	log.Fatalf("init skyWalkingTracer failure: %v", err)
-	//}
-	//
+		log.Fatalf("init skyWalkingTracer failure: %v", err)
+	}
+
 	//// init zipkin tracer
 	//zipkinReporter := zipkin_reporter.NewReporter("http://localhost:9411/api/v2/spans")
 	//// create our local service endpoint

@@ -19,4 +19,4 @@ import requests
 while True:
     r = requests.get("http://localhost:9999/provider", verify=False)
     print(r.text)
-    time.sleep(20)
+    time.sleep(10)

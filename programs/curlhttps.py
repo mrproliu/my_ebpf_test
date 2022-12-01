@@ -17,6 +17,6 @@ import time
 import requests
 
 while True:
-    r = requests.get("http://localhost:9999/provider", verify=False)
+    r = requests.get("https://www.baidu.com", verify=False)
     print(r.text)
-    time.sleep(10)
+    time.sleep(1)

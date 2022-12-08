@@ -20,10 +20,11 @@ SEC("kprobe/sys_execve")
 int kprobe_execve(struct pt_regs *ctx) {
     u32 kZero = 0;
     struct statics *statics_value = bpf_map_lookup_elem(&test_map, &kZero);
-    if (statics_value == NULL) {
-        struct statics tmp = {};
+    if (!statics_value) {
+        struct statics tmp = {.count = 1};
         bpf_map_update_elem(&test_map, &kZero, &tmp, BPF_ANY);
         statics_value = bpf_map_lookup_elem(&test_map, &kZero);
+        return 0;
     }
 
     statics_value->count += 1;

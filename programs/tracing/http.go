@@ -18,7 +18,6 @@
 package main
 
 import (
-	"context"
 	"github.com/SkyAPM/go2sky"
 	"github.com/SkyAPM/go2sky/reporter"
 	"github.com/openzipkin/zipkin-go"
@@ -80,18 +79,20 @@ func main() {
 
 	// skywalking
 	for true {
-		addr := "http://www.google.com"
+		addr := "http://www.baidu.com"
 		request, err := http.NewRequest("GET", addr, nil)
-		request.Header.Add("Accept", "*/*")
+		//request.Header.Add("Accept", "*/*")
 		request.Header.Add("Accept-Encoding", "gzip")
-		exitSpan, err := skyWalkingTracer.CreateExitSpan(context.Background(), "/curl", addr, func(headerKey, headerValue string) error {
-			request.Header.Set(headerKey, headerValue)
-			return nil
-		})
+		request.Header.Add("Host", "www.baidu.com")
+		request.Header.Add("User-Agent", "go-http-client/1.1")
+		//exitSpan, err := skyWalkingTracer.CreateExitSpan(context.Background(), "/curl", addr, func(headerKey, headerValue string) error {
+		//	request.Header.Set(headerKey, headerValue)
+		//	return nil
+		//})
 		get, err := http.DefaultClient.Do(request)
 		_, err = ioutil.ReadAll(get.Body)
 		_ = get.Body.Close()
-		exitSpan.End()
+		//exitSpan.End()
 		if err != nil {
 			log.Printf("get response body error: %v", err)
 		}

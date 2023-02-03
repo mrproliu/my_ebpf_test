@@ -99,7 +99,7 @@ func main() {
 			log.Printf("get response body error: %v", err)
 		}
 
-		fmt.Printf("reading finish")
+		fmt.Printf("reading finish\n")
 		time.Sleep(time.Second)
 	}
 }

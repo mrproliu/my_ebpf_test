@@ -19,6 +19,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/SkyAPM/go2sky"
 	"github.com/SkyAPM/go2sky/reporter"
 	"github.com/openzipkin/zipkin-go"
@@ -98,6 +99,7 @@ func main() {
 			log.Printf("get response body error: %v", err)
 		}
 
+		fmt.Printf("reading finish")
 		time.Sleep(time.Second)
 	}
 }

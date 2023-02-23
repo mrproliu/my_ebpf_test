@@ -81,7 +81,7 @@ func main() {
 
 	// skywalking
 	for true {
-		addr := "http://www.baidu.com"
+		addr := "https://www.baidu.com"
 		request, err := http.NewRequest("GET", addr, nil)
 		//request.Header.Add("Accept", "*/*")
 		request.Header.Add("Accept-Encoding", "gzip")

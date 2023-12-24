@@ -31,8 +31,5 @@ func sendSingleConnectionRequest() {
 	}
 	defer resp.Body.Close()
 
-	_, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	ioutil.ReadAll(resp.Body)
 }

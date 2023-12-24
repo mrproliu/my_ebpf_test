@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	time.Sleep(time.Second * 3)
 	for true {
 		get, err := http.Get("https://www.google.com")
 		if err != nil {
